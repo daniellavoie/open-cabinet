@@ -12,6 +12,14 @@ _Avoid_: Builder, company, account, organisation
 A person who works in a Shop and uses Open Cabinet on its behalf.
 _Avoid_: User, employee, builder
 
+**Owner**:
+A Member who manages the Shop: its Members, Construction Standard, Material Catalog, prices, Labour Methods, taxes and currency.
+_Avoid_: Admin, manager, boss
+
+**Designer**:
+A Member who creates Projects and Quotes using the Shop's settings, without changing prices or standards.
+_Avoid_: Salesperson, drafter, user
+
 **Client**:
 The person a Shop designs and builds cabinets for, typically a homeowner.
 _Avoid_: Customer, end user, homeowner
