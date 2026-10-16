@@ -23,8 +23,8 @@ postgresql:
 
 server:
   keycloak:
-    # TODO: set to the Keycloak realm issuer from the arendal repository.
-    issuerUri: ""
+    # Realm created per docs/operations/keycloak-realm.md.
+    issuerUri: https://auth.arendal.ca/realms/open-cabinet
     clientId: open-cabinet-web
   resources:
     requests:
