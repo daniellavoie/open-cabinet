@@ -1,12 +1,34 @@
 ---
 name: angular-frontend
-description: Use when writing or modifying Angular frontend code in server/src/main/webapp/. Ensures standalone component patterns, in-house design system usage (`--sd-*` tokens), service conventions, and consistent styling.
+description: Use when writing or modifying Angular frontend code in Open Cabinet. Ensures standalone component patterns, design-token styling, service conventions, glossary-aligned naming, and front-end Construction Rules kept in step with the server.
 user-invocable: false
 ---
 
-## Mineshaft Angular Frontend Coding Style
+## Open Cabinet Angular Frontend Coding Style
 
-Follow these patterns exactly when writing Angular code in `server/src/main/webapp/`.
+Follow these patterns exactly when writing Angular code.
+
+> **Open decisions** (marked `TODO` below) must be settled before they are relied on:
+> - **TODO(location)**: where the Angular app lives (e.g. inside the Spring Boot module or a separate `frontend/` folder).
+> - **TODO(auth)**: authentication provider and route guard.
+> - **TODO(design)**: visual design system — token prefix, palette, light/dark theme. Placeholder token prefix used here: `--oc-*`.
+> - **TODO(3d)**: 3D rendering library (e.g. Three.js).
+
+### Domain Language
+
+Name components, services, models and routes with the terms in `GLOSSARY.md` (Shop, Member, Client, Project, Room, Cabinet, Part, Front, Quote, Cut List…), never with the words listed under `_Avoid_`. If a concept has no glossary term yet, raise it before inventing a name.
+
+### Languages
+
+All user-facing text is available in French and English; French is the default. Never hardcode user-facing strings in templates or components.
+
+### Construction Rules Are Implemented Twice
+
+Per `docs/adr/0002-construction-rules-run-in-browser-and-server.md`, the front end runs the Construction Rules for live feedback while editing in 3D; the server is the authority. Any change to a Construction Rule must:
+1. be made in both the TypeScript and Java implementations, and
+2. be covered by the shared, language-neutral test cases that both test suites run.
+
+When the server's result for a saved edit differs from the front end's, the server's result replaces it. The front end never computes the Cut List, Bill of Materials, Nesting or Quote; it displays what the server returns.
 
 ### Component Structure
 
@@ -24,7 +46,7 @@ All components are standalone. Use this exact decorator pattern:
 
 ```typescript
 @Component({
-  selector: "server-logs",
+  selector: "project-list",
   standalone: true,
   imports: [NgFor, NgIf, FormsModule],
   styleUrls: ["./<component-name>.component.css"],
@@ -32,7 +54,7 @@ All components are standalone. Use this exact decorator pattern:
 })
 ```
 
-- Selectors use element style: `selector: "server-logs"` (no `app-` prefix)
+- Selectors use element style: `selector: "project-list"` (no `app-` prefix)
 - Always use `standalone: true`
 - Import Angular directives explicitly: `NgFor`, `NgIf`, `NgClass`, `DatePipe`, etc.
 - Use `styleUrls` and `templateUrl` (external files, not inline)
@@ -41,17 +63,17 @@ All components are standalone. Use this exact decorator pattern:
 
 **Page Component** - top-level route target:
 ```typescript
-export class ServersComponent {
-  page!: Page<Server>;
+export class ProjectsComponent {
+  page!: Page<Project>;
   currentPage = 0;
   pageSize = 10;
 
-  constructor(private serverService: ServerService) {
+  constructor(private projectService: ProjectService) {
     this.loadPage(0);
   }
 
   loadPage(page: number) {
-    this.serverService.findAllPage(page, this.pageSize)
+    this.projectService.findAllPage(page, this.pageSize)
       .pipe(tap(page => this.page = page))
       .subscribe();
   }
@@ -60,13 +82,13 @@ export class ServersComponent {
 
 **Sub-Component** - child with @Input/@Output:
 ```typescript
-export class ServerLogsComponent implements OnDestroy, OnInit {
+export class CutListComponent implements OnDestroy, OnInit {
   @Input()
-  server!: Server;
+  project!: Project;
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private serverService: ServerService,
+    private projectService: ProjectService,
   ) {}
 
   ngOnInit() { /* initialize */ }
@@ -76,9 +98,9 @@ export class ServerLogsComponent implements OnDestroy, OnInit {
 
 **Modal Component** - uses NgbActiveModal:
 ```typescript
-export class RestartServerModalComponent {
+export class SendQuoteModalComponent {
   @Input()
-  server!: Server;
+  quote!: Quote;
 
   constructor(public modal: NgbActiveModal) {}
 
@@ -99,54 +121,37 @@ export class LoadingButtonComponent {
 
 ### Service Patterns
 
-**HTTP Service** extending EventService for auto-refresh:
+**HTTP Service** - one per feature, wrapping the REST API:
 ```typescript
 @Injectable()
-export class ServerService extends EventService<Server[]> {
-  constructor(
-    private httpClient: HttpClient,
-    private sseService: SseService,
-  ) {
-    super(true);  // enable 5s auto-refresh
+export class ProjectService {
+  constructor(private httpClient: HttpClient) {}
+
+  public findAllPage(page: number, size: number): Observable<Page<Project>> {
+    return this.httpClient.get<Page<Project>>(`/api/project?page=${page}&size=${size}`);
   }
 
-  public findAll(): Observable<Server[]> {
-    return this.httpClient.get<Page<Server>>(`/api/game-server?sort=key.name,ASC&size=1000`)
-      .pipe(map(page => page.content));
-  }
-
-  refresh(): Observable<Server[]> {
-    return this.findAll();
+  public findById(projectId: string): Observable<Project> {
+    return this.httpClient.get<Project>(`/api/project/${projectId}`);
   }
 }
 ```
-
-**EventService** - abstract base for pub-sub with auto-refresh:
-- Manages subscriber list
-- Auto-refreshes every 5 seconds when `refreshWithTimer: true`
-- Subclasses implement `refresh(): Observable<T>`
-
-**EventSubscriber** - `@Directive()` base class for components that consume events:
-- Handles subscription lifecycle (auto-unsubscribe on `ngOnDestroy`)
-- Components extend this and call `this.subscribe()`
 
 ### Model Classes
 
 Use TypeScript classes with `!` definite assignment:
 ```typescript
-export class Server {
-  config!: GameServerConfig;
-  creationTimestamp!: Date;
-  hostname!: string;
+export class Project {
+  id!: string;
+  clientId!: string;
   name!: string;
-  ownerId!: string;
-  port!: number;
-  status!: string;
+  creationTimestamp!: Date;
+  updateTimestamp!: Date;
 }
 ```
 
 - Use `!` (non-null assertion) for all fields
-- Use `| null` for nullable fields: `deletionTimestamp!: Date | null;`
+- Use `| null` for nullable fields: `sentTimestamp!: Date | null;`
 - No constructors, no decorators - plain class shape
 
 ### RxJS Patterns
@@ -154,18 +159,14 @@ export class Server {
 Use `pipe()` with operators. Common patterns:
 ```typescript
 // Simple data fetch
-this.serverService.findAllPage(page, this.pageSize)
+this.projectService.findAllPage(page, this.pageSize)
   .pipe(tap(page => this.page = page))
   .subscribe();
 
 // Chained operations
 activatedRoute.paramMap
-  .pipe(switchMap(paramMap => this.getServerNameFromParam(paramMap)))
-  .pipe(switchMap(serverName => this.findByName(serverName)));
-
-// SSE streaming
-this.sseService.getEventSource(`/api/game-server/${name}/logs`)
-  .pipe(switchMap(eventSource => this.handleLogsEventSource(eventSource)));
+  .pipe(map(paramMap => paramMap.get("projectId")!))
+  .pipe(switchMap(projectId => this.projectService.findById(projectId)));
 ```
 
 - Each `.pipe()` call is on its own line
@@ -176,7 +177,7 @@ this.sseService.getEventSource(`/api/game-server/${name}/logs`)
 
 **Structural directives:**
 ```html
-<tr *ngFor="let server of page?.content">
+<tr *ngFor="let project of page?.content">
 <div *ngIf="!page">Loading ...</div>
 ```
 
@@ -189,7 +190,7 @@ this.sseService.getEventSource(`/api/game-server/${name}/logs`)
 **Event bindings:**
 ```html
 <button (click)="loadPage(p)">
-<input (keydown.enter)="addTag($event)" (blur)="addTag($event)">
+<input (keydown.enter)="search($event)" (blur)="search($event)">
 ```
 
 **Two-way binding:**
@@ -199,70 +200,35 @@ this.sseService.getEventSource(`/api/game-server/${name}/logs`)
 
 **Component inputs:**
 ```html
-<server-status [status]="server.status"></server-status>
-<snapshot-selector [sourceServer]="server" (snapshotChange)="onSnapshotChange($event)"></snapshot-selector>
+<quote-status [status]="quote.status"></quote-status>
+<material-selector [catalog]="catalog" (materialChange)="onMaterialChange($event)"></material-selector>
 ```
 
-### CSS / Design System
+### CSS / Design Tokens
 
-**Always use the design-system CSS custom properties** (prefix `--sd-*`) — never hardcode colors, spacing, fonts, or radii:
+**Always use the design-system CSS custom properties** — never hardcode colors, spacing, fonts, or radii. The token set is **TODO(design)**; until it exists, use the placeholder `--oc-*` names below and define them in one global stylesheet:
 
 ```css
-/* Colors */
-background-color: var(--sd-bg-raise);
-color: var(--sd-text-default);
-border: 1px solid var(--sd-border-default);
-
-/* Spacing (4px grid) */
-padding: var(--sd-space-4);
-gap: var(--sd-space-3);
-margin-bottom: var(--sd-space-4);
-
-/* Typography */
-font-family: var(--sd-font-mono);
-font-size: var(--sd-font-size-sm);
-
-/* Radii */
-border-radius: var(--sd-radius-md);
-
-/* Transitions */
-transition: all var(--sd-transition-base);
+background-color: var(--oc-bg-raise);
+color: var(--oc-text-default);
+border: 1px solid var(--oc-border-default);
+padding: var(--oc-space-4);
+gap: var(--oc-space-3);
+font-size: var(--oc-font-size-sm);
+border-radius: var(--oc-radius-md);
+transition: all var(--oc-transition-base);
 ```
 
-**Key design-system tokens:**
-
-| Category | Tokens |
-|----------|--------|
-| Backgrounds | `--sd-bg-default` (darkest), `--sd-bg-raise`, `--sd-bg-secondary`, `--sd-bg-tertiary`, `--sd-bg-quaternary` |
-| Text | `--sd-text-default`, `--sd-text-secondary`, `--sd-text-tertiary`, `--sd-text-emphasis`, `--sd-text-inverse` |
-| Borders | `--sd-border-default`, `--sd-border-secondary` |
-| Accent | `--sd-accent-default` (amber), `--sd-accent-hover`, `--sd-accent-muted` |
-| Semantic | `--sd-success`, `--sd-destructive`, `--sd-warning`, `--sd-info` + `-muted` variants |
-| Spacing | `--sd-space-1` through `--sd-space-12` (4px grid) |
-| Font sizes | `--sd-font-size-xs` (11px) through `--sd-font-size-2xl` (24px) |
-| Radii | `--sd-radius-sm` (2px), `--sd-radius-md` (4px), `--sd-radius-lg` (6px) |
-| Transitions | `--sd-transition-fast` (120ms), `--sd-transition-base` (200ms) |
-
-**Theme**: Dark theme with deep slate backgrounds and amber accent. Always `data-bs-theme="dark"`.
-
-**Bootstrap integration**: Use Bootstrap for layout grid, tables, pagination, modals, and badges. Override Bootstrap colors via `system-bootstrap-overrides.css`. Component-level styles use the `--sd-*` tokens.
-
-**Page layout wrapper:**
-```css
-.content-window {
-  height: 100vh;
-  overflow: auto;
-  background-color: var(--sd-bg-default);
-  padding: var(--sd-space-8) var(--sd-space-6);
-}
-```
+**Bootstrap integration**: Use Bootstrap for layout grid, tables, pagination, modals, and badges. Override Bootstrap colors from the design tokens in one global overrides stylesheet. Component-level styles use the tokens.
 
 ### Routing
 
-All routes use Auth0 guard:
+All routes except sign-in require an authenticated Member (**TODO(auth)**: guard name and provider):
 ```typescript
-{ path: 'servers/:serverName', component: ServerDetailsComponent, canActivate: [authGuardFn] }
+{ path: 'projects/:projectId', component: ProjectDetailsComponent, canActivate: [authGuardFn] }
 ```
+
+Owner-only screens (Members, Construction Standard, Material Catalog, prices, Labour Methods, taxes, currency) are also hidden from Designers; the server still enforces the role.
 
 ### Directory Organization
 
@@ -274,8 +240,6 @@ src/app/
 │   ├── <sub-feature>/   # Component directories
 │   └── ...
 ├── util/
-│   ├── event/           # EventService, EventSubscriber
-│   ├── sse/             # SSE service
 │   ├── model/           # Shared models (Page)
 │   └── <component>/     # Reusable components
 └── environments/

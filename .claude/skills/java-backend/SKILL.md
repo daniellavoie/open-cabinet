@@ -1,12 +1,20 @@
 ---
 name: java-backend
-description: Use when writing or modifying Java backend code in the server, client, common, or model modules. Ensures hexagonal architecture, Lombok conventions, reactive patterns, and naming consistency.
+description: Use when writing or modifying Java backend code in the Open Cabinet Spring Boot server. Ensures hexagonal architecture, Lombok conventions, glossary-aligned naming, and Shop-scoped multi-tenancy.
 user-invocable: false
 ---
 
-## Mineshaft Java Backend Coding Style
+## Open Cabinet Java Backend Coding Style
 
-Follow these patterns exactly when writing Java code in the server-side modules.
+Follow these patterns exactly when writing Java code in the Spring Boot back end.
+
+> **Open decisions** (marked `TODO` below) must be settled before they are relied on:
+> - **TODO(package)**: root package. Placeholder used here: `dev.daniellavoie.opencabinet`.
+> - **TODO(reactive)**: blocking Spring MVC or reactive WebFlux (`Mono`/`Flux`). Until decided, write blocking code and do not introduce reactive types.
+
+### Domain Language
+
+Name classes, fields and endpoints with the terms in `GLOSSARY.md` (Shop, Member, Client, Project, Room, Cabinet, Part, Front, Quote, Cut List…), never with the words listed under `_Avoid_`. If a concept has no glossary term yet, raise it before inventing a name.
 
 ### Architecture: Hexagonal (Ports & Adapters)
 
@@ -31,6 +39,16 @@ New features MUST follow this directory structure:
         └── <Feature>Controller.java   # @RestController
 ```
 
+Domain logic (Construction Rules, Cut List, Bill of Materials, Nesting, Quote calculation) lives in `domain/` and never depends on `module/`.
+
+### Construction Rules Are Implemented Twice
+
+Per `docs/adr/0002-construction-rules-run-in-browser-and-server.md`, Construction Rules also exist in the Angular front end. The server is the authority. Any change to a Construction Rule must:
+1. be made in both the Java and TypeScript implementations, and
+2. be covered by the shared, language-neutral test cases that both test suites run.
+
+Everything priced or printed (Cut List, Bill of Materials, Nesting, Quote) is computed on the server only.
+
 ### Class Annotations (exact order matters)
 
 **Domain Service:**
@@ -38,7 +56,7 @@ New features MUST follow this directory structure:
 @Service
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class DefaultGameServerDomain implements GameServerDomain {
+public class DefaultProjectDomain implements ProjectDomain {
 ```
 
 **Repository Adapter:**
@@ -47,7 +65,7 @@ public class DefaultGameServerDomain implements GameServerDomain {
 @Repository
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GameServerDatabaseRepository implements GameServerRepository {
+public class ProjectDatabaseRepository implements ProjectRepository {
 ```
 
 **REST Controller:**
@@ -56,7 +74,7 @@ public class GameServerDatabaseRepository implements GameServerRepository {
 @AllArgsConstructor
 @RequestMapping("/api/<resource>")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GameServerController {
+public class ProjectController {
 ```
 
 **JPA Entity:**
@@ -64,10 +82,10 @@ public class GameServerController {
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "Server")
+@Entity(name = "Project")
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ServerEntity {
+public class ProjectEntity {
 ```
 
 Note: Entities use `@FieldDefaults(level = AccessLevel.PRIVATE)` WITHOUT `makeFinal = true`.
@@ -76,9 +94,9 @@ Note: Entities use `@FieldDefaults(level = AccessLevel.PRIVATE)` WITHOUT `makeFi
 ```java
 @Data
 @Configuration
-@ConfigurationProperties("minecraft-operator-api")
+@ConfigurationProperties("open-cabinet")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MineshaftServerConfiguration {
+public class OpenCabinetConfiguration {
 ```
 
 **Immutable Domain Model (value object):**
@@ -86,10 +104,10 @@ public class MineshaftServerConfiguration {
 @Value
 @Jacksonized
 @Builder(toBuilder = true)
-public class NodePortAllocation {
-	int serverNodePort;
-	int rconNodePort;
-	int metricsNodePort;
+public class PartDimensions {
+	BigDecimal length;
+	BigDecimal width;
+	BigDecimal thickness;
 }
 ```
 
@@ -100,47 +118,43 @@ public class NodePortAllocation {
 @Service
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class DefaultGameServerDomain implements GameServerDomain {
-	KubernetesClient kubernetesClient;
-	GameServerRepository repository;
-	UserDomain userDomain;
+public class DefaultQuoteDomain implements QuoteDomain {
+	QuoteRepository repository;
+	ProjectDomain projectDomain;
+	MaterialCatalogDomain materialCatalogDomain;
 ```
 
 **Entity-to-domain conversion** - Entities have a `to()` method:
 ```java
-public GameServer to() {
-	return GameServer.builder()
-			.name(key.getName())
-			.ownerId(key.getOwner().getId())
-			.status(status)
+public Project to() {
+	return Project.builder()
+			.id(id)
+			.name(name)
+			.clientId(client.getId())
 			.build();
 }
 ```
 
-**Multi-tenancy** - `Principal` is passed through all domain and repository methods:
+**Multi-tenancy** - Every piece of data belongs to a Shop. `Principal` is passed through all domain and repository methods, and every query is scoped to the Principal's Shop:
 ```java
-GameServer findByName(String serverName, Principal principal);
-Page<GameServer> findByPrincipal(Principal principal, Pageable pageable);
+Project findById(UUID projectId, Principal principal);
+Page<Project> findByClient(UUID clientId, Principal principal, Pageable pageable);
 ```
 
-**Reactive types** - Use `Mono<T>` and `Flux<T>` for async operations:
-```java
-public Flux<String> logs(String serverName, Principal principal) {
-	return reactiveRepository.findByName(serverName, principal)
-			.flatMapMany(gameServer -> serverClient.logs(...));
-}
-```
+**Roles** - Owner-only operations (Members, Construction Standard, Material Catalog, prices, Labour Methods, taxes, currency) are rejected for Designers in the domain layer, not only in the controller.
+
+**Frozen Quotes** - A sent Quote is never modified. Changes produce a new Quote Revision; never update a sent Quote's lines or totals in place.
 
 **Validation** - Use `Optional` + `orElseThrow` for null checks, `IllegalArgumentException` for input errors, `IllegalStateException` for state violations:
 ```java
-Optional.ofNullable(request.getVersion())
-		.orElseThrow(() -> new IllegalArgumentException("a version is required"));
+Optional.ofNullable(request.getClientId())
+		.orElseThrow(() -> new IllegalArgumentException("a client is required"));
 ```
 
 **Controller methods** - Thin delegation to domain, always pass `Principal`:
 ```java
 @PostMapping
-public GameServerEvent create(@RequestBody CreateServerRequest request, Principal principal) {
+public Project create(@RequestBody CreateProjectRequest request, Principal principal) {
 	return domain.create(request, principal);
 }
 ```
@@ -148,38 +162,36 @@ public GameServerEvent create(@RequestBody CreateServerRequest request, Principa
 **Pagination** - Use Spring Data `Page<T>` and `Pageable`:
 ```java
 @GetMapping
-public Page<GameServer> findAll(Principal principal, Pageable pageable) {
+public Page<Project> findAll(Principal principal, Pageable pageable) {
 	return domain.findByPrincipal(principal, pageable);
 }
 ```
 
 **Logging** - Use `@Slf4j` with structured parameters:
 ```java
-log.info("Updating server status {}/{} with: { status = {}, hostname = {}, port = {} }",
-		ownerId, serverName, status, hostname, port);
+log.info("Sending quote {}/{} revision {} with: { total = {}, currency = {} }",
+		shopId, quoteId, revision, total, currency);
 ```
 
 ### Naming Conventions
 
 | Type | Pattern | Example |
 |------|---------|---------|
-| Domain interface | `<Feature>Domain` | `GameServerDomain` |
-| Domain impl | `Default<Feature>Domain` | `DefaultGameServerDomain` |
-| Backend port | `<Feature>Repository` | `GameServerRepository` |
-| DB adapter | `<Feature>DatabaseRepository` | `GameServerDatabaseRepository` |
-| JPA interface | `<Feature>JpaRepository` | `GameServerJpaRepository` |
-| Entity | `<Feature>Entity` | `ServerEntity` |
-| Controller | `<Feature>Controller` | `GameServerController` |
-| Config | `<Feature>Configuration` or `<Feature>Config` | `MineshaftServerConfiguration` |
-| Util | `<Feature>Util` | `StatefulSetUtil` |
-| Domain model | Plain name | `GameServer`, `Snapshot`, `NodePortAllocation` |
+| Domain interface | `<Feature>Domain` | `ProjectDomain` |
+| Domain impl | `Default<Feature>Domain` | `DefaultProjectDomain` |
+| Backend port | `<Feature>Repository` | `ProjectRepository` |
+| DB adapter | `<Feature>DatabaseRepository` | `ProjectDatabaseRepository` |
+| JPA interface | `<Feature>JpaRepository` | `ProjectJpaRepository` |
+| Entity | `<Feature>Entity` | `ProjectEntity` |
+| Controller | `<Feature>Controller` | `ProjectController` |
+| Config | `<Feature>Configuration` or `<Feature>Config` | `OpenCabinetConfiguration` |
+| Util | `<Feature>Util` | `NestingUtil` |
+| Domain model | Plain glossary name | `Project`, `Cabinet`, `Quote`, `PartDimensions` |
 
 ### Package Structure
 
-- Server module: `dev.daniellavoie.mineshaft.server.<feature>.*`
-- Operator module: `dev.daniellavoie.minecraft.operator.server.*`
-- Model module: `dev.daniellavoie.minecraft.operator.api.model.*`
-- Operator model: `dev.daniellavoie.minecraft.operator.model.*`
+- Root: `dev.daniellavoie.opencabinet` (**TODO(package)**: confirm)
+- Features: `dev.daniellavoie.opencabinet.<feature>.*`, one feature per glossary area (e.g. `shop`, `client`, `project`, `catalog`, `quote`)
 
 ### Formatting
 
@@ -188,8 +200,8 @@ log.info("Updating server status {}/{} with: { status = {}, hostname = {}, port 
 - `@Transactional` on repository adapter methods that need it (not on domain)
 - Use `toBuilder()` pattern for updating entities:
   ```java
-  repository.save(server.toBuilder()
-  		.status(ServerStatus.UPDATING)
+  repository.save(project.toBuilder()
+  		.name(request.getName())
   		.updateTimestamp(LocalDateTime.now())
   		.build());
   ```
