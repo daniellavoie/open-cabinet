@@ -1,0 +1,23 @@
+{{- if .Values.postgresql.cluster.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.postgresql.cluster.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "open-cabinet.fullname" . }}
+    release: {{ .Release.Name }}
+    component: postgres
+spec:
+  instances: {{ .Values.postgresql.cluster.instances }}
+  imageName: {{ .Values.postgresql.cluster.image }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.postgresql.database }}
+      owner: {{ .Values.postgresql.cluster.owner }}
+  storage:
+    size: {{ .Values.postgresql.cluster.storage.size }}
+    {{- with .Values.postgresql.cluster.storage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,19 @@
+/* Bootstrap variables, set from semantic tokens only. */
+:root {
+  --bs-body-bg: var(--oc-bg-default);
+  --bs-body-color: var(--oc-text-default);
+  --bs-body-font-family: var(--oc-font-sans);
+  --bs-border-color: var(--oc-border-default);
+  --bs-primary: var(--oc-accent-default);
+  --bs-link-color: var(--oc-accent-default);
+  --bs-link-hover-color: var(--oc-accent-hover);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--oc-accent-default);
+  --bs-btn-border-color: var(--oc-accent-default);
+  --bs-btn-hover-bg: var(--oc-accent-hover);
+  --bs-btn-hover-border-color: var(--oc-accent-hover);
+  --bs-btn-color: var(--oc-text-inverse);
+  --bs-btn-hover-color: var(--oc-text-inverse);
+}
