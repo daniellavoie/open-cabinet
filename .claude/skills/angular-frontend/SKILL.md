@@ -1,18 +1,18 @@
 ---
 name: angular-frontend
-description: Use when writing or modifying Angular frontend code in Open Cabinet. Ensures standalone component patterns, design-token styling, service conventions, glossary-aligned naming, and front-end Construction Rules kept in step with the server.
+description: Use when writing or modifying Angular frontend code in backend/src/main/webapp/. Ensures standalone component patterns, design-token styling, service conventions, glossary-aligned naming, and front-end Construction Rules kept in step with the server.
 user-invocable: false
 ---
 
 ## Open Cabinet Angular Frontend Coding Style
 
-Follow these patterns exactly when writing Angular code.
+Follow these patterns exactly when writing Angular code in `backend/src/main/webapp/`.
 
-> **Open decisions** (marked `TODO` below) must be settled before they are relied on:
-> - **TODO(location)**: where the Angular app lives (e.g. inside the Spring Boot module or a separate `frontend/` folder).
-> - **TODO(auth)**: authentication provider and route guard.
-> - **TODO(design)**: visual design system — token prefix, palette, light/dark theme. Placeholder token prefix used here: `--oc-*`.
-> - **TODO(3d)**: 3D rendering library (e.g. Three.js).
+### Stack
+
+- The app lives in `backend/src/main/webapp/`, is built by the backend build, and is served by Spring Boot as one deployable unit.
+- **Authentication**: the existing Keycloak server, via OpenID Connect. API calls carry the Keycloak access token.
+- **3D**: plain Three.js wrapped in Angular components (see *3D Rendering*). No Angular-specific 3D wrapper libraries.
 
 ### Domain Language
 
@@ -206,7 +206,14 @@ activatedRoute.paramMap
 
 ### CSS / Design Tokens
 
-**Always use the design-system CSS custom properties** — never hardcode colors, spacing, fonts, or radii. The token set is **TODO(design)**; until it exists, use the placeholder `--oc-*` names below and define them in one global stylesheet:
+The current look is a **temporary light theme**: neutral palette, one accent color. A proper design system will replace it later, so styling must be swappable by editing token files only.
+
+**Three token layers, all in `src/styles/`:**
+1. `tokens.palette.css` — raw values (`--oc-palette-gray-100`, `--oc-palette-blue-600`…). Nothing outside the token files may reference these.
+2. `tokens.semantic.css` — meaning-based tokens mapped onto the palette (`--oc-bg-default`, `--oc-bg-raise`, `--oc-text-default`, `--oc-text-secondary`, `--oc-border-default`, `--oc-accent-default`, `--oc-success`, `--oc-destructive`, `--oc-warning`, spacing `--oc-space-1`…`--oc-space-12` on a 4px grid, `--oc-font-size-*`, `--oc-radius-*`, `--oc-transition-*`).
+3. `bootstrap-overrides.css` — Bootstrap variables set from semantic tokens only.
+
+**Components use semantic tokens only** — never hardcode colors, spacing, fonts or radii, and never reference palette tokens:
 
 ```css
 background-color: var(--oc-bg-raise);
@@ -219,11 +226,20 @@ border-radius: var(--oc-radius-md);
 transition: all var(--oc-transition-base);
 ```
 
-**Bootstrap integration**: Use Bootstrap for layout grid, tables, pagination, modals, and badges. Override Bootstrap colors from the design tokens in one global overrides stylesheet. Component-level styles use the tokens.
+If a component needs a value no semantic token expresses, add a semantic token rather than a literal. The 3D scene takes its colors from the same semantic tokens (read via `getComputedStyle`), not from literals in TypeScript.
+
+**Bootstrap integration**: Use Bootstrap for layout grid, tables, pagination, modals, and badges. Component-level styles use the semantic tokens.
+
+### 3D Rendering
+
+- Each 3D view is an Angular component that owns one Three.js renderer, scene and camera, attached to a `<canvas>` in its template.
+- Create the renderer in `ngAfterViewInit` and run the render loop with `NgZone.runOutsideAngular` so animation frames don't trigger change detection; re-enter the zone only to emit events (`@Output`).
+- In `ngOnDestroy`, stop the loop and dispose every geometry, material, texture and the renderer.
+- Scene objects map one-to-one to domain objects (a Cabinet, a Part, a Wall); keep the mapping in a dedicated service rather than in the component.
 
 ### Routing
 
-All routes except sign-in require an authenticated Member (**TODO(auth)**: guard name and provider):
+All routes except sign-in require an authenticated Member, signed in through Keycloak:
 ```typescript
 { path: 'projects/:projectId', component: ProjectDetailsComponent, canActivate: [authGuardFn] }
 ```

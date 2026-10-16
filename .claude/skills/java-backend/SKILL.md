@@ -8,9 +8,11 @@ user-invocable: false
 
 Follow these patterns exactly when writing Java code in the Spring Boot back end.
 
-> **Open decisions** (marked `TODO` below) must be settled before they are relied on:
-> - **TODO(package)**: root package. Placeholder used here: `dev.daniellavoie.opencabinet`.
-> - **TODO(reactive)**: blocking Spring MVC or reactive WebFlux (`Mono`/`Flux`). Until decided, write blocking code and do not introduce reactive types.
+### Stack
+
+- **Blocking Spring MVC** with Spring Data JPA on PostgreSQL. Do not introduce reactive types (`Mono`, `Flux`, WebFlux).
+- **Authentication**: the existing Keycloak server. The back end is an OAuth2 resource server that validates Keycloak-issued JWTs via Spring Security; `Principal` comes from the validated token.
+- The Angular app lives in `backend/src/main/webapp/`, is built by the backend build, and is served by Spring Boot as one deployable unit.
 
 ### Domain Language
 
@@ -190,7 +192,7 @@ log.info("Sending quote {}/{} revision {} with: { total = {}, currency = {} }",
 
 ### Package Structure
 
-- Root: `dev.daniellavoie.opencabinet` (**TODO(package)**: confirm)
+- Root: `dev.daniellavoie.opencabinet`
 - Features: `dev.daniellavoie.opencabinet.<feature>.*`, one feature per glossary area (e.g. `shop`, `client`, `project`, `catalog`, `quote`)
 
 ### Formatting
