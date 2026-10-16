@@ -27,6 +27,16 @@
   --oc-destructive: var(--oc-palette-red-600);
   --oc-warning: var(--oc-palette-amber-600);
 
+  /* 3D view */
+  --oc-3d-background: var(--oc-palette-gray-100);
+  --oc-3d-floor: var(--oc-palette-gray-300);
+  --oc-3d-wall: var(--oc-palette-white);
+  --oc-3d-carcass: var(--oc-palette-gray-50);
+  --oc-3d-front: var(--oc-palette-gray-500);
+  --oc-3d-toe-kick: var(--oc-palette-gray-700);
+  --oc-3d-selected: var(--oc-palette-blue-600);
+  --oc-3d-invalid: var(--oc-palette-red-600);
+
   /* Spacing (4px grid) */
   --oc-space-1: 4px;
   --oc-space-2: 8px;

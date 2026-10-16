@@ -1,0 +1,53 @@
+<div class="page">
+  <section class="list">
+    <h1 i18n="@@clients.title">Clients</h1>
+    <div *ngIf="!clients" i18n="@@common.loading">Chargement…</div>
+    <p class="empty" *ngIf="clients?.length === 0" i18n="@@clients.empty">Aucun client pour l'instant.</p>
+    <table class="table table-hover" *ngIf="clients?.length">
+      <thead>
+        <tr>
+          <th i18n="@@clients.name">Nom</th>
+          <th i18n="@@clients.email">Courriel</th>
+          <th i18n="@@clients.phone">Téléphone</th>
+          <th i18n="@@clients.address">Adresse</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of clients" (click)="edit(client)" [class.table-active]="editing?.id === client.id">
+          <td>{{ client.name }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.phone }}</td>
+          <td>{{ client.address }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <aside class="panel">
+    <h2 *ngIf="!editing" i18n="@@clients.new">Nouveau client</h2>
+    <h2 *ngIf="editing" i18n="@@clients.edit">Modifier le client</h2>
+    <form (ngSubmit)="save()">
+      <div class="mb-2">
+        <label class="form-label" for="clientName" i18n="@@clients.name">Nom</label>
+        <input class="form-control" id="clientName" name="name" [(ngModel)]="form.name" required />
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="clientEmail" i18n="@@clients.email">Courriel</label>
+        <input class="form-control" id="clientEmail" name="email" type="email" [(ngModel)]="form.email" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="clientPhone" i18n="@@clients.phone">Téléphone</label>
+        <input class="form-control" id="clientPhone" name="phone" [(ngModel)]="form.phone" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="clientAddress" i18n="@@clients.address">Adresse</label>
+        <textarea class="form-control" id="clientAddress" name="address" rows="2" [(ngModel)]="form.address"></textarea>
+      </div>
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" [disabled]="saving || !form.name" i18n="@@common.save">Enregistrer</button>
+        <button class="btn btn-outline-secondary" type="button" *ngIf="editing" (click)="edit(null)" i18n="@@common.cancel">Annuler</button>
+      </div>
+    </form>
+  </aside>
+</div>

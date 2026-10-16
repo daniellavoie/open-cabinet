@@ -1,0 +1,17 @@
+<div class="layout">
+  <nav class="topbar">
+    <a class="brand" routerLink="/projects">Open Cabinet</a>
+    <span class="shop-name">{{ memberService.shop()?.name }}</span>
+    <ul class="links">
+      <li><a routerLink="/projects" routerLinkActive="active" i18n="@@nav.projects">Projets</a></li>
+      <li><a routerLink="/clients" routerLinkActive="active" i18n="@@nav.clients">Clients</a></li>
+      <li *ngIf="memberService.isOwner()"><a routerLink="/catalog" routerLinkActive="active" i18n="@@nav.catalog">Catalogue</a></li>
+      <li *ngIf="memberService.isOwner()"><a routerLink="/settings" routerLinkActive="active" i18n="@@nav.settings">Paramètres</a></li>
+    </ul>
+    <span class="member">{{ memberService.member()?.name }}</span>
+    <button class="btn btn-sm btn-outline-secondary" (click)="logout()" i18n="@@nav.logout">Se déconnecter</button>
+  </nav>
+  <main class="content-window">
+    <router-outlet />
+  </main>
+</div>

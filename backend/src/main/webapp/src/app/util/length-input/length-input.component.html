@@ -1,0 +1,9 @@
+<input
+  class="form-control form-control-sm"
+  [class.is-invalid]="invalid"
+  [id]="inputId"
+  [disabled]="disabled"
+  [(ngModel)]="text"
+  (blur)="commit()"
+  (keydown.enter)="commit()"
+/>

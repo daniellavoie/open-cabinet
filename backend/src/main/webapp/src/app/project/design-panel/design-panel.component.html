@@ -1,0 +1,81 @@
+<section class="block">
+  <h2 i18n="@@design.walls">Murs</h2>
+  <div class="wall" *ngFor="let wall of design.walls; let index = index">
+    <span class="wall-name" i18n="@@design.wallNumber">Mur {{ index + 1 }}</span>
+    <label class="visually-hidden" [for]="'wallLength' + index" i18n="@@design.length">Longueur</label>
+    <length-input [inputId]="'wallLength' + index" [units]="units" [valueMm]="wall.lengthMm" (valueMmChange)="updateWall(wall, { lengthMm: $event })" />
+    <label class="visually-hidden" [for]="'wallHeight' + index" i18n="@@design.height">Hauteur</label>
+    <length-input [inputId]="'wallHeight' + index" [units]="units" [valueMm]="wall.heightMm" (valueMmChange)="updateWall(wall, { heightMm: $event })" />
+    <input class="form-control form-control-sm angle" type="number" step="15" [ngModel]="wall.angleToNextDegrees"
+      (ngModelChange)="updateWall(wall, { angleToNextDegrees: $event })" i18n-title="@@design.angle" title="Angle vers le mur suivant (°)" />
+    <button class="btn btn-sm btn-link text-danger" *ngIf="design.walls.length > 1" (click)="removeWall(wall)" i18n="@@common.remove">Retirer</button>
+  </div>
+  <p class="hint" i18n="@@design.wallHint">Longueur, hauteur et angle vers le mur suivant.</p>
+  <button class="btn btn-sm btn-outline-secondary" (click)="addWall()" i18n="@@design.addWall">Ajouter un mur</button>
+</section>
+
+<section class="block">
+  <h2 i18n="@@design.addCabinet">Ajouter un caisson</h2>
+  <div class="add-row">
+    <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
+      <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+    </select>
+    <select class="form-select form-select-sm" [(ngModel)]="newWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <button class="btn btn-sm btn-primary" (click)="addCabinet()" i18n="@@design.add">Ajouter</button>
+  </div>
+</section>
+
+<section class="block">
+  <h2 i18n="@@design.cabinets">Caissons</h2>
+  <p class="hint" *ngIf="design.cabinets.length === 0" i18n="@@design.noCabinets">Aucun caisson. Ajoutez-en un ci-dessus.</p>
+  <ul class="cabinets">
+    <li *ngFor="let cabinet of design.cabinets" [class.selected]="cabinet.id === selectedCabinetId"
+      [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectCabinet.emit(cabinet.id)">
+      <span>{{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}</span>
+      <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(cabinet.wallId) }}</span>
+    </li>
+  </ul>
+</section>
+
+<section class="block selected-cabinet" *ngIf="selected && selectedTemplate">
+  <h2>
+    <span>{{ templateLabels[selected.templateCode] ?? selected.templateCode }}</span>
+    <button class="btn btn-sm btn-link text-danger" (click)="removeSelected()" i18n="@@common.remove">Retirer</button>
+  </h2>
+  <div class="fields">
+    <label for="cabinetWall" i18n="@@design.wall">Mur</label>
+    <select class="form-select form-select-sm" id="cabinetWall" [ngModel]="selected.wallId" (ngModelChange)="updateSelected({ wallId: $event })">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <label for="cabinetOffset" i18n="@@design.offset">Position</label>
+    <length-input inputId="cabinetOffset" [units]="units" [valueMm]="selected.offsetMm" (valueMmChange)="updateSelected({ offsetMm: $event })" />
+    <label for="cabinetWidth" i18n="@@design.width">Largeur</label>
+    <length-input inputId="cabinetWidth" [units]="units" [valueMm]="selected.widthMm" (valueMmChange)="updateSelected({ widthMm: $event })" />
+    <label for="cabinetHeight" i18n="@@design.height">Hauteur</label>
+    <length-input inputId="cabinetHeight" [units]="units" [valueMm]="selected.heightMm" (valueMmChange)="updateSelected({ heightMm: $event })" />
+    <label for="cabinetDepth" i18n="@@design.depth">Profondeur</label>
+    <length-input inputId="cabinetDepth" [units]="units" [valueMm]="selected.depthMm" (valueMmChange)="updateSelected({ depthMm: $event })" />
+    <ng-container *ngIf="selectedTemplate.type === 'WALL'">
+      <label for="cabinetElevation" i18n="@@design.elevation">Hauteur du bas</label>
+      <length-input inputId="cabinetElevation" [units]="units" [valueMm]="selected.elevationMm" (valueMmChange)="updateSelected({ elevationMm: $event })" />
+    </ng-container>
+    <ng-container *ngIf="selectedTemplate.maxShelfCount > 0">
+      <label for="cabinetShelves" i18n="@@design.shelves">Tablettes</label>
+      <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"
+        [ngModel]="selected.shelfCount" (ngModelChange)="updateSelected({ shelfCount: $event })" />
+    </ng-container>
+  </div>
+</section>
+
+<section class="block" *ngIf="violations.length > 0">
+  <h2 class="text-danger" i18n="@@design.violations">Règles de construction</h2>
+  <ul class="violations">
+    <li *ngFor="let violation of violations" (click)="violation.cabinetId && selectCabinet.emit(violation.cabinetId)">
+      <strong *ngIf="violation.cabinetId">{{ cabinetLabels.get(violation.cabinetId) ?? "" }}</strong>
+      <strong *ngIf="!violation.cabinetId && violation.wallId" i18n="@@design.wallNumber">Mur {{ wallNumber(violation.wallId) }}</strong>
+      {{ violationLabels[violation.code] ?? violation.code }}
+    </li>
+  </ul>
+</section>

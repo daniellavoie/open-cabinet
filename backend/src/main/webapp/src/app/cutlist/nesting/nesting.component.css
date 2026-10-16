@@ -1,0 +1,53 @@
+.material {
+  margin-bottom: var(--oc-space-6);
+}
+
+h3 {
+  font-size: var(--oc-font-size-md);
+  font-weight: 600;
+  display: flex;
+  gap: var(--oc-space-3);
+  align-items: baseline;
+}
+
+.sheets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--oc-space-4);
+}
+
+.sheet {
+  margin: 0;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.board {
+  fill: var(--oc-bg-secondary);
+  stroke: var(--oc-border-default);
+  stroke-width: 6;
+}
+
+.part {
+  fill: var(--oc-accent-muted);
+  stroke: var(--oc-accent-default);
+  stroke-width: 3;
+}
+
+.part-label {
+  fill: var(--oc-text-default);
+  font-size: 46px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+figcaption,
+.meta,
+.hint {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+}

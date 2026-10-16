@@ -1,0 +1,19 @@
+<main class="onboarding">
+  <section class="card-panel">
+    <h1 i18n="@@onboarding.title">Bienvenue dans Open Cabinet</h1>
+    <p class="lead" i18n="@@onboarding.lead">Créez votre atelier pour commencer. Vous en serez le propriétaire.</p>
+    <form (ngSubmit)="create()">
+      <div class="mb-3">
+        <label class="form-label" for="shopName" i18n="@@onboarding.shopName">Nom de l'atelier</label>
+        <input class="form-control" id="shopName" name="shopName" [(ngModel)]="shopName" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="memberName" i18n="@@onboarding.memberName">Votre nom</label>
+        <input class="form-control" id="memberName" name="memberName" [(ngModel)]="memberName" required />
+      </div>
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <button class="btn btn-primary" type="submit" [disabled]="saving || !shopName || !memberName"
+        i18n="@@onboarding.create">Créer l'atelier</button>
+    </form>
+  </section>
+</main>

@@ -1,0 +1,10 @@
+.number {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.meta,
+.hint {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+}

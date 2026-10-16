@@ -43,6 +43,11 @@ export class AuthService {
     return profile?.name ?? profile?.preferred_username ?? "";
   }
 
+  email(): string | null {
+    const profile = this.keycloak?.tokenParsed as { email?: string } | undefined;
+    return profile?.email ?? null;
+  }
+
   logout(): Promise<void> {
     return this.keycloak?.logout({ redirectUri: window.location.origin + "/" }) ?? Promise.resolve();
   }
