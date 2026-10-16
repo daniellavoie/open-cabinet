@@ -21,13 +21,13 @@ A Member who creates Projects and Quotes using the Shop's settings, without chan
 _Avoid_: Salesperson, drafter, user
 
 **Client**:
-The person a Shop designs and builds cabinets for, typically a homeowner.
+The person a Shop designs and builds cabinets for, typically a homeowner. A Client can have several Projects.
 _Avoid_: Customer, end user, homeowner
 
 ## Design
 
 **Project**:
-One job for a Client: a Room containing all the Cabinets to be designed, quoted and built together.
+One job for one Client: a Room containing all the Cabinets to be designed, quoted and built together.
 _Avoid_: Design, job, order
 
 **Room**:
