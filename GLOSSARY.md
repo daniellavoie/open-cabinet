@@ -19,8 +19,24 @@ _Avoid_: Customer, end user, homeowner
 ## Design
 
 **Project**:
-One job for a Client: a room containing all the Cabinets to be designed, quoted and built together.
+One job for a Client: a Room containing all the Cabinets to be designed, quoted and built together.
 _Avoid_: Design, job, order
+
+**Room**:
+The space a Project's Cabinets are placed in, made of Walls, Openings and Appliances.
+_Avoid_: Floor plan, space, layout
+
+**Wall**:
+A straight wall segment of a Room, with a length, height and angle to the next Wall.
+_Avoid_: Side, partition
+
+**Opening**:
+A window or doorway in a Wall that Cabinets must avoid.
+_Avoid_: Gap, hole, cutout
+
+**Appliance**:
+A placeholder for a fridge, range, dishwasher, sink or similar, which Cabinets are fitted around but which the Shop does not build.
+_Avoid_: Fixture, equipment
 
 **Cabinet**:
 A single box-like unit within a Project, such as a base, wall or tall cabinet, made of Parts.
@@ -29,6 +45,14 @@ _Avoid_: Unit, box, module
 **Part**:
 One physical piece of a Cabinet, such as a side, bottom, shelf, door or drawer front, made of a real material.
 _Avoid_: Panel, board, piece, component
+
+**Front**:
+A door or drawer front. Each Front is either made by the Shop (it appears on the Cut List) or ordered from a supplier (it appears on the Bill of Materials).
+_Avoid_: Door, facade, face
+
+**Trim**:
+Parts that finish a Project rather than form a Cabinet: fillers, finished end panels, toe kicks and crown moulding.
+_Avoid_: Accessories, finishing, mouldings
 
 **Construction Standard**:
 A Shop's chosen way of building cabinets: construction method, material thicknesses, joinery, edge banding and gaps.
@@ -47,6 +71,14 @@ _Avoid_: European, Euro-style, full-access
 **Material Catalog**:
 A Shop's list of the sheet goods, edge banding and hardware it uses, with prices and sheet sizes.
 _Avoid_: Price list, inventory, materials database
+
+**Labour Method**:
+How labour is priced on a Project: by operation (cuts, edge banding, assembly, hardware), by linear foot, or by estimated hours. Each Shop has a default; each Project can use another.
+_Avoid_: Labour model, pricing mode
+
+**Manual Line**:
+A Quote line a Member enters by hand for work Open Cabinet does not model, such as countertops, installation or delivery.
+_Avoid_: Extra, custom item, add-on
 
 ## Output
 
