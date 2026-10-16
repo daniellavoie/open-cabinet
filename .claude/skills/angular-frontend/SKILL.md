@@ -13,6 +13,7 @@ Follow these patterns exactly when writing Angular code in `backend/src/main/web
 - The app lives in `backend/src/main/webapp/`, is built by the backend build, and is served by Spring Boot as one deployable unit.
 - **Authentication**: the existing Keycloak server, via OpenID Connect. API calls carry the Keycloak access token. Keycloak is identity only: the current Member's Shop and role (Owner or Designer) come from the Open Cabinet API, never from token claims.
 - **3D**: plain Three.js wrapped in Angular components (see *3D Rendering*). No Angular-specific 3D wrapper libraries.
+- **Change detection**: zone.js (`provideZoneChangeDetection`), with `HttpClient` on the XHR backend (`withXhr()`). Angular 22's default fetch backend resolves outside zone.js, so views would not update after responses.
 
 ### Domain Language
 
@@ -47,6 +48,7 @@ All components are standalone. Use this exact decorator pattern:
 ```typescript
 @Component({
   selector: "project-list",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [NgFor, NgIf, FormsModule],
   styleUrls: ["./<component-name>.component.css"],
@@ -54,6 +56,7 @@ All components are standalone. Use this exact decorator pattern:
 })
 ```
 
+- Always set `changeDetection: ChangeDetectionStrategy.Eager`: Angular 22 defaults components to OnPush, and the patterns below assign plain fields in `subscribe()`, which OnPush would never render
 - Selectors use element style: `selector: "project-list"` (no `app-` prefix)
 - Always use `standalone: true`
 - Import Angular directives explicitly: `NgFor`, `NgIf`, `NgClass`, `DatePipe`, etc.

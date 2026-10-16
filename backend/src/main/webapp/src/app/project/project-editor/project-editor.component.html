@@ -1,0 +1,44 @@
+<div class="editor" *ngIf="draft">
+  <header class="editor-header">
+    <a class="back" routerLink="/projects" i18n="@@editor.back">← Projets</a>
+    <input class="form-control name" [ngModel]="draft.name" (ngModelChange)="setDraft({ ...draft, name: $event })"
+      i18n-aria-label="@@editor.name" aria-label="Nom du projet" />
+    <select class="form-select client" [ngModel]="draft.clientId" (ngModelChange)="setDraft({ ...draft, clientId: $event })"
+      i18n-aria-label="@@editor.client" aria-label="Client">
+      <option *ngFor="let client of clients" [value]="client.id">{{ client.name }}</option>
+    </select>
+    <span class="status" *ngIf="dirty && violations.length === 0" i18n="@@editor.unsaved">Modifications non enregistrées</span>
+    <span class="status invalid" *ngIf="violations.length > 0" i18n="@@editor.violations">{{ violations.length }} règle(s) non respectée(s)</span>
+    <button class="btn btn-outline-secondary" (click)="revert()" [disabled]="!dirty || saving" i18n="@@editor.revert">Annuler</button>
+    <button class="btn btn-primary" (click)="save()" [disabled]="!dirty || saving || violations.length > 0" i18n="@@common.save">Enregistrer</button>
+  </header>
+
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <nav class="tabs" role="tablist">
+    <button *ngFor="let item of tabs" role="tab" [class.active]="tab === item.id" [attr.aria-selected]="tab === item.id"
+      (click)="selectTab(item.id)">{{ item.label }}</button>
+  </nav>
+
+  <div class="design" *ngIf="tab === 'design'">
+    <room-view class="view" [design]="draft.design" [templates]="templates" [selectedCabinetId]="selectedCabinetId"
+      [invalidCabinetIds]="invalidCabinetIds" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      (selectCabinet)="selectedCabinetId = $event" (moveCabinet)="onMove($event)" />
+    <design-panel class="panel" [design]="draft.design" [templates]="templates" [units]="units" [selectedCabinetId]="selectedCabinetId"
+      [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectCabinet)="selectedCabinetId = $event" />
+  </div>
+
+  <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">
+    <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
+    <div *ngIf="loadingOutput" i18n="@@editor.computing">Calcul en cours…</div>
+    <ng-container *ngIf="output && !loadingOutput">
+      <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [units]="units" />
+      <nesting *ngIf="tab === 'nesting'" [nesting]="output.nesting" [units]="units" />
+      <bill-of-materials *ngIf="tab === 'materials'" [lines]="output.billOfMaterials" [total]="output.materialsTotal"
+        [operations]="output.operations" [currency]="memberService.shop()!.currency" />
+    </ng-container>
+  </section>
+
+  <quotes *ngIf="tab === 'quotes'" [project]="draft" [dirty]="dirty" [currency]="memberService.shop()!.currency"
+    [defaultLabourMethod]="memberService.shop()!.settings.labour.defaultMethod" (projectChange)="setDraft($event)" />
+</div>

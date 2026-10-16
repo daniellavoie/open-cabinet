@@ -1,0 +1,26 @@
+<p class="hint" *ngIf="nesting.length === 0" i18n="@@nesting.empty">Aucun panneau à découper.</p>
+<section class="material" *ngFor="let material of nesting">
+  <h3>
+    {{ material.materialName }}
+    <span class="meta" i18n="@@nesting.sheetCount">{{ material.sheets.length }} panneau(x) de {{ formatLength(material.sheetLengthMm, units) }} × {{ formatLength(material.sheetWidthMm, units) }}</span>
+  </h3>
+  <div class="alert alert-warning" *ngIf="material.oversizedParts.length > 0" i18n="@@nesting.oversized">
+    {{ material.oversizedParts.length }} pièce(s) plus grande(s) que le panneau ne peuvent pas être découpées.
+  </div>
+  <div class="sheets">
+    <figure class="sheet" *ngFor="let sheet of material.sheets; let index = index">
+      <svg [attr.viewBox]="'0 0 ' + material.sheetLengthMm + ' ' + material.sheetWidthMm" preserveAspectRatio="xMidYMid meet" role="img"
+        [attr.aria-label]="material.materialName + ' ' + (index + 1)">
+        <rect class="board" x="0" y="0" [attr.width]="material.sheetLengthMm" [attr.height]="material.sheetWidthMm" />
+        <g *ngFor="let placement of sheet.placements">
+          <rect class="part" [attr.x]="placement.alongMm" [attr.y]="placement.acrossMm" [attr.width]="placement.lengthMm" [attr.height]="placement.widthMm">
+            <title>{{ label(placement) }} — {{ size(placement) }}</title>
+          </rect>
+          <text class="part-label" *ngIf="placement.widthMm > 90 && placement.lengthMm > 220"
+            [attr.x]="placement.alongMm + placement.lengthMm / 2" [attr.y]="placement.acrossMm + placement.widthMm / 2">{{ label(placement) }}</text>
+        </g>
+      </svg>
+      <figcaption i18n="@@nesting.caption">Panneau {{ index + 1 }} — {{ sheet.utilization | percent: "1.0-0" }} utilisé</figcaption>
+    </figure>
+  </div>
+</section>

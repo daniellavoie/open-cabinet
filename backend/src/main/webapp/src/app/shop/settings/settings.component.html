@@ -1,0 +1,89 @@
+<div class="page" *ngIf="settings">
+  <header class="page-header">
+    <h1 i18n="@@settings.title">Paramètres de l'atelier</h1>
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving" i18n="@@common.save">Enregistrer</button>
+  </header>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <div class="sections">
+    <section class="panel">
+      <h2 i18n="@@settings.shop">Atelier</h2>
+      <div class="mb-2">
+        <label class="form-label" for="shopName" i18n="@@settings.name">Nom</label>
+        <input class="form-control" id="shopName" [(ngModel)]="name" />
+      </div>
+      <div class="row g-2">
+        <div class="col">
+          <label class="form-label" for="currency" i18n="@@settings.currency">Devise</label>
+          <input class="form-control" id="currency" maxlength="3" [(ngModel)]="currency" />
+        </div>
+        <div class="col">
+          <label class="form-label" for="units" i18n="@@settings.units">Unités</label>
+          <select class="form-select" id="units" [(ngModel)]="units">
+            <option value="IMPERIAL" i18n="@@settings.imperial">Impériales (po)</option>
+            <option value="METRIC" i18n="@@settings.metric">Métriques (mm)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 i18n="@@settings.pricing">Prix</h2>
+      <div class="mb-3">
+        <label class="form-label" for="markup" i18n="@@settings.markup">Majoration (%)</label>
+        <input class="form-control" id="markup" type="number" min="0" step="0.5" [(ngModel)]="settings.markupPercent" />
+      </div>
+      <h3 i18n="@@settings.taxes">Taxes</h3>
+      <div class="tax-row" *ngFor="let tax of settings.taxes; let index = index">
+        <input class="form-control form-control-sm" [(ngModel)]="tax.name" i18n-placeholder="@@settings.taxName" placeholder="Nom" />
+        <input class="form-control form-control-sm" type="number" min="0" step="0.001" [(ngModel)]="tax.ratePercent" />
+        <span>%</span>
+        <button class="btn btn-sm btn-outline-danger" (click)="removeTax(index)" i18n="@@common.remove">Retirer</button>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" (click)="addTax()" i18n="@@settings.addTax">Ajouter une taxe</button>
+    </section>
+
+    <section class="panel">
+      <h2 i18n="@@settings.labour">Main-d'œuvre</h2>
+      <div class="mb-3">
+        <label class="form-label" for="defaultMethod" i18n="@@settings.defaultMethod">Méthode par défaut</label>
+        <select class="form-select" id="defaultMethod" [(ngModel)]="settings.labour.defaultMethod">
+          <option *ngFor="let method of labourMethods" [value]="method[0]">{{ method[1] }}</option>
+        </select>
+      </div>
+      <div class="rates">
+        <label for="ratePerSheet" i18n="@@settings.ratePerSheet">Par panneau</label>
+        <input class="form-control form-control-sm" id="ratePerSheet" type="number" min="0" [(ngModel)]="settings.labour.ratePerSheet" />
+        <label for="ratePerMeter" i18n="@@settings.ratePerMeter">Par mètre de bande de chant</label>
+        <input class="form-control form-control-sm" id="ratePerMeter" type="number" min="0" [(ngModel)]="settings.labour.ratePerEdgeBandingMeter" />
+        <label for="ratePerCabinet" i18n="@@settings.ratePerCabinet">Par caisson assemblé</label>
+        <input class="form-control form-control-sm" id="ratePerCabinet" type="number" min="0" [(ngModel)]="settings.labour.ratePerCabinet" />
+        <label for="ratePerHardware" i18n="@@settings.ratePerHardware">Par pièce de quincaillerie</label>
+        <input class="form-control form-control-sm" id="ratePerHardware" type="number" min="0" [(ngModel)]="settings.labour.ratePerHardwareItem" />
+        <label for="ratePerFoot" i18n="@@settings.ratePerFoot">Par pied linéaire</label>
+        <input class="form-control form-control-sm" id="ratePerFoot" type="number" min="0" [(ngModel)]="settings.labour.ratePerLinearFoot" />
+        <label for="hourlyRate" i18n="@@settings.hourlyRate">Taux horaire</label>
+        <input class="form-control form-control-sm" id="hourlyRate" type="number" min="0" [(ngModel)]="settings.labour.hourlyRate" />
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 i18n="@@settings.standard">Norme de construction</h2>
+      <p class="hint" i18n="@@settings.frameless">Construction sans cadre (système 32 mm).</p>
+      <div class="rates">
+        <ng-container *ngFor="let entry of materialFields">
+          <label [for]="entry.field">{{ entry.label }}</label>
+          <select class="form-select form-select-sm" [id]="entry.field" [(ngModel)]="settings.constructionStandard[entry.field]">
+            <option *ngFor="let material of materialsOf(entry.kind)" [value]="material.id">{{ material.name }}</option>
+          </select>
+        </ng-container>
+        <ng-container *ngFor="let entry of lengthFields">
+          <label [for]="entry.field">{{ entry.label }}</label>
+          <length-input [inputId]="entry.field" [units]="units" [valueMm]="settings.constructionStandard[entry.field]"
+            (valueMmChange)="settings.constructionStandard[entry.field] = $event" />
+        </ng-container>
+      </div>
+    </section>
+  </div>
+</div>

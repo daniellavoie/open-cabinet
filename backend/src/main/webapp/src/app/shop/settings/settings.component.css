@@ -1,0 +1,59 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--oc-space-4);
+}
+
+h1 {
+  font-size: var(--oc-font-size-2xl);
+  margin: 0;
+}
+
+h2 {
+  font-size: var(--oc-font-size-lg);
+  margin-bottom: var(--oc-space-3);
+}
+
+h3 {
+  font-size: var(--oc-font-size-md);
+  margin-bottom: var(--oc-space-2);
+}
+
+.sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--oc-space-4);
+}
+
+.panel {
+  background-color: var(--oc-bg-raise);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-lg);
+  padding: var(--oc-space-5);
+}
+
+.tax-row {
+  display: grid;
+  grid-template-columns: 1fr 100px auto auto;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-bottom: var(--oc-space-2);
+}
+
+.rates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--oc-space-2) var(--oc-space-3);
+  align-items: center;
+}
+
+.rates label {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.hint {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+}

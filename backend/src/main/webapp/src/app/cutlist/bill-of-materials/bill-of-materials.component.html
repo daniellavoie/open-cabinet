@@ -1,0 +1,33 @@
+<p class="hint" *ngIf="lines.length === 0" i18n="@@bom.empty">Rien à acheter : ajoutez des caissons au projet.</p>
+<table class="table table-sm" *ngIf="lines.length > 0">
+  <thead>
+    <tr>
+      <th i18n="@@bom.kind">Type</th>
+      <th i18n="@@bom.item">Article</th>
+      <th i18n="@@bom.sku">Code</th>
+      <th class="text-end" i18n="@@bom.quantity">Quantité</th>
+      <th class="text-end" i18n="@@bom.unitPrice">Prix unitaire</th>
+      <th class="text-end" i18n="@@bom.total">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let line of lines">
+      <td class="meta">{{ kindLabels[line.kind] }}</td>
+      <td>{{ line.name }}</td>
+      <td class="meta">{{ line.sku }}</td>
+      <td class="text-end">{{ line.quantity | number: "1.0-1" }} {{ unit(line) }}</td>
+      <td class="text-end">{{ line.unitPrice | currency: currency }}</td>
+      <td class="text-end">{{ line.total | currency: currency }}</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="5" class="text-end" i18n="@@bom.materialsTotal">Total des matériaux</th>
+      <th class="text-end">{{ total | currency: currency }}</th>
+    </tr>
+  </tfoot>
+</table>
+<p class="meta" *ngIf="operations && lines.length > 0" i18n="@@bom.operations">
+  {{ operations.cabinets }} caisson(s) · {{ operations.sheets }} panneau(x) · {{ operations.edgeBandingMeters | number: "1.0-1" }} m de bande de chant ·
+  {{ operations.hardwareItems }} pièce(s) de quincaillerie · {{ operations.linearFeet | number: "1.0-2" }} pi linéaire(s)
+</p>

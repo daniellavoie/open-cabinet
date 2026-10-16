@@ -1,0 +1,88 @@
+<div class="page">
+  <section class="list">
+    <h1 i18n="@@catalog.title">Catalogue de matériaux</h1>
+    <div *ngIf="!materials" i18n="@@common.loading">Chargement…</div>
+    <ng-container *ngIf="materials">
+      <section *ngFor="let kind of kinds">
+        <h2>{{ kind[1] }}</h2>
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th i18n="@@catalog.name">Nom</th>
+              <th i18n="@@catalog.sku">Code</th>
+              <th *ngIf="kind[0] === 'SHEET'" i18n="@@catalog.size">Format</th>
+              <th class="text-end" i18n="@@catalog.price">Prix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let material of materialsOf(kind[0])" (click)="edit(material)" [class.table-active]="editing?.id === material.id">
+              <td>{{ material.name }}</td>
+              <td>{{ material.sku }}</td>
+              <td *ngIf="kind[0] === 'SHEET'">
+                {{ formatLength(material.thicknessMm, memberService.shop()!.units) }} ·
+                {{ formatLength(material.lengthMm, memberService.shop()!.units) }} × {{ formatLength(material.widthMm, memberService.shop()!.units) }}
+                <span class="badge text-bg-light" *ngIf="material.grain" i18n="@@catalog.grain">Fil</span>
+              </td>
+              <td class="text-end">{{ material.price | currency: memberService.shop()!.currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </ng-container>
+  </section>
+
+  <aside class="panel">
+    <h2 *ngIf="!editing" i18n="@@catalog.new">Nouveau matériau</h2>
+    <h2 *ngIf="editing" i18n="@@catalog.edit">Modifier le matériau</h2>
+    <form (ngSubmit)="save()">
+      <div class="mb-2">
+        <label class="form-label" for="kind" i18n="@@catalog.kind">Type</label>
+        <select class="form-select" id="kind" name="kind" [(ngModel)]="form.kind" [disabled]="!!editing">
+          <option *ngFor="let kind of kinds" [value]="kind[0]">{{ kind[1] }}</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="materialName" i18n="@@catalog.name">Nom</label>
+        <input class="form-control" id="materialName" name="name" [(ngModel)]="form.name" required />
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="sku" i18n="@@catalog.sku">Code</label>
+        <input class="form-control" id="sku" name="sku" [(ngModel)]="form.sku" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="price">
+          <span *ngIf="form.kind === 'SHEET'" i18n="@@catalog.pricePerSheet">Prix par panneau</span>
+          <span *ngIf="form.kind === 'EDGE_BANDING'" i18n="@@catalog.pricePerMeter">Prix par mètre</span>
+          <span *ngIf="form.kind === 'HARDWARE'" i18n="@@catalog.pricePerUnit">Prix unitaire</span>
+        </label>
+        <input class="form-control" id="price" name="price" type="number" min="0" step="0.01" [(ngModel)]="form.price" />
+      </div>
+      <ng-container *ngIf="form.kind === 'SHEET'">
+        <div class="mb-2">
+          <label class="form-label" for="thickness" i18n="@@catalog.thickness">Épaisseur</label>
+          <length-input inputId="thickness" [units]="memberService.shop()!.units" [valueMm]="form.thicknessMm" (valueMmChange)="form.thicknessMm = $event" />
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col">
+            <label class="form-label" for="length" i18n="@@catalog.length">Longueur</label>
+            <length-input inputId="length" [units]="memberService.shop()!.units" [valueMm]="form.lengthMm" (valueMmChange)="form.lengthMm = $event" />
+          </div>
+          <div class="col">
+            <label class="form-label" for="width" i18n="@@catalog.width">Largeur</label>
+            <length-input inputId="width" [units]="memberService.shop()!.units" [valueMm]="form.widthMm" (valueMmChange)="form.widthMm = $event" />
+          </div>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" id="grain" name="grain" type="checkbox" [(ngModel)]="form.grain" />
+          <label class="form-check-label" for="grain" i18n="@@catalog.hasGrain">Le fil suit la longueur</label>
+        </div>
+      </ng-container>
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" [disabled]="saving || !form.name" i18n="@@common.save">Enregistrer</button>
+        <button class="btn btn-outline-secondary" type="button" *ngIf="editing" (click)="edit(null)" i18n="@@common.cancel">Annuler</button>
+        <button class="btn btn-outline-danger ms-auto" type="button" *ngIf="editing" (click)="remove()" i18n="@@common.remove">Retirer</button>
+      </div>
+    </form>
+  </aside>
+</div>

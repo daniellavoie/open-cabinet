@@ -1,0 +1,27 @@
+<p class="hint" *ngIf="rows.length === 0" i18n="@@cutList.empty">Aucune pièce : ajoutez des caissons au projet.</p>
+<table class="table table-sm table-striped" *ngIf="rows.length > 0">
+  <thead>
+    <tr>
+      <th i18n="@@cutList.material">Matériau</th>
+      <th i18n="@@cutList.part">Pièce</th>
+      <th class="text-end" i18n="@@cutList.quantity">Qté</th>
+      <th class="text-end" i18n="@@cutList.length">Longueur</th>
+      <th class="text-end" i18n="@@cutList.width">Largeur</th>
+      <th i18n="@@cutList.grain">Fil</th>
+      <th i18n="@@cutList.banding">Chants (long. / larg.)</th>
+      <th i18n="@@cutList.cabinets">Caissons</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of rows">
+      <td>{{ row.materialName }}</td>
+      <td>{{ roleLabels[row.role] }}</td>
+      <td class="text-end">{{ row.quantity }}</td>
+      <td class="text-end number">{{ formatLength(row.lengthMm, units) }}</td>
+      <td class="text-end number">{{ formatLength(row.widthMm, units) }}</td>
+      <td>{{ row.grain ? "↕" : "" }}</td>
+      <td>{{ banding(row) }} <span class="meta" *ngIf="row.edgeBandingName">{{ row.edgeBandingName }}</span></td>
+      <td class="meta">{{ row.cabinetLabels.join(", ") }}</td>
+    </tr>
+  </tbody>
+</table>

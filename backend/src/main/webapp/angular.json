@@ -29,6 +29,7 @@
               "src/styles.css"
             ],
             "polyfills": [
+              "zone.js",
               "@angular/localize/init"
             ]
           },
@@ -37,8 +38,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "900kB",
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -72,7 +73,8 @@
           }
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {}
         }
       },
       "i18n": {

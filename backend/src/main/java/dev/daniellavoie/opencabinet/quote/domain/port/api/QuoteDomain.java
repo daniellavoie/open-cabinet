@@ -1,0 +1,30 @@
+package dev.daniellavoie.opencabinet.quote.domain.port.api;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
+
+public interface QuoteDomain {
+	List<Quote> findByProject(UUID projectId, Principal principal);
+
+	Quote findById(UUID quoteId, Principal principal);
+
+	/**
+	 * Prices the Project as it is now into a new DRAFT Quote.
+	 */
+	Quote create(UUID projectId, Principal principal);
+
+	/**
+	 * Freezes a DRAFT Quote: from then on it never changes.
+	 */
+	Quote send(UUID quoteId, Principal principal);
+
+	Quote updateStatus(UUID quoteId, QuoteStatus status, Principal principal);
+
+	void delete(UUID quoteId, Principal principal);
+
+	byte[] pdf(UUID quoteId, Principal principal);
+}
