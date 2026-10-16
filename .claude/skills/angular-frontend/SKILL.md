@@ -11,7 +11,7 @@ Follow these patterns exactly when writing Angular code in `backend/src/main/web
 ### Stack
 
 - The app lives in `backend/src/main/webapp/`, is built by the backend build, and is served by Spring Boot as one deployable unit.
-- **Authentication**: the existing Keycloak server, via OpenID Connect. API calls carry the Keycloak access token.
+- **Authentication**: the existing Keycloak server, via OpenID Connect. API calls carry the Keycloak access token. Keycloak is identity only: the current Member's Shop and role (Owner or Designer) come from the Open Cabinet API, never from token claims.
 - **3D**: plain Three.js wrapped in Angular components (see *3D Rendering*). No Angular-specific 3D wrapper libraries.
 
 ### Domain Language

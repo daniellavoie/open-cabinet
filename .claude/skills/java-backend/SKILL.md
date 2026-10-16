@@ -12,6 +12,7 @@ Follow these patterns exactly when writing Java code in the Spring Boot back end
 
 - **Blocking Spring MVC** with Spring Data JPA on PostgreSQL. Do not introduce reactive types (`Mono`, `Flux`, WebFlux).
 - **Authentication**: the existing Keycloak server. The back end is an OAuth2 resource server that validates Keycloak-issued JWTs via Spring Security; `Principal` comes from the validated token.
+- **Keycloak is identity only** (`docs/adr/0003-keycloak-for-identity-only.md`). Shops, Members and the Owner/Designer roles are stored in Open Cabinet's PostgreSQL and resolved from the `Principal`'s subject. Never read Shop membership or roles from Keycloak groups, roles or token claims, and never call the Keycloak admin API to manage them.
 - The Angular app lives in `backend/src/main/webapp/`, is built by the backend build, and is served by Spring Boot as one deployable unit.
 
 ### Domain Language
