@@ -4,6 +4,7 @@ A 3D cabinet designer for cabinet Shops: design a Project in 3D, then get its Cu
 
 - Domain language: [`GLOSSARY.md`](GLOSSARY.md)
 - Decisions: [`docs/adr/`](docs/adr)
+- Implementation plan and current step: [`docs/implementation-plan.md`](docs/implementation-plan.md)
 - Keycloak realm setup: [`docs/operations/keycloak-realm.md`](docs/operations/keycloak-realm.md)
 
 ## Layout
