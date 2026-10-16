@@ -31,7 +31,7 @@
   <h2 i18n="@@design.cabinets">Caissons</h2>
   <p class="hint" *ngIf="design.cabinets.length === 0" i18n="@@design.noCabinets">Aucun caisson. Ajoutez-en un ci-dessus.</p>
   <ul class="cabinets">
-    <li *ngFor="let cabinet of design.cabinets" [class.selected]="cabinet.id === selectedCabinetId"
+    <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedCabinetId"
       [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectCabinet.emit(cabinet.id)">
       <span>{{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}</span>
       <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(cabinet.wallId) }}</span>

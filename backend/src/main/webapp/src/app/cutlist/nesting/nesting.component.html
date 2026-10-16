@@ -13,11 +13,11 @@
         [attr.aria-label]="material.materialName + ' ' + (index + 1)">
         <rect class="board" x="0" y="0" [attr.width]="material.sheetLengthMm" [attr.height]="material.sheetWidthMm" />
         <g *ngFor="let placement of sheet.placements">
-          <rect class="part" [attr.x]="placement.xMm" [attr.y]="placement.yMm" [attr.width]="placement.lengthMm" [attr.height]="placement.widthMm">
+          <rect class="part" [attr.x]="placement.alongMm" [attr.y]="placement.acrossMm" [attr.width]="placement.lengthMm" [attr.height]="placement.widthMm">
             <title>{{ label(placement) }} — {{ size(placement) }}</title>
           </rect>
           <text class="part-label" *ngIf="placement.widthMm > 90 && placement.lengthMm > 220"
-            [attr.x]="placement.xMm + placement.lengthMm / 2" [attr.y]="placement.yMm + placement.widthMm / 2">{{ label(placement) }}</text>
+            [attr.x]="placement.alongMm + placement.lengthMm / 2" [attr.y]="placement.acrossMm + placement.widthMm / 2">{{ label(placement) }}</text>
         </g>
       </svg>
       <figcaption i18n="@@nesting.caption">Panneau {{ index + 1 }} — {{ sheet.utilization | percent: "1.0-0" }} utilisé</figcaption>

@@ -1,5 +1,5 @@
 import { CurrencyPipe, NgFor, NgIf } from "@angular/common";
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
@@ -12,6 +12,7 @@ import { Material, MaterialKind } from "../model/material";
 
 @Component({
   selector: "catalog",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [CurrencyPipe, FormsModule, LengthInputComponent, NgFor, NgIf],
   styleUrls: ["./catalog.component.css"],

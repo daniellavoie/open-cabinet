@@ -5,8 +5,8 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * Where one Part sits on a sheet. {@code x} runs along the sheet's length (and its grain), {@code y}
- * across its width, both from the sheet's corner.
+ * Where one Part sits on a sheet: {@code alongMm} is measured along the sheet's length (and its
+ * grain), {@code acrossMm} across its width, both from the sheet's corner.
  */
 @Value
 @Jacksonized
@@ -14,8 +14,8 @@ import lombok.extern.jackson.Jacksonized;
 public class SheetPlacement {
 	String cabinetLabel;
 	PartRole role;
-	double xMm;
-	double yMm;
+	double alongMm;
+	double acrossMm;
 	double lengthMm;
 	double widthMm;
 	boolean rotated;

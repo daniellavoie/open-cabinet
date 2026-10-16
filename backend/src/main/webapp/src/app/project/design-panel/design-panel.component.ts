@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from "@angular/common";
-import { Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
@@ -14,6 +14,7 @@ import { Cabinet, CabinetTemplate, Design, Violation, Wall } from "../model/desi
  */
 @Component({
   selector: "design-panel",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [FormsModule, LengthInputComponent, NgFor, NgIf],
   styleUrls: ["./design-panel.component.css"],
@@ -40,6 +41,14 @@ export class DesignPanelComponent implements OnChanges {
     if (!this.design.walls.some(wall => wall.id === this.newWallId)) {
       this.newWallId = this.design.walls[0]?.id ?? "";
     }
+  }
+
+  /**
+   * Cabinets in label order (C1, C2, …), which follows the Room.
+   */
+  get orderedCabinets(): Cabinet[] {
+    const order = (cabinet: Cabinet) => Number(this.cabinetLabels.get(cabinet.id)?.slice(1) ?? Number.MAX_SAFE_INTEGER);
+    return [...this.design.cabinets].sort((first, second) => order(first) - order(second));
   }
 
   get selected(): Cabinet | undefined {

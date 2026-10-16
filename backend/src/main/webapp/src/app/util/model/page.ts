@@ -1,9 +1,14 @@
-export class Page<T> {
-  content!: T[];
+export class PageMetadata {
+  size!: number;
+  number!: number;
   totalElements!: number;
   totalPages!: number;
-  number!: number;
-  size!: number;
-  first!: boolean;
-  last!: boolean;
+}
+
+/**
+ * A page of results, as Spring Data serializes it (PageSerializationMode.VIA_DTO).
+ */
+export class Page<T> {
+  content!: T[];
+  page!: PageMetadata;
 }

@@ -21,8 +21,8 @@ export class CutListRow {
 export class SheetPlacement {
   cabinetLabel!: string;
   role!: PartRole;
-  xMm!: number;
-  yMm!: number;
+  alongMm!: number;
+  acrossMm!: number;
   lengthMm!: number;
   widthMm!: number;
   rotated!: boolean;

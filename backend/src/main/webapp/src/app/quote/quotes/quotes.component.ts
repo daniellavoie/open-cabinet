@@ -1,5 +1,5 @@
-import { CurrencyPipe, DatePipe, NgFor, NgIf } from "@angular/common";
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { CurrencyPipe, DatePipe, DecimalPipe, NgFor, NgIf } from "@angular/common";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, Observable, tap } from "rxjs";
 
@@ -15,8 +15,9 @@ import { QuoteService } from "../quote-service";
  */
 @Component({
   selector: "quotes",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, FormsModule, NgFor, NgIf],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, FormsModule, NgFor, NgIf],
   styleUrls: ["./quotes.component.css"],
   templateUrl: "./quotes.component.html",
 })

@@ -1,6 +1,6 @@
 import { NgFor, NgIf } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { finalize, forkJoin, map, switchMap, tap } from "rxjs";
@@ -35,6 +35,7 @@ const SNAP_DISTANCE_MM = 30;
  */
 @Component({
   selector: "project-editor",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [
     BillOfMaterialsComponent,

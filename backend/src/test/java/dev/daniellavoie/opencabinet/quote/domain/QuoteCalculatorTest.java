@@ -77,6 +77,7 @@ class QuoteCalculatorTest {
 		assertThat(content.getLines()).hasSize(2);
 		assertThat(content.getLines().get(0).getKind()).isEqualTo(QuoteLineKind.CABINETS);
 		assertThat(content.getLines().get(0).getAmount()).isEqualByComparingTo("1112.50");
+		assertThat(content.getLines().get(0).getDescription()).contains("3 caisson(s), 6 pi linéaire(s)");
 		assertThat(content.getLines().get(1).getAmount()).isEqualByComparingTo("400.00");
 
 		assertThat(content.getSubtotal()).isEqualByComparingTo("1512.50");
@@ -85,6 +86,11 @@ class QuoteCalculatorTest {
 				.containsExactly(new BigDecimal("75.63"), new BigDecimal("150.87"));
 		assertThat(content.getTotal()).isEqualByComparingTo("1739.00");
 		assertThat(content.getClientName()).isEqualTo("Marie Tremblay");
+	}
+
+	@Test
+	void decimalsAreWrittenTheFrenchWay() {
+		assertThat(QuoteCalculator.decimal(new BigDecimal("10.50"))).isEqualTo("10,5");
 	}
 
 	@Test

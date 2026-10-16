@@ -1,5 +1,5 @@
 import { NgIf } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { finalize, switchMap, tap } from "rxjs";
@@ -13,6 +13,7 @@ import { ShopService } from "../shop/shop-service";
  */
 @Component({
   selector: "onboarding",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [FormsModule, NgIf],
   styleUrls: ["./onboarding.component.css"],

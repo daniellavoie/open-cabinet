@@ -1,5 +1,5 @@
 import { NgIf } from "@angular/common";
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 
 import { MemberService } from "../member/member-service";
@@ -7,6 +7,7 @@ import { AuthService } from "../security/auth-service";
 
 @Component({
   selector: "layout",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [NgIf, RouterLink, RouterLinkActive, RouterOutlet],
   styleUrls: ["./layout.component.css"],

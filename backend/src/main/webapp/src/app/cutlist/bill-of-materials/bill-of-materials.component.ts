@@ -1,11 +1,12 @@
 import { CurrencyPipe, DecimalPipe, NgFor, NgIf } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
 import { MATERIAL_KIND_LABELS } from "../../util/labels";
 import { BomLine, OperationCounts } from "../model/project-output";
 
 @Component({
   selector: "bill-of-materials",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [CurrencyPipe, DecimalPipe, NgFor, NgIf],
   styleUrls: ["./bill-of-materials.component.css"],

@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from "@angular/common";
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
@@ -8,6 +8,7 @@ import { Client } from "../model/client";
 
 @Component({
   selector: "clients",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [FormsModule, NgFor, NgIf],
   styleUrls: ["./clients.component.css"],

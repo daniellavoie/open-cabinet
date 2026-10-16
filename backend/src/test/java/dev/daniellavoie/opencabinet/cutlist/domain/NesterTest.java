@@ -34,10 +34,10 @@ class NesterTest {
 		for (var sheet : nesting.getSheets()) {
 			var placements = sheet.getPlacements();
 			for (var placement : placements) {
-				assertThat(placement.getXMm()).isGreaterThanOrEqualTo(TRIM);
-				assertThat(placement.getYMm()).isGreaterThanOrEqualTo(TRIM);
-				assertThat(placement.getXMm() + placement.getLengthMm()).isLessThanOrEqualTo(CARCASS.getLengthMm() - TRIM);
-				assertThat(placement.getYMm() + placement.getWidthMm()).isLessThanOrEqualTo(CARCASS.getWidthMm() - TRIM);
+				assertThat(placement.getAlongMm()).isGreaterThanOrEqualTo(TRIM);
+				assertThat(placement.getAcrossMm()).isGreaterThanOrEqualTo(TRIM);
+				assertThat(placement.getAlongMm() + placement.getLengthMm()).isLessThanOrEqualTo(CARCASS.getLengthMm() - TRIM);
+				assertThat(placement.getAcrossMm() + placement.getWidthMm()).isLessThanOrEqualTo(CARCASS.getWidthMm() - TRIM);
 			}
 			for (int second = 0; second < placements.size(); second++) {
 				for (int first = 0; first < second; first++) {
@@ -93,10 +93,10 @@ class NesterTest {
 	}
 
 	private static boolean separatedByKerf(SheetPlacement first, SheetPlacement second) {
-		return first.getXMm() + first.getLengthMm() + KERF <= second.getXMm() + 1e-6
-				|| second.getXMm() + second.getLengthMm() + KERF <= first.getXMm() + 1e-6
-				|| first.getYMm() + first.getWidthMm() + KERF <= second.getYMm() + 1e-6
-				|| second.getYMm() + second.getWidthMm() + KERF <= first.getYMm() + 1e-6;
+		return first.getAlongMm() + first.getLengthMm() + KERF <= second.getAlongMm() + 1e-6
+				|| second.getAlongMm() + second.getLengthMm() + KERF <= first.getAlongMm() + 1e-6
+				|| first.getAcrossMm() + first.getWidthMm() + KERF <= second.getAcrossMm() + 1e-6
+				|| second.getAcrossMm() + second.getWidthMm() + KERF <= first.getAcrossMm() + 1e-6;
 	}
 
 	private static Part part(Material material, double length, double width) {

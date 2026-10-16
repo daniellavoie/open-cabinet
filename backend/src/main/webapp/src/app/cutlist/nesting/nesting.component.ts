@@ -1,5 +1,5 @@
 import { NgFor, NgIf, PercentPipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
 import { PART_ROLE_LABELS } from "../../util/labels";
 import { formatLength, Units } from "../../util/units/units";
@@ -10,6 +10,7 @@ import { MaterialNesting, SheetPlacement } from "../model/project-output";
  */
 @Component({
   selector: "nesting",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [NgFor, NgIf, PercentPipe],
   styleUrls: ["./nesting.component.css"],

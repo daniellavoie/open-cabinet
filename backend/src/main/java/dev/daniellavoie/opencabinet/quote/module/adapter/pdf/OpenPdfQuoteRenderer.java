@@ -24,6 +24,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import dev.daniellavoie.opencabinet.quote.domain.port.backend.QuoteRenderer;
 
 /**
@@ -61,7 +62,8 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 		parties.setWidthPercentage(100);
 		parties.addCell(block("Client", Stream.of(content.getClientName(), content.getClientAddress(),
 				content.getClientEmail(), content.getClientPhone())));
-		parties.addCell(block("Projet", Stream.of(content.getProjectName(), statusLabel(quote))));
+		parties.addCell(block("Projet", Stream.of(content.getProjectName(),
+				quote.getStatus() == QuoteStatus.DRAFT ? "Brouillon" : null)));
 		document.add(parties);
 		document.add(spacer());
 
@@ -90,15 +92,6 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 
 		document.close();
 		return output.toByteArray();
-	}
-
-	private static String statusLabel(Quote quote) {
-		return switch (quote.getStatus()) {
-		case DRAFT -> "Brouillon";
-		case SENT -> "Envoyée";
-		case ACCEPTED -> "Acceptée";
-		case DECLINED -> "Refusée";
-		};
 	}
 
 	private static String percent(BigDecimal rate) {

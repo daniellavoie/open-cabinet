@@ -77,7 +77,7 @@
           <th class="text-end">{{ selected.content.subtotal | currency: selected.content.currency }}</th>
         </tr>
         <tr *ngFor="let tax of selected.content.taxes">
-          <td class="text-end">{{ tax.name }} ({{ tax.ratePercent }} %)</td>
+          <td class="text-end">{{ tax.name }} ({{ tax.ratePercent | number: "1.0-3" }} %)</td>
           <td class="text-end">{{ tax.amount | currency: selected.content.currency }}</td>
         </tr>
         <tr>
@@ -93,7 +93,7 @@
       <dd>{{ selected.content.breakdown.materials | currency: selected.content.currency }}</dd>
       <dt>{{ methodLabels[selected.content.breakdown.labourMethod] }}</dt>
       <dd>{{ selected.content.breakdown.labour | currency: selected.content.currency }}</dd>
-      <dt i18n="@@quotes.markup">Majoration ({{ selected.content.breakdown.markupPercent }} %)</dt>
+      <dt i18n="@@quotes.markup">Majoration ({{ selected.content.breakdown.markupPercent | number: "1.0-3" }} %)</dt>
       <dd>{{ selected.content.breakdown.markup | currency: selected.content.currency }}</dd>
     </dl>
   </section>

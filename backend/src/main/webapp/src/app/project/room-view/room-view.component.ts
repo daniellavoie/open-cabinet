@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, ViewChild } from "@angular/core";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
@@ -32,6 +32,7 @@ interface Drag {
  */
 @Component({
   selector: "room-view",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [],
   styleUrls: ["./room-view.component.css"],

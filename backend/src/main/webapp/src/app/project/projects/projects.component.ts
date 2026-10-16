@@ -1,5 +1,5 @@
 import { DatePipe, NgFor, NgIf } from "@angular/common";
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { finalize, forkJoin, tap } from "rxjs";
@@ -11,6 +11,7 @@ import { ProjectService } from "../project-service";
 
 @Component({
   selector: "projects",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [DatePipe, FormsModule, NgFor, NgIf, RouterLink],
   styleUrls: ["./projects.component.css"],

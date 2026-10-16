@@ -2,8 +2,10 @@ package dev.daniellavoie.opencabinet.quote.domain;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import dev.daniellavoie.opencabinet.client.domain.model.Client;
@@ -46,7 +48,7 @@ final class QuoteCalculator {
 			lines.add(QuoteLine.builder()
 					.kind(QuoteLineKind.CABINETS)
 					.description("Armoires sur mesure : " + operations.getCabinets() + " caisson(s), "
-							+ operations.getLinearFeet().stripTrailingZeros().toPlainString() + " pi linéaire(s)")
+							+ decimal(operations.getLinearFeet()) + " pi linéaire(s)")
 					.amount(cabinetsAmount)
 					.build());
 		}
@@ -105,6 +107,15 @@ final class QuoteCalculator {
 		case LINEAR_FOOT -> rates.getRatePerLinearFoot().multiply(operations.getLinearFeet());
 		case HOURLY -> rates.getHourlyRate().multiply(hours);
 		};
+	}
+
+	/**
+	 * Quotes are written in French (Canada), where the decimal separator is a comma.
+	 */
+	static String decimal(BigDecimal value) {
+		var format = NumberFormat.getNumberInstance(Locale.CANADA_FRENCH);
+		format.setMaximumFractionDigits(2);
+		return format.format(value);
 	}
 
 	private static BigDecimal money(BigDecimal value) {

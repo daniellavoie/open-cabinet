@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { formatLength, parseLength, Units } from "../units/units";
@@ -8,6 +8,7 @@ import { formatLength, parseLength, Units } from "../units/units";
  */
 @Component({
   selector: "length-input",
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
   imports: [FormsModule],
   styleUrls: ["./length-input.component.css"],
