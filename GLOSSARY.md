@@ -42,6 +42,10 @@ _Avoid_: Fixture, equipment
 A single box-like unit within a Project, such as a base, wall or tall cabinet, made of Parts.
 _Avoid_: Unit, box, module
 
+**Cabinet Template**:
+A reusable starting point for a type of Cabinet, such as a sink base or oven tower. Open Cabinet provides a starter library; each Shop can save its own.
+_Avoid_: Preset, model, cabinet type, catalog item
+
 **Part**:
 One physical piece of a Cabinet, such as a side, bottom, shelf, door or drawer front, made of a real material.
 _Avoid_: Panel, board, piece, component
@@ -95,5 +99,17 @@ Laying out a Project's panels on full sheets of material to minimise waste and w
 _Avoid_: Sheet optimisation, layout
 
 **Quote**:
-The price a Shop offers a Client for building a Project.
+The price a Shop offers a Client for building a Project. A Quote is frozen once sent: later changes to the design or prices never alter it.
 _Avoid_: Estimate, bid, price
+
+**Quote Revision**:
+A new, numbered version of a Quote, issued when a sent Quote needs to change.
+_Avoid_: Update, amendment, new quote
+
+**Elevation**:
+A straight-on drawing of one Wall showing its Cabinets, Fronts and overall dimensions.
+_Avoid_: Wall view, front view
+
+**Shop Drawings**:
+The drawings a Shop uses to build and install a Project: plan, Elevations and per-Cabinet details.
+_Avoid_: Plans, blueprints, technical drawings
