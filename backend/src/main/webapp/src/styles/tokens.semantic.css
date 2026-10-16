@@ -1,0 +1,58 @@
+/*
+ * Semantic tokens: the only tokens components may use.
+ * To restyle the app, change the mappings below or tokens.palette.css.
+ */
+:root {
+  /* Backgrounds */
+  --oc-bg-default: var(--oc-palette-gray-50);
+  --oc-bg-raise: var(--oc-palette-white);
+  --oc-bg-secondary: var(--oc-palette-gray-100);
+
+  /* Text */
+  --oc-text-default: var(--oc-palette-gray-900);
+  --oc-text-secondary: var(--oc-palette-gray-700);
+  --oc-text-tertiary: var(--oc-palette-gray-500);
+  --oc-text-inverse: var(--oc-palette-white);
+
+  /* Borders */
+  --oc-border-default: var(--oc-palette-gray-300);
+
+  /* Accent */
+  --oc-accent-default: var(--oc-palette-blue-600);
+  --oc-accent-hover: var(--oc-palette-blue-700);
+  --oc-accent-muted: var(--oc-palette-blue-100);
+
+  /* Semantic */
+  --oc-success: var(--oc-palette-green-600);
+  --oc-destructive: var(--oc-palette-red-600);
+  --oc-warning: var(--oc-palette-amber-600);
+
+  /* Spacing (4px grid) */
+  --oc-space-1: 4px;
+  --oc-space-2: 8px;
+  --oc-space-3: 12px;
+  --oc-space-4: 16px;
+  --oc-space-5: 20px;
+  --oc-space-6: 24px;
+  --oc-space-8: 32px;
+  --oc-space-10: 40px;
+  --oc-space-12: 48px;
+
+  /* Typography */
+  --oc-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --oc-font-size-xs: 11px;
+  --oc-font-size-sm: 13px;
+  --oc-font-size-md: 15px;
+  --oc-font-size-lg: 18px;
+  --oc-font-size-xl: 20px;
+  --oc-font-size-2xl: 24px;
+
+  /* Radii */
+  --oc-radius-sm: 2px;
+  --oc-radius-md: 4px;
+  --oc-radius-lg: 6px;
+
+  /* Transitions */
+  --oc-transition-fast: 120ms ease;
+  --oc-transition-base: 200ms ease;
+}

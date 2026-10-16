@@ -1,0 +1,10 @@
+@import "./styles/tokens.palette.css";
+@import "./styles/tokens.semantic.css";
+@import "./styles/bootstrap-overrides.css";
+
+body {
+  margin: 0;
+  font-family: var(--oc-font-sans);
+  background-color: var(--oc-bg-default);
+  color: var(--oc-text-default);
+}

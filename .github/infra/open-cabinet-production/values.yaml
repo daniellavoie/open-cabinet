@@ -1,0 +1,35 @@
+image:
+  pullSecrets:
+    - name: ghcr-pull-secret
+
+domain: cabinet.arendal.ca
+
+externalDns:
+  enabled: true
+  recordType: CNAME
+  target: iberville.paasas.io
+
+postgresql:
+  cluster:
+    enabled: true
+    name: open-cabinet-db
+  host: open-cabinet-db-rw
+  port: 5432
+  database: opencabinet
+  secretName: open-cabinet-db-app
+  caSecretName: open-cabinet-db-ca
+  usernameKey: username
+  passwordKey: password
+
+server:
+  keycloak:
+    # TODO: set to the Keycloak realm issuer from the arendal repository.
+    issuerUri: ""
+    clientId: open-cabinet-web
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1G
+
+tls:
+  clusterIssuer: cloudflare

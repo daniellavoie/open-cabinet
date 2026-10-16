@@ -1,0 +1,6 @@
+apiVersion: v2
+name: open-cabinet
+description: A Helm chart for setting up Open Cabinet on Kubernetes
+type: application
+version: 0.0.1-dev
+appVersion: 0.1.0-SNAPSHOT

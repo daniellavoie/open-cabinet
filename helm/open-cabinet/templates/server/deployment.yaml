@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "open-cabinet.fullname" . }}
+    release: {{ .Release.Name }}
+    component: {{ include "server.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "open-cabinet.fullname" . }}
+      release: {{ .Release.Name }}
+      component: {{ include "server.fullname" . }}
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ include "open-cabinet.fullname" . }}
+        release: {{ .Release.Name }}
+        component: {{ include "server.fullname" . }}
+    spec:
+      serviceAccountName: {{ include "server.fullname" . }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
+      volumes:
+      - name: tls
+        secret:
+          secretName: {{ printf "%s-tls" ( include "server.fullname" . ) }}
+      - name: pg-ca
+        secret:
+          secretName: {{ .Values.postgresql.caSecretName }}
+      - name: keystore
+        emptyDir: {}
+      - name: truststore
+        emptyDir: {}
+      initContainers:
+      - name: init-keystore
+        image: eclipse-temurin:21-jdk
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - >
+          echo "importing ca cert and tls key" &&
+          openssl pkcs12 -export -name tls -in /opt/open-cabinet/server/tls/tls.crt -inkey /opt/open-cabinet/server/tls/tls.key -out /opt/open-cabinet/server/keystore.p12 -password pass:changeit &&
+          rm -f /opt/open-cabinet/server/keystore/keystore &&
+          keytool -importkeystore -alias tls -srckeystore /opt/open-cabinet/server/keystore.p12 -srcstoretype PKCS12 -srcstorepass changeit -deststorepass changeit -destkeystore /opt/open-cabinet/server/keystore/keystore -noprompt &&
+          cp $JAVA_HOME/lib/security/cacerts /opt/open-cabinet/server/truststore/truststore &&
+          keytool -importcert -alias pg-ca -file /opt/open-cabinet/server/pg-ca/ca.crt -keystore /opt/open-cabinet/server/truststore/truststore -storepass changeit -noprompt
+        volumeMounts:
+        - name: tls
+          mountPath: /opt/open-cabinet/server/tls
+          readOnly: true
+        - name: pg-ca
+          mountPath: /opt/open-cabinet/server/pg-ca
+          readOnly: true
+        - name: keystore
+          mountPath: /opt/open-cabinet/server/keystore
+        - name: truststore
+          mountPath: /opt/open-cabinet/server/truststore
+      containers:
+      - name: server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: SERVER_PORT
+          value: "8443"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretName }}
+              key: {{ .Values.postgresql.usernameKey }}
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretName }}
+              key: {{ .Values.postgresql.passwordKey }}
+        - name: SPRING_DATASOURCE_URL
+          value: {{ printf "jdbc:postgresql://%s:%s/%s?sslmode=verify-full&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory" .Values.postgresql.host (.Values.postgresql.port | toString) .Values.postgresql.database }}
+        - name: SERVER_SSL_ENABLED
+          value: "true"
+        - name: SERVER_SSL_KEYSTORETYPE
+          value: PKCS12
+        - name: SERVER_SSL_KEYSTORE
+          value: /opt/open-cabinet/server/keystore/keystore
+        - name: SERVER_SSL_KEYSTOREPASSWORD
+          value: changeit
+        - name: JAVA_TOOL_OPTIONS
+          value: -Djavax.net.ssl.trustStore=/opt/open-cabinet/server/truststore/truststore -Djavax.net.ssl.trustStorePassword=changeit
+        - name: OPEN_CABINET_KEYCLOAK_ISSUER_URI
+          value: {{ required "Value server.keycloak.issuerUri is required" .Values.server.keycloak.issuerUri | quote }}
+        - name: OPEN_CABINET_KEYCLOAK_CLIENT_ID
+          value: {{ required "Value server.keycloak.clientId is required" .Values.server.keycloak.clientId | quote }}
+        {{- range $k, $v := .Values.server.env }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        envFrom:
+        - secretRef:
+            name: {{ include "server.fullname" . }}
+            optional: true
+        ports:
+        - name: https
+          containerPort: 8443
+          protocol: TCP
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          httpGet:
+            path: /actuator/health/liveness
+            scheme: HTTPS
+            port: 8443
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          httpGet:
+            path: /actuator/health/readiness
+            scheme: HTTPS
+            port: 8443
+        resources:
+          {{- toYaml .Values.server.resources | nindent 10 }}
+        volumeMounts:
+        - name: keystore
+          mountPath: /opt/open-cabinet/server/keystore
+          readOnly: true
+        - name: truststore
+          mountPath: /opt/open-cabinet/server/truststore
+          readOnly: true

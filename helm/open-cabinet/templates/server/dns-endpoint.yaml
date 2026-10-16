@@ -1,0 +1,21 @@
+{{- if .Values.externalDns.enabled }}
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: {{ include "server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "open-cabinet.fullname" . }}
+    release: {{ .Release.Name }}
+    component: {{ include "server.fullname" . }}
+spec:
+  endpoints:
+  - dnsName: {{ required "Value domain is required" .Values.domain }}
+    recordType: {{ .Values.externalDns.recordType }}
+    recordTTL: {{ .Values.externalDns.recordTTL }}
+    targets:
+    - {{ required "externalDns.target is required when externalDns.enabled is true" .Values.externalDns.target }}
+    providerSpecific:
+    - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+      value: {{ .Values.externalDns.cloudflareProxied | toString | quote }}
+{{- end }}

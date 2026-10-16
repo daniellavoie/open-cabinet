@@ -1,0 +1,65 @@
+image:
+  repository: ghcr.io/daniellavoie/open-cabinet-images/opencabinet-backend
+  # CI deploys with --set image.tag=<commit SHA>.
+  tag: 0.1.0-SNAPSHOT
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Public hostname of the app. Shared by the Certificate, IngressRouteTCP and
+# DNSEndpoint so they can't drift.
+domain: ""
+
+# Optional ExternalDNS record (DNSEndpoint CRD) for `.Values.domain`.
+# Requires ExternalDNS to be installed in the cluster with the `crd` source
+# enabled.
+externalDns:
+  enabled: false
+  # IP or hostname records resolve to. Required when enabled.
+  target: ""
+  # A for IP targets, CNAME for hostname targets.
+  recordType: A
+  recordTTL: 300
+  # Cloudflare-only. Must stay false for TLS passthrough — proxied (orange-cloud)
+  # would terminate TLS at the edge and break the SNI-routed IngressRouteTCP.
+  cloudflareProxied: false
+
+tls:
+  # Name of the cert-manager ClusterIssuer the Certificate references.
+  # Required. The ClusterIssuer is provisioned out-of-chart at cluster bootstrap.
+  clusterIssuer: ""
+
+postgresql:
+  host: open-cabinet-postgres-rw
+  port: 5432
+  database: opencabinet
+  secretName: open-cabinet-postgres-app
+  caSecretName: open-cabinet-postgres-ca
+  usernameKey: username
+  passwordKey: password
+  # Optional in-chart CloudNativePG Cluster. Off by default — flip on when
+  # the chart should own the Postgres instance. Defaults align with the
+  # host/secret/CA values above (cluster `open-cabinet-postgres` produces the
+  # `-rw` Service, `-app` credentials Secret, and `-ca` CA Secret).
+  cluster:
+    enabled: false
+    name: open-cabinet-postgres
+    instances: 1
+    image: ghcr.io/cloudnative-pg/postgresql:16
+    owner: opencabinet
+    storage:
+      size: 10Gi
+      storageClass: ""
+
+server:
+  # Keycloak is identity only (docs/adr/0003-keycloak-for-identity-only.md).
+  keycloak:
+    # Realm issuer, e.g. https://auth.example.ca/realms/open-cabinet.
+    issuerUri: ""
+    # Public client used by the Angular app.
+    clientId: open-cabinet-web
+  # Extra environment variables for the server container.
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1G

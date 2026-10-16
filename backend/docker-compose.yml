@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    labels:
+      org.springframework.boot.service-connection: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: opencabinet
+      POSTGRES_USER: opencabinet
+      POSTGRES_PASSWORD: opencabinet
+    volumes:
+      - opencabinet-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  opencabinet-postgres-data:

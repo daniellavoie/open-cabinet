@@ -1,0 +1,96 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.11</version>
+  </parent>
+
+  <groupId>dev.daniellavoie.opencabinet</groupId>
+  <artifactId>opencabinet-parent</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+  <name>Open Cabinet</name>
+  <description>3D cabinet designer for cabinet shops: design a project, get its cut list, materials and quote.</description>
+
+  <modules>
+    <module>backend</module>
+  </modules>
+
+  <properties>
+    <java.version>21</java.version>
+
+    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+    <jib.version>3.4.4</jib.version>
+    <lombok.version>1.18.44</lombok.version>
+    <testcontainers.version>1.20.4</testcontainers.version>
+
+    <!--
+      Dummy values required for build-image goal to not complain even if no publish is done.
+      Override on the command line: -Ddocker-registry.repository=...
+    -->
+    <docker-registry.repository>open-cabinet</docker-registry.repository>
+    <docker-registry.username>dummy-username</docker-registry.username>
+    <docker-registry.password>dummy-password</docker-registry.password>
+    <!-- Image tag; CI overrides it with the commit SHA. -->
+    <docker-image.tag>${project.version}</docker-image.tag>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>${frontend-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.google.cloud.tools</groupId>
+          <artifactId>jib-maven-plugin</artifactId>
+          <version>${jib.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
