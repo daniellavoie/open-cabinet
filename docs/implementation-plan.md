@@ -18,8 +18,9 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | Next |
-| 5. Design Assistant | Planned |
-| 6. After v1 | Not scheduled |
+| 5. Custom Cabinet Templates | Planned |
+| 6. Design Assistant | Planned |
+| 7. After v1 | Not scheduled |
 
 ## 0. Foundation and delivery: done
 
@@ -72,18 +73,29 @@ Follow-ups found while building it:
 
 ## 4. Outputs for the shop floor and the Client: planned
 
+0. **Template Versions** (first, ahead of the outputs; ADR 0005). Today a Cabinet keeps only its template's code, so editing `cabinet-templates.json` silently changes every old Project. Starter templates are split into numbered Template Version files that are only ever added, never edited, with a test that fails if a published version changes. Every Cabinet records its template and version; existing Cabinets are migrated to version 1. Outdated Cabinets get a badge in 3D and in the side panel, and the Project a notice ("3 Cabinets can be updated") with Update all and each version's change note. Updating keeps the Cabinet's own values (size, shelves, dividers, Fronts, finished ends, crown, blind side) and is refused, showing the broken rules, when they don't fit the new version; Revert goes back to any published version. Sent Quotes are untouched; draft Quotes get the existing "priced before a change" notice.
 1. **Shop Drawings**: plan view, an Elevation per Wall and per-Cabinet details, printable.
 2. **Quote PDF with pictures**: a 3D render and Elevations alongside the price.
 3. **Printable and exportable outputs**: Cut List, Nesting layouts and Bill of Materials as PDF and CSV.
 4. **Better Nesting**: fill partly used sheets before opening new ones, compare layouts, keep grain and saw constraints.
 
-## 5. Design Assistant: planned
+## 5. Custom Cabinet Templates: planned
+
+Members create their own Cabinet Templates beyond the starter library, versioned like the starter ones (Milestone 4, step 0) so Projects never change under them. What they place is still a Cabinet.
+
+1. **Project templates.** A template editor with a single-Cabinet 3D preview, opened from the Project editor, starting from an existing template or from a Cabinet ("make a custom template from this"). A template has one draft and published Template Versions that never change; publishing needs a change note. It belongs to its Project until shared. On first publish the editor offers to switch the original Cabinet to it. Custom templates have one name, not translated, unique within the Project and within the Shop library.
+2. **Construction options.** On top of what a template sets today (type, size ranges, front rows, shelves, dividers, blind width): back full or none; an open front row with no Front; top full, stretchers or none; floor support toe kick, legs or none; adjustable or fixed shelves. Each option carries its Cut List, Bill of Materials and hardware effects and its Construction Rules in Java and TypeScript, with cases in `cases.json`. The three types stay; thicknesses and joinery keep following the Shop's current Construction Standard.
+3. **Shop library.** Sharing moves a Project template, with its history, into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates and publish new versions of Shop templates. Templates are archived, never deleted, once a version is in use: hidden when adding Cabinets, still available to update and revert. Milestone 3's Shop Cabinet Template presets become Shop templates at version 1, and the preset feature goes away.
+
+Follow-up: free Part assembly (add, remove and place individual Parts), which needs general rules (fits a sheet, no overlaps, joined to something).
+
+## 6. Design Assistant: planned
 
 Members describe changes in a Conversation, or forward a Client's email thread, and the Design Assistant answers with a Design Proposal they review in 3D and accept or discard (ADR 0004). Built with Spring AI on Claude: Sonnet builds Proposals, Haiku sorts the Inbox, both set in configuration.
 
 Ground rules for every step:
 - Off until an Owner opts the Shop in; Settings say what is sent to the model provider and to Resend (which keeps received mail 30 days). A monthly budget per Shop, in dollars, stops the assistant clearly when spent.
-- Owners and Designers use it. It reads the current design, Cabinet Templates (starter and Shop), the Construction Standard, material and Front style names and the Client's name; never prices, Quotes or other Projects.
+- Owners and Designers use it. It reads the current design, published Cabinet Templates (starter, Shop and the Project's own), the Construction Standard, material and Front style names and the Client's name; never prices, Quotes or other Projects. It places Cabinets from published templates but never creates, publishes or updates templates, nor moves Cabinets to a newer Template Version.
 - It answers in the Member's language. Email content is untrusted: it is quoted to the model, never followed as instructions.
 
 1. **Foundation.** The `assistant` module (hexagonal: Spring AI and Resend in adapters only), the model port, the Shop opt-in and budget, the glossary terms and ADR 0004.
@@ -95,7 +107,7 @@ Ground rules for every step:
 
 To confirm when building step 5: Resend's maximum message size, and whether `In-Reply-To` and `References` come as named headers or only in the raw message.
 
-## 6. After v1: not scheduled
+## 7. After v1: not scheduled
 
 - Client portal: Clients design in the Shop's space and send a Quote Request.
 - CNC export (DXF or machine files, with drilling).

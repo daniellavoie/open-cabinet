@@ -55,8 +55,12 @@ A single box-like unit within a Project, such as a base, wall or tall cabinet, m
 _Avoid_: Unit, box, module
 
 **Cabinet Template**:
-A reusable starting point for a type of Cabinet, such as a sink base or oven tower. Open Cabinet provides a starter library; each Shop can save its own.
-_Avoid_: Preset, model, cabinet type, catalog item
+A reusable definition of a kind of Cabinet, such as a sink base or an open bookcase. Open Cabinet provides a starter library; Members create their own, for one Project or shared with the whole Shop.
+_Avoid_: Preset, model, cabinet type, catalog item, piece
+
+**Template Version**:
+One published, numbered state of a Cabinet Template (v1, v2…) that never changes. Each Cabinet keeps the version it was placed with until a Member updates or reverts it.
+_Avoid_: Revision, release, edition
 
 **Part**:
 One physical piece of a Cabinet, such as a side, bottom, shelf, door or drawer front, made of a real material.
