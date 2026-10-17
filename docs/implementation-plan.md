@@ -4,13 +4,13 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 
 ## Current step
 
-**Milestone 1 → production.** Milestones 0 and 1 are merged into `main` (PRs #1 and #2), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
+**Milestones 0–2 → production.** Milestones 0, 1 and 2 are merged into `main` (PRs #1, #2 and #3), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
 
 1. Add `KUBECONFIG_BASE64` and `GHCR_PAT` to the `open-cabinet-production` GitHub environment.
 2. Create the `open-cabinet` realm and `open-cabinet-web` client: [`docs/operations/keycloak-realm.md`](operations/keycloak-realm.md).
 3. Re-run the latest `Build and Deploy` run, then smoke-test `https://cabinet.arendal.ca`: sign in, create a Shop, design a Project, download a Quote PDF.
 
-Milestone 2 is built on `claude/milestone-2` and goes live once merged, after the steps above.
+Milestones 0–2 are all merged into `main`; the next successful deploy ships all three. After that, start Milestone 3.
 
 ## Status
 
@@ -18,8 +18,8 @@ Milestone 2 is built on `claude/milestone-2` and goes live once merged, after th
 |---|---|
 | 0. Foundation and delivery | Done (PR #1); deploy pending, see Current step |
 | 1. First end-to-end slice | Done (PR #2); deploy pending, see Current step |
-| 2. Shop-ready | Built (PR #3); merge after Milestone 1 is live |
-| 3. Design depth | Planned |
+| 2. Shop-ready | Done (PR #3); deploy pending, see Current step |
+| 3. Design depth | Next |
 | 4. Outputs for the shop floor and the Client | Planned |
 | 5. After v1 | Not scheduled |
 
@@ -39,7 +39,7 @@ Proves the core pipeline, design → Cut List → Nesting → Quote.
 - Cut List with edge banding per edge, rule-based hardware, guillotine Nesting, Bill of Materials.
 - Quotes: three Labour Methods, markup, Manual Lines, Shop taxes; frozen when sent; Client PDF in French.
 
-## 2. Shop-ready: built
+## 2. Shop-ready: done
 
 What a real Shop needs before using it every day.
 
@@ -55,7 +55,7 @@ Follow-ups found while building it:
 - Email delivery for Invitations.
 - The Keycloak login page follows the realm's default language, not the app's.
 
-## 3. Design depth: planned
+## 3. Design depth: next
 
 The design freedom ADR 0001 allows: free 3D editing, constrained to buildable Parts.
 
@@ -84,5 +84,5 @@ The design freedom ADR 0001 allows: free 3D editing, constrained to buildable Pa
 
 ## Housekeeping
 
-- Delete the merged branches `claude/build-and-deploy` and `claude/first-milestone`, and the old `claude/add-grill-skills`, from GitHub.
+- Delete the merged branches `claude/build-and-deploy`, `claude/first-milestone` and `claude/milestone-2`, and the old `claude/add-grill-skills`, from GitHub.
 - Keep this file's **Current step** and **Status** up to date as milestones land.
