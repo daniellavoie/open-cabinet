@@ -1,0 +1,8 @@
+<div class="alert alert-info" *ngIf="drafts.length > 0">
+  <p class="mb-1" i18n="@@staleDrafts.message">Ces brouillons de soumission gardent les anciens prix. Recréez-les pour appliquer vos changements :</p>
+  <ul class="mb-0">
+    <li *ngFor="let draft of drafts">
+      <a [routerLink]="['/projects', draft.projectId]">{{ draft.displayNumber }} — {{ draft.content.projectName }}</a>
+    </li>
+  </ul>
+</div>

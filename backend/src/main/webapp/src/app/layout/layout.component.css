@@ -61,3 +61,8 @@
   flex: 1;
   padding: var(--oc-space-6);
 }
+
+.language {
+  color: var(--oc-text-secondary);
+  text-decoration: none;
+}

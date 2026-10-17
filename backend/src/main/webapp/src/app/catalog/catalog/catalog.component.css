@@ -40,3 +40,25 @@ tbody tr {
     grid-template-columns: 1fr;
   }
 }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--oc-space-3);
+  margin-bottom: var(--oc-space-2);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.page-header .actions {
+  display: flex;
+  gap: var(--oc-space-2);
+}
+
+.hint {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+}

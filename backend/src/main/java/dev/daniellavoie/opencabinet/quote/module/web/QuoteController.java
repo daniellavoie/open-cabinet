@@ -43,9 +43,19 @@ public class QuoteController {
 		return domain.create(projectId, principal);
 	}
 
+	@GetMapping("/quote/draft")
+	public List<Quote> findDrafts(Principal principal) {
+		return domain.findDrafts(principal);
+	}
+
 	@GetMapping("/quote/{quoteId}")
 	public Quote findById(@PathVariable UUID quoteId, Principal principal) {
 		return domain.findById(quoteId, principal);
+	}
+
+	@PostMapping("/quote/{quoteId}/revise")
+	public Quote revise(@PathVariable UUID quoteId, Principal principal) {
+		return domain.revise(quoteId, principal);
 	}
 
 	@PostMapping("/quote/{quoteId}/send")

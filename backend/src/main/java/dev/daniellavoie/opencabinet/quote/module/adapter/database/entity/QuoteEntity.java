@@ -32,6 +32,7 @@ public class QuoteEntity {
 	UUID shopId;
 	UUID projectId;
 	int number;
+	int revision;
 	@Enumerated(EnumType.STRING)
 	QuoteStatus status;
 	@JdbcTypeCode(SqlTypes.JSON)
@@ -44,6 +45,7 @@ public class QuoteEntity {
 				.id(id)
 				.projectId(projectId)
 				.number(number)
+				.revision(revision)
 				.status(status)
 				.content(content)
 				.creationTimestamp(creationTimestamp)

@@ -1,17 +1,24 @@
 <div class="editor" *ngIf="draft">
   <header class="editor-header">
     <a class="back" routerLink="/projects" i18n="@@editor.back">← Projets</a>
-    <input class="form-control name" [ngModel]="draft.name" (ngModelChange)="setDraft({ ...draft, name: $event })"
+    <input class="form-control name" [disabled]="readOnly" [ngModel]="draft.name" (ngModelChange)="setDraft({ ...draft, name: $event })"
       i18n-aria-label="@@editor.name" aria-label="Nom du projet" />
-    <select class="form-select client" [ngModel]="draft.clientId" (ngModelChange)="setDraft({ ...draft, clientId: $event })"
+    <select class="form-select client" [disabled]="readOnly" [ngModel]="draft.clientId" (ngModelChange)="setDraft({ ...draft, clientId: $event })"
       i18n-aria-label="@@editor.client" aria-label="Client">
       <option *ngFor="let client of clients" [value]="client.id">{{ client.name }}</option>
     </select>
     <span class="status" *ngIf="dirty && violations.length === 0" i18n="@@editor.unsaved">Modifications non enregistrées</span>
     <span class="status invalid" *ngIf="violations.length > 0" i18n="@@editor.violations">{{ violations.length }} règle(s) non respectée(s)</span>
-    <button class="btn btn-outline-secondary" (click)="revert()" [disabled]="!dirty || saving" i18n="@@editor.revert">Annuler</button>
-    <button class="btn btn-primary" (click)="save()" [disabled]="!dirty || saving || violations.length > 0" i18n="@@common.save">Enregistrer</button>
+    <ng-container *ngIf="!readOnly">
+      <button class="btn btn-outline-secondary" (click)="revert()" [disabled]="!dirty || saving" i18n="@@editor.revert">Annuler</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="!dirty || saving || violations.length > 0" i18n="@@common.save">Enregistrer</button>
+    </ng-container>
   </header>
+
+  <div class="alert alert-warning lock" *ngIf="lock && !lock.mine">
+    <span i18n="@@editor.lockedBy">{{ lock.holderName }} modifie ce projet. Vous le voyez en lecture seule.</span>
+    <button class="btn btn-sm btn-outline-secondary" (click)="takeLock()" i18n="@@editor.retryLock">Réessayer</button>
+  </div>
 
   <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
 
@@ -22,9 +29,9 @@
 
   <div class="design" *ngIf="tab === 'design'">
     <room-view class="view" [design]="draft.design" [templates]="templates" [selectedCabinetId]="selectedCabinetId"
-      [invalidCabinetIds]="invalidCabinetIds" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      [invalidCabinetIds]="invalidCabinetIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
       (selectCabinet)="selectedCabinetId = $event" (moveCabinet)="onMove($event)" />
-    <design-panel class="panel" [design]="draft.design" [templates]="templates" [units]="units" [selectedCabinetId]="selectedCabinetId"
+    <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedCabinetId]="selectedCabinetId"
       [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectCabinet)="selectedCabinetId = $event" />
   </div>
 
@@ -39,6 +46,6 @@
     </ng-container>
   </section>
 
-  <quotes *ngIf="tab === 'quotes'" [project]="draft" [dirty]="dirty" [currency]="memberService.shop()!.currency"
+  <quotes *ngIf="tab === 'quotes'" [project]="draft" [dirty]="dirty" [readOnly]="readOnly" [currency]="memberService.shop()!.currency"
     [defaultLabourMethod]="memberService.shop()!.settings.labour.defaultMethod" (projectChange)="setDraft($event)" />
 </div>

@@ -3,12 +3,15 @@ package dev.daniellavoie.opencabinet;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +78,27 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(11)));
 
+		var exported = mockMvc.perform(as(owner, get("/api/material/export")))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		var repriced = exported.replace("MEL-WH-58,68.00", "MEL-WH-58,72.00")
+				+ "HARDWARE,Pentures de porte,HNG-SOFT,7.25,,,,false\r\n";
+		mockMvc.perform(as(owner, post("/api/material/import"))
+				.contentType("text/csv")
+				.content(repriced))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.applied").value(true))
+				.andExpect(jsonPath("$.created").value(1))
+				.andExpect(jsonPath("$.updated").value(11));
+		mockMvc.perform(as(owner, post("/api/material/import"))
+				.contentType("text/csv")
+				.content("kind,name,sku,price\nSHEET,Mélamine,MEL-WH-58,abc\nHARDWARE,Coulisse,MEL-WH-14,1\n"))
+				.andExpect(jsonPath("$.applied").value(false))
+				.andExpect(jsonPath("$.errors", hasSize(2)))
+				.andExpect(jsonPath("$.errors[1].line").value(3));
+		mockMvc.perform(as(owner, get("/api/material")))
+				.andExpect(jsonPath("$", hasSize(12)));
+
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"name\":\"Jean Tremblay\",\"address\":\"123 rue Masson, Montréal\"}"))
@@ -97,6 +121,14 @@ class OpenCabinetApplicationTests {
 		cabinets.add(cabinet("c3", "WALL_DOOR", wallId, 0, 914.4, 762, 304.8, 1371.6, 2));
 		update.set("design", design);
 		update.putArray("manualLines").addObject().put("description", "Installation").put("amount", 400);
+
+		mockMvc.perform(as(owner, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, post("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.mine").value(true));
 
 		var overlapping = update.deepCopy();
 		((ObjectNode) overlapping.at("/design/cabinets/1")).put("offsetMm", 100);
@@ -125,6 +157,10 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.content.lines", hasSize(2))));
 		var quoteId = quote.get("id").asText();
 
+		mockMvc.perform(as(owner, get("/api/quote/draft")))
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].content.projectName").value("Cuisine"));
+
 		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/send")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("SENT"));
@@ -132,12 +168,125 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/send")))
 				.andExpect(status().isConflict());
 
+		var revision = read(mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/revise")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("DRAFT"))
+				.andExpect(jsonPath("$.displayNumber").value("S-0001-R1")));
+		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/revise")))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, post("/api/quote/" + revision.get("id").asText() + "/send")))
+				.andExpect(status().isOk());
+		mockMvc.perform(as(owner, get("/api/quote/" + quoteId)))
+				.andExpect(jsonPath("$.status").value("SUPERSEDED"));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/quote")))
+				.andExpect(jsonPath("$[0].displayNumber").value("S-0001-R1"))
+				.andExpect(jsonPath("$[1].displayNumber").value("S-0001"));
+
 		mockMvc.perform(as(owner, get("/api/quote/" + quoteId + "/pdf")))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Type", startsWith("application/pdf")));
 
 		mockMvc.perform(as("stranger-" + System.nanoTime(), get("/api/project/" + projectId)))
 				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void ownersInviteMembersWhoJoinWithTheirRole() throws Exception {
+		var owner = "owner-" + System.nanoTime();
+		var designer = "designer-" + System.nanoTime();
+
+		mockMvc.perform(as(owner, post("/api/shop"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"shopName\":\"Atelier Villeray\",\"memberName\":\"Luc\"}"))
+				.andExpect(status().isOk());
+
+		var created = read(mockMvc.perform(as(owner, post("/api/invitation"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"sophie@example.ca\",\"role\":\"DESIGNER\"}"))
+				.andExpect(status().isOk()));
+		var token = created.get("token").asText();
+
+		mockMvc.perform(as(owner, get("/api/invitation")))
+				.andExpect(jsonPath("$", hasSize(1)));
+
+		mockMvc.perform(as(designer, get("/api/invitation/token/" + token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.shopName").value("Atelier Villeray"))
+				.andExpect(jsonPath("$.role").value("DESIGNER"))
+				.andExpect(jsonPath("$.invitedByName").value("Luc"));
+
+		mockMvc.perform(as(designer, post("/api/invitation/token/" + token + "/accept"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"memberName\":\"Sophie\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.role").value("DESIGNER"))
+				.andExpect(jsonPath("$.email").value("sophie@example.ca"));
+
+		mockMvc.perform(as("someone-" + System.nanoTime(), post("/api/invitation/token/" + token + "/accept"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"memberName\":\"Again\"}"))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(as(owner, get("/api/invitation")))
+				.andExpect(jsonPath("$", hasSize(0)));
+		mockMvc.perform(as(owner, get("/api/member")))
+				.andExpect(jsonPath("$", hasSize(2)));
+
+		mockMvc.perform(as(designer, get("/api/shop")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Atelier Villeray"));
+		mockMvc.perform(as(designer, get("/api/member")))
+				.andExpect(status().isForbidden());
+		mockMvc.perform(as(designer, post("/api/invitation"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"role\":\"OWNER\"}"))
+				.andExpect(status().isForbidden());
+
+		var members = read(mockMvc.perform(as(owner, get("/api/member"))));
+		var ownerId = StreamSupport.stream(members.spliterator(), false)
+				.filter(member -> member.get("role").asText().equals("OWNER"))
+				.map(member -> member.get("id").asText())
+				.findFirst()
+				.orElseThrow();
+
+		var client = read(mockMvc.perform(as(owner, post("/api/client"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\":\"Nadia\"}")));
+		var project = read(mockMvc.perform(as(owner, post("/api/project"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"clientId\":\"" + client.get("id").asText() + "\",\"name\":\"Vanité\"}")));
+		var projectId = project.get("id").asText();
+		var update = objectMapper.createObjectNode()
+				.put("clientId", client.get("id").asText())
+				.put("name", "Vanité")
+				.set("design", project.get("design"));
+
+		mockMvc.perform(as(owner, post("/api/project/" + projectId + "/lock")))
+				.andExpect(jsonPath("$.mine").value(true));
+		mockMvc.perform(as(designer, post("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.mine").value(false))
+				.andExpect(jsonPath("$.holderName").value("Luc"));
+		mockMvc.perform(as(designer, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("this project is being edited by Luc"));
+		mockMvc.perform(as(owner, delete("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isNoContent());
+		mockMvc.perform(as(designer, post("/api/project/" + projectId + "/lock")))
+				.andExpect(jsonPath("$.mine").value(true));
+		mockMvc.perform(as(designer, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(as(owner, put("/api/member/" + ownerId + "/role"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"role\":\"DESIGNER\"}"))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, delete("/api/member/" + ownerId)))
+				.andExpect(status().isConflict());
 	}
 
 	private ObjectNode cabinet(String id, String template, String wallId, double offset, double width, double height,

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CreateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
+import dev.daniellavoie.opencabinet.project.domain.model.ProjectLock;
 import dev.daniellavoie.opencabinet.project.domain.model.UpdateProjectRequest;
 
 public interface ProjectDomain {
@@ -22,9 +23,18 @@ public interface ProjectDomain {
 	Project create(CreateProjectRequest request, Principal principal);
 
 	/**
-	 * Saves a Project. Rejected with the broken Construction Rules when the design cannot be built.
+	 * Saves a Project. Requires the editing lock; rejected with the broken Construction Rules when
+	 * the design cannot be built.
 	 */
 	Project update(UUID projectId, UpdateProjectRequest request, Principal principal);
 
 	List<CabinetTemplate> templates();
+
+	/**
+	 * Takes or renews the editing lock when it is free, lapsed or already ours; otherwise reports
+	 * who holds it.
+	 */
+	ProjectLock lock(UUID projectId, Principal principal);
+
+	void unlock(UUID projectId, Principal principal);
 }

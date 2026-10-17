@@ -31,7 +31,8 @@
             "polyfills": [
               "zone.js",
               "@angular/localize/init"
-            ]
+            ],
+            "i18nMissingTranslation": "error"
           },
           "configurations": {
             "production": {
@@ -47,7 +48,8 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "localize": true
             },
             "development": {
               "optimization": false,
@@ -75,10 +77,25 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {}
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "buildTarget": "open-cabinet-web:build"
+          }
         }
       },
       "i18n": {
-        "sourceLocale": "fr-CA"
+        "sourceLocale": {
+          "code": "fr-CA",
+          "subPath": "fr"
+        },
+        "locales": {
+          "en": {
+            "translation": "src/locale/messages.en.xlf",
+            "subPath": "en"
+          }
+        }
       }
     }
   }

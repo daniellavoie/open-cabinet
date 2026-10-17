@@ -90,3 +90,11 @@
     position: static;
   }
 }
+
+.lock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--oc-space-3);
+  margin: 0;
+}

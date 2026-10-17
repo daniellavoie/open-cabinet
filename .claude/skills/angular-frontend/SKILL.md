@@ -21,7 +21,12 @@ Name components, services, models and routes with the terms in `GLOSSARY.md` (Sh
 
 ### Languages
 
-All user-facing text is available in French and English; French is the default. Never hardcode user-facing strings in templates or components.
+All user-facing text is available in French and English; French is the source language and the default. Never hardcode user-facing strings in templates or components:
+
+- Templates: mark text with `i18n="@@area.key"` (and `i18n-placeholder`, `i18n-title`, `i18n-aria-label` on attributes). Write the French text in the template.
+- TypeScript: `$localize\`:@@area.key:Texte français\``. Enum labels live in `util/labels.ts`.
+- After adding or changing text, run `npm run extract-i18n`, then add or update the English `<target>` for each changed unit in `src/locale/messages.en.xlf`. Production builds fail on a missing translation.
+- Production builds one bundle per language, served under `/fr/` and `/en/`; Spring's `SinglePageAppFilter` sends other URLs to the visitor's language (`oc-locale` cookie, then browser language, then French). The dev server serves French only.
 
 ### Construction Rules Are Implemented Twice
 

@@ -13,12 +13,24 @@ public interface QuoteDomain {
 	Quote findById(UUID quoteId, Principal principal);
 
 	/**
+	 * The Shop's DRAFT Quotes. Drafts keep the prices they were created with, so after a change to
+	 * the Shop's settings or catalog they are worth re-creating.
+	 */
+	List<Quote> findDrafts(Principal principal);
+
+	/**
 	 * Prices the Project as it is now into a new DRAFT Quote.
 	 */
 	Quote create(UUID projectId, Principal principal);
 
 	/**
-	 * Freezes a DRAFT Quote: from then on it never changes.
+	 * Prices the Project as it is now into the next DRAFT revision of a sent Quote's number.
+	 */
+	Quote revise(UUID quoteId, Principal principal);
+
+	/**
+	 * Freezes a DRAFT Quote: from then on it never changes. Earlier sent revisions become
+	 * superseded.
 	 */
 	Quote send(UUID quoteId, Principal principal);
 

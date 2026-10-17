@@ -1,6 +1,24 @@
 <div class="page">
   <section class="list">
-    <h1 i18n="@@catalog.title">Catalogue de matériaux</h1>
+    <header class="page-header">
+      <h1 i18n="@@catalog.title">Catalogue de matériaux</h1>
+      <div class="actions">
+        <button class="btn btn-sm btn-outline-secondary" (click)="exportCsv()" i18n="@@catalog.export">Exporter (CSV)</button>
+        <label class="btn btn-sm btn-outline-secondary mb-0" for="importFile" i18n="@@catalog.import">Importer un CSV</label>
+        <input class="visually-hidden" id="importFile" type="file" accept=".csv,text/csv" (change)="importCsv($event)" />
+      </div>
+    </header>
+    <p class="hint" i18n="@@catalog.csvHint">Colonnes : kind, name, sku, price, thickness_mm, length_mm, width_mm, grain. Les codes déjà au catalogue sont mis à jour, les autres sont ajoutés.</p>
+    <stale-drafts />
+    <div class="alert alert-success" *ngIf="importResult?.applied" i18n="@@catalog.imported">
+      Import terminé : {{ importResult?.created }} ajouté(s), {{ importResult?.updated }} mis à jour.
+    </div>
+    <div class="alert alert-danger" *ngIf="importResult && !importResult.applied">
+      <p class="mb-1" i18n="@@catalog.importRejected">Rien n'a été importé. Corrigez ces lignes et réessayez :</p>
+      <ul class="mb-0">
+        <li *ngFor="let importError of importResult.errors" i18n="@@catalog.importLine">Ligne {{ importError.line }} : {{ importError.message }}</li>
+      </ul>
+    </div>
     <div *ngIf="!materials" i18n="@@common.loading">Chargement…</div>
     <ng-container *ngIf="materials">
       <section *ngFor="let kind of kinds">

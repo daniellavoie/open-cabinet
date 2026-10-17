@@ -6,6 +6,7 @@ import { ProjectOutput } from "../cutlist/model/project-output";
 import { Page } from "../util/model/page";
 import { CabinetTemplate } from "./model/design";
 import { Project } from "./model/project";
+import { ProjectLock } from "./model/project-lock";
 
 export type UpdateProjectRequest = Pick<Project, "clientId" | "name" | "design" | "labourMethod" | "labourHours" | "manualLines">;
 
@@ -30,6 +31,17 @@ export class ProjectService {
 
   update(projectId: string, request: UpdateProjectRequest): Observable<Project> {
     return this.httpClient.put<Project>(`/api/project/${projectId}`, request);
+  }
+
+  /**
+   * Takes or renews the editing lock; reports the holder when someone else has it.
+   */
+  lock(projectId: string): Observable<ProjectLock> {
+    return this.httpClient.post<ProjectLock>(`/api/project/${projectId}/lock`, {});
+  }
+
+  unlock(projectId: string): Observable<void> {
+    return this.httpClient.delete<void>(`/api/project/${projectId}/lock`);
   }
 
   output(projectId: string): Observable<ProjectOutput> {

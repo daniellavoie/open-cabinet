@@ -1,0 +1,27 @@
+<main class="invite">
+  <section class="card-panel">
+    <ng-container *ngIf="invalid">
+      <h1 i18n="@@invite.invalidTitle">Invitation introuvable</h1>
+      <p i18n="@@invite.invalid">Ce lien n'est plus valide : il a expiré, a déjà servi ou a été annulé. Demandez une nouvelle invitation.</p>
+    </ng-container>
+
+    <ng-container *ngIf="!invalid && alreadyMember">
+      <h1 i18n="@@invite.alreadyTitle">Vous faites déjà partie d'un atelier</h1>
+      <p i18n="@@invite.already">Un compte ne peut appartenir qu'à un atelier.</p>
+      <a class="btn btn-primary" routerLink="/projects" i18n="@@invite.toProjects">Aller aux projets</a>
+    </ng-container>
+
+    <ng-container *ngIf="!invalid && !alreadyMember && preview">
+      <h1 i18n="@@invite.title">Rejoindre {{ preview.shopName }}</h1>
+      <p class="lead" i18n="@@invite.lead">{{ preview.invitedByName }} vous invite à titre de {{ roleLabels[preview.role] }}.</p>
+      <form (ngSubmit)="accept()">
+        <div class="mb-3">
+          <label class="form-label" for="memberName" i18n="@@onboarding.memberName">Votre nom</label>
+          <input class="form-control" id="memberName" name="memberName" [(ngModel)]="memberName" required />
+        </div>
+        <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+        <button class="btn btn-primary" type="submit" [disabled]="saving || !memberName" i18n="@@invite.accept">Rejoindre l'atelier</button>
+      </form>
+    </ng-container>
+  </section>
+</main>

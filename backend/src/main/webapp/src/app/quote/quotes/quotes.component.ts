@@ -28,6 +28,10 @@ export class QuotesComponent implements OnChanges {
 
   @Input() project!: Project;
   @Input() dirty = false;
+  /**
+   * Another Member is editing: pricing inputs are locked, quotes can still be managed.
+   */
+  @Input() readOnly = false;
   @Input() currency = "CAD";
   @Input() defaultLabourMethod: LabourMethod = "OPERATION";
   @Output() projectChange = new EventEmitter<Project>();
@@ -83,6 +87,18 @@ export class QuotesComponent implements OnChanges {
 
   create() {
     this.run(this.quoteService.create(this.project.id), quote => this.selected = quote);
+  }
+
+  /**
+   * Only the latest revision of a sent Quote can be revised.
+   */
+  canRevise(quote: Quote): boolean {
+    return quote.status !== "DRAFT"
+      && !this.quotes.some(other => other.number === quote.number && other.revision > quote.revision);
+  }
+
+  revise(quote: Quote) {
+    this.run(this.quoteService.revise(quote.id), revision => this.selected = revision);
   }
 
   send(quote: Quote) {

@@ -1,20 +1,22 @@
 import { CurrencyPipe, NgFor, NgIf } from "@angular/common";
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
 import { MemberService } from "../../member/member-service";
+import { StaleDraftsComponent } from "../../quote/stale-drafts/stale-drafts.component";
 import { MATERIAL_KIND_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { formatLength } from "../../util/units/units";
 import { CatalogService, MaterialRequest } from "../catalog-service";
+import { CatalogImportResult } from "../model/catalog-import-result";
 import { Material, MaterialKind } from "../model/material";
 
 @Component({
   selector: "catalog",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [CurrencyPipe, FormsModule, LengthInputComponent, NgFor, NgIf],
+  imports: [CurrencyPipe, FormsModule, LengthInputComponent, NgFor, NgIf, StaleDraftsComponent],
   styleUrls: ["./catalog.component.css"],
   templateUrl: "./catalog.component.html",
 })
@@ -23,11 +25,14 @@ export class CatalogComponent {
   readonly kindLabels = MATERIAL_KIND_LABELS;
   readonly formatLength = formatLength;
 
+  @ViewChild(StaleDraftsComponent) staleDrafts?: StaleDraftsComponent;
+
   materials?: Material[];
   editing: Material | null = null;
   form: MaterialRequest = emptyForm();
   saving = false;
   error = "";
+  importResult?: CatalogImportResult;
 
   constructor(
     public memberService: MemberService,
@@ -40,6 +45,37 @@ export class CatalogComponent {
     this.catalogService.findAll()
       .pipe(tap(materials => this.materials = materials))
       .subscribe();
+  }
+
+  exportCsv() {
+    this.catalogService.exportCsv()
+      .pipe(tap(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "catalogue.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+      }))
+      .subscribe();
+  }
+
+  importCsv(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) {
+      return;
+    }
+    file.text().then(csv => this.catalogService.importCsv(csv)
+      .pipe(tap(result => {
+        this.importResult = result;
+        if (result.applied) {
+          this.load();
+          this.staleDrafts?.check();
+        }
+      }))
+      .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@catalog.importError:Impossible d'importer le fichier.` }));
   }
 
   materialsOf(kind: MaterialKind): Material[] {
@@ -63,6 +99,7 @@ export class CatalogComponent {
       .pipe(tap(() => {
         this.edit(null);
         this.load();
+        this.staleDrafts?.check();
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@catalog.saveError:Impossible d'enregistrer le matériau.` });

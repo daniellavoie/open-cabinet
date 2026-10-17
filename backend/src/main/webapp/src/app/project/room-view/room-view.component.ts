@@ -46,6 +46,10 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() selectedCabinetId: string | null = null;
   @Input() invalidCabinetIds = new Set<string>();
   @Input() toeKickHeightMm = 101.6;
+  /**
+   * Cabinets can still be picked, but not dragged.
+   */
+  @Input() readOnly = false;
 
   @Output() selectCabinet = new EventEmitter<string | null>();
   @Output() moveCabinet = new EventEmitter<CabinetMove>();
@@ -265,7 +269,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     const along = placement ? this.alongWall(event, placement) : null;
     this.ngZone.run(() => this.selectCabinet.emit(cabinetId));
 
-    if (placement && along !== null) {
+    if (placement && along !== null && !this.readOnly) {
       this.drag = { cabinetId, placement, grabAlongMm: along - cabinet.offsetMm };
       this.controls!.enabled = false;
       this.canvasRef.nativeElement.setPointerCapture(event.pointerId);

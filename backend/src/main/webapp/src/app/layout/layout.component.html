@@ -6,8 +6,10 @@
       <li><a routerLink="/projects" routerLinkActive="active" i18n="@@nav.projects">Projets</a></li>
       <li><a routerLink="/clients" routerLinkActive="active" i18n="@@nav.clients">Clients</a></li>
       <li *ngIf="memberService.isOwner()"><a routerLink="/catalog" routerLinkActive="active" i18n="@@nav.catalog">Catalogue</a></li>
+      <li *ngIf="memberService.isOwner()"><a routerLink="/members" routerLinkActive="active" i18n="@@nav.members">Membres</a></li>
       <li *ngIf="memberService.isOwner()"><a routerLink="/settings" routerLinkActive="active" i18n="@@nav.settings">Paramètres</a></li>
     </ul>
+    <button class="btn btn-sm btn-link language" *ngIf="otherLanguage" (click)="switchLanguage()" [attr.lang]="otherLanguage.code">{{ otherLanguage.label }}</button>
     <span class="member">{{ memberService.member()?.name }}</span>
     <button class="btn btn-sm btn-outline-secondary" (click)="logout()" i18n="@@nav.logout">Se déconnecter</button>
   </nav>

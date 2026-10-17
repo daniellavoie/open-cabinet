@@ -3,7 +3,7 @@ import { Injectable, signal } from "@angular/core";
 import { catchError, map, Observable, of, switchMap, tap, throwError } from "rxjs";
 
 import { Shop } from "../shop/model/shop";
-import { Member } from "./model/member";
+import { Member, Role } from "./model/member";
 
 /**
  * The signed-in Member and their Shop. Both come from the Open Cabinet API,
@@ -32,6 +32,18 @@ export class MemberService {
         }))))
       .pipe(map(() => true))
       .pipe(catchError((error: HttpErrorResponse) => error.status === 404 ? of(false) : throwError(() => error)));
+  }
+
+  findAll(): Observable<Member[]> {
+    return this.httpClient.get<Member[]>("/api/member");
+  }
+
+  updateRole(memberId: string, role: Role): Observable<Member> {
+    return this.httpClient.put<Member>(`/api/member/${memberId}/role`, { role });
+  }
+
+  remove(memberId: string): Observable<void> {
+    return this.httpClient.delete<void>(`/api/member/${memberId}`);
   }
 
   isOwner(): boolean {
