@@ -82,6 +82,7 @@ export const MATERIAL_KIND_LABELS: Record<MaterialKind, string> = {
   SHEET: $localize`:@@materialKind.sheet:Panneau`,
   EDGE_BANDING: $localize`:@@materialKind.edgeBanding:Bande de chant`,
   HARDWARE: $localize`:@@materialKind.hardware:Quincaillerie`,
+  FRONT: $localize`:@@materialKind.front:Façades commandées`,
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

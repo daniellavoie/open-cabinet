@@ -9,7 +9,8 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * Everything computed from a Project's design: its Cut List, Nesting and Bill of Materials.
+ * Everything computed from a Project's design: its Cut List, the Fronts to order, Nesting and Bill of
+ * Materials.
  */
 @Value
 @Jacksonized
@@ -20,6 +21,7 @@ public class ProjectOutput {
 	 */
 	Map<String, String> cabinetLabels;
 	List<CutListRow> cutList;
+	List<OrderedFrontRow> orderedFronts;
 	List<MaterialNesting> nesting;
 	List<BomLine> billOfMaterials;
 	BigDecimal materialsTotal;

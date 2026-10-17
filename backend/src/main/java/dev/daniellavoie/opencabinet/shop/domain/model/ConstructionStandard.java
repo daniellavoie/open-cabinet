@@ -19,6 +19,10 @@ public class ConstructionStandard {
 	UUID frontMaterialId;
 	UUID carcassEdgeBandingId;
 	UUID frontEdgeBandingId;
+	/**
+	 * The Front style ordered for Cabinets whose Fronts are ordered, unless they pick another.
+	 */
+	UUID orderedFrontId;
 
 	UUID hingeId;
 	UUID shelfPinId;

@@ -68,9 +68,23 @@ export class OperationCounts {
   linearFeet!: number;
 }
 
+/**
+ * Identical Fronts to order from a supplier, in one style.
+ */
+export class OrderedFrontRow {
+  role!: PartRole;
+  materialId!: string;
+  materialName!: string;
+  heightMm!: number;
+  widthMm!: number;
+  quantity!: number;
+  cabinetLabels!: string[];
+}
+
 export class ProjectOutput {
   cabinetLabels!: Record<string, string>;
   cutList!: CutListRow[];
+  orderedFronts?: OrderedFrontRow[];
   nesting!: MaterialNesting[];
   billOfMaterials!: BomLine[];
   materialsTotal!: number;

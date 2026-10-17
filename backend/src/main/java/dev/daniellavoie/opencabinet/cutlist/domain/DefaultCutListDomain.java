@@ -23,6 +23,7 @@ import dev.daniellavoie.opencabinet.cutlist.domain.model.BomLine;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.CutListRow;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.MaterialNesting;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.OperationCounts;
+import dev.daniellavoie.opencabinet.cutlist.domain.model.OrderedFrontRow;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.ProjectOutput;
 import dev.daniellavoie.opencabinet.cutlist.domain.port.api.CutListDomain;
@@ -74,11 +75,12 @@ public class DefaultCutListDomain implements CutListDomain {
 		IntStream.range(0, cabinets.size()).forEach(index -> labels.put(cabinets.get(index).getId(), "C" + (index + 1)));
 
 		var parts = new ArrayList<Part>();
+		var orderedParts = new ArrayList<Part>();
 		var hardware = new LinkedHashMap<UUID, Integer>();
 		for (var cabinet : cabinets) {
 			var set = PartGenerator.generate(cabinet, templates.get(cabinet.getTemplateCode()),
 					labels.get(cabinet.getId()), standard, materials);
-			parts.addAll(set.parts());
+			set.parts().forEach(part -> (part.isOrdered() ? orderedParts : parts).add(part));
 			set.hardware().forEach((materialId, quantity) -> hardware.merge(materialId, quantity, Integer::sum));
 		}
 
@@ -96,12 +98,15 @@ public class DefaultCutListDomain implements CutListDomain {
 		nesting.forEach(materialNesting -> billOfMaterials.add(line(materials.get(materialNesting.getMaterialId()),
 				BigDecimal.valueOf(materialNesting.getSheets().size()))));
 		edgeBanding.forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId), meters)));
+		orderedSquareMeters(orderedParts).forEach((materialId, squareMeters) -> billOfMaterials
+				.add(line(materials.get(materialId), squareMeters)));
 		hardware.forEach((materialId, quantity) -> billOfMaterials.add(line(materials.get(materialId),
 				BigDecimal.valueOf(quantity))));
 
 		return ProjectOutput.builder()
 				.cabinetLabels(labels)
 				.cutList(cutList(parts, materials))
+				.orderedFronts(orderedFronts(orderedParts, materials))
 				.nesting(nesting)
 				.billOfMaterials(billOfMaterials)
 				.materialsTotal(billOfMaterials.stream().map(BomLine::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add))
@@ -152,6 +157,43 @@ public class DefaultCutListDomain implements CutListDomain {
 						.multiply(EDGE_BANDING_WASTE)
 						.setScale(1, RoundingMode.CEILING)));
 		return meters;
+	}
+
+	static Map<UUID, BigDecimal> orderedSquareMeters(List<Part> orderedParts) {
+		var squareMillimetres = new LinkedHashMap<UUID, Double>();
+		orderedParts.forEach(part -> squareMillimetres.merge(part.getMaterialId(),
+				part.getLengthMm() * part.getWidthMm(), Double::sum));
+
+		var squareMeters = new LinkedHashMap<UUID, BigDecimal>();
+		squareMillimetres.forEach((materialId, area) -> squareMeters.put(materialId,
+				BigDecimal.valueOf(area / 1_000_000).setScale(2, RoundingMode.CEILING)));
+		return squareMeters;
+	}
+
+	private static List<OrderedFrontRow> orderedFronts(List<Part> orderedParts, Map<UUID, Material> materials) {
+		var rows = new LinkedHashMap<List<Object>, List<Part>>();
+		orderedParts.forEach(part -> rows.computeIfAbsent(List.of(part.getRole(), part.getMaterialId(),
+				part.getLengthMm(), part.getWidthMm()), key -> new ArrayList<>()).add(part));
+
+		return rows.values()
+				.stream()
+				.map(group -> {
+					var part = group.get(0);
+					return OrderedFrontRow.builder()
+							.role(part.getRole())
+							.materialId(part.getMaterialId())
+							.materialName(materials.get(part.getMaterialId()).getName())
+							.heightMm(part.getLengthMm())
+							.widthMm(part.getWidthMm())
+							.quantity(group.size())
+							.cabinetLabels(group.stream().map(Part::getCabinetLabel).distinct().toList())
+							.build();
+				})
+				.sorted(Comparator.comparing(OrderedFrontRow::getMaterialName)
+						.thenComparing(OrderedFrontRow::getRole)
+						.thenComparing(Comparator.comparingDouble(OrderedFrontRow::getHeightMm).reversed())
+						.thenComparing(Comparator.comparingDouble(OrderedFrontRow::getWidthMm).reversed()))
+				.toList();
 	}
 
 	private static List<CutListRow> cutList(List<Part> parts, Map<UUID, Material> materials) {

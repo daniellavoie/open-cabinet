@@ -9,7 +9,8 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * One thing to buy. {@code quantity} is in sheets, metres of edge banding or hardware units.
+ * One thing to buy. {@code quantity} is in sheets, metres of edge banding, hardware units or square
+ * metres of ordered Fronts.
  */
 @Value
 @Jacksonized

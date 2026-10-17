@@ -1,6 +1,7 @@
 package dev.daniellavoie.opencabinet.project.domain.model;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Value;
@@ -33,9 +34,21 @@ public class Cabinet {
 	 * shelves.
 	 */
 	List<Double> dividerPositionsMm;
+	/**
+	 * Made in the Shop when unset.
+	 */
+	FrontSource frontSource;
+	/**
+	 * The ordered Front style (a FRONT catalog entry), when not the Construction Standard's.
+	 */
+	UUID orderedFrontId;
 
 	public List<Double> dividers() {
 		return dividerPositionsMm == null ? List.of() : dividerPositionsMm;
+	}
+
+	public boolean frontsOrdered() {
+		return frontSource == FrontSource.ORDERED;
 	}
 
 	public Side effectiveBlindSide() {

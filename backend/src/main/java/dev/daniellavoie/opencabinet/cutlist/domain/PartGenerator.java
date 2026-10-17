@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
+import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.FrontLayout;
@@ -25,7 +26,9 @@ import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
  * cabinets) between them, and the back applied over the whole rear. Base and tall cabinets stand on
  * legs, so their box is the cabinet height minus the toe kick. Fronts are full overlay and follow
  * the template's front rows ({@link FrontLayout}). Dividers stand between the bottom and the top (or
- * stretchers) and split the interior into sections, each with its own shelves.
+ * stretchers) and split the interior into sections, each with its own shelves. Fronts of a Cabinet
+ * whose Fronts are ordered come out as ordered Parts of the Front style, made to size by the
+ * supplier, rather than cut from sheets.
  */
 final class PartGenerator {
 	static final double STRETCHER_WIDTH_MM = 101.6;
@@ -44,6 +47,7 @@ final class PartGenerator {
 		var carcass = material(catalog, standard.getCarcassMaterialId());
 		var back = material(catalog, standard.getBackMaterialId());
 		var front = material(catalog, standard.getFrontMaterialId());
+		var orderedStyle = cabinet.frontsOrdered() ? orderedStyle(cabinet, standard, catalog) : null;
 
 		var t = carcass.getThicknessMm();
 		var gap = standard.getDoorGapMm();
@@ -56,7 +60,7 @@ final class PartGenerator {
 
 		var parts = new ArrayList<Part>();
 		var hardware = new LinkedHashMap<UUID, Integer>();
-		var builder = new Builder(cabinet, label, parts);
+		var builder = new Builder(cabinet, label, parts, orderedStyle);
 
 		builder.add(PartRole.SIDE, carcass, boxHeight, carcassDepth, 1, 0, standard.getCarcassEdgeBandingId(), 2);
 		builder.add(PartRole.BOTTOM, carcass, innerWidth, carcassDepth, 1, 0, standard.getCarcassEdgeBandingId(), 1);
@@ -89,19 +93,19 @@ final class PartGenerator {
 			switch (row.kind()) {
 			case DOOR -> {
 				var leaves = FrontLayout.doorLeaves(frontWidth);
-				builder.add(PartRole.DOOR, front, row.heightMm(), (frontWidth - gap * leaves) / leaves, 2, 2,
+				builder.front(PartRole.DOOR, front, row.heightMm(), (frontWidth - gap * leaves) / leaves, true,
 						standard.getFrontEdgeBandingId(), leaves);
 				add(hardware, standard.getHingeId(), leaves * hingesPerDoor(row.heightMm()));
 				pulls += leaves;
 			}
 			case DRAWER -> {
-				builder.add(PartRole.DRAWER_FRONT, front, frontWidth - gap, row.heightMm(), 2, 2,
+				builder.front(PartRole.DRAWER_FRONT, front, row.heightMm(), frontWidth - gap, false,
 						standard.getFrontEdgeBandingId(), 1);
 				add(hardware, standard.getDrawerSlideId(), 1);
 				add(hardware, standard.getDrawerBoxId(), 1);
 				pulls++;
 			}
-			case FALSE_FRONT -> builder.add(PartRole.FALSE_FRONT, front, frontWidth - gap, row.heightMm(), 2, 2,
+			case FALSE_FRONT -> builder.front(PartRole.FALSE_FRONT, front, row.heightMm(), frontWidth - gap, false,
 					standard.getFrontEdgeBandingId(), 1);
 			case OPENING -> {
 			}
@@ -109,7 +113,7 @@ final class PartGenerator {
 		}
 
 		if (template.getBlindWidthMm() > 0) {
-			builder.add(PartRole.BLIND_PANEL, front, boxHeight - gap, template.getBlindWidthMm() - gap, 2, 2,
+			builder.front(PartRole.BLIND_PANEL, front, boxHeight - gap, template.getBlindWidthMm() - gap, true,
 					standard.getFrontEdgeBandingId(), 1);
 		}
 
@@ -150,6 +154,18 @@ final class PartGenerator {
 		}
 	}
 
+	/**
+	 * The Cabinet's own Front style if it is still a FRONT in the catalog, else the Construction
+	 * Standard's.
+	 */
+	private static Material orderedStyle(Cabinet cabinet, ConstructionStandard standard,
+			Map<UUID, Material> catalog) {
+		return Optional.ofNullable(cabinet.getOrderedFrontId())
+				.map(catalog::get)
+				.filter(material -> material.getKind() == MaterialKind.FRONT)
+				.orElseGet(() -> material(catalog, standard.getOrderedFrontId()));
+	}
+
 	private static Material material(Map<UUID, Material> catalog, UUID materialId) {
 		return Optional.ofNullable(materialId)
 				.map(catalog::get)
@@ -157,7 +173,31 @@ final class PartGenerator {
 						"material " + materialId + " of the construction standard is not in the catalog"));
 	}
 
-	private record Builder(Cabinet cabinet, String label, List<Part> parts) {
+	private record Builder(Cabinet cabinet, String label, List<Part> parts, Material orderedStyle) {
+		/**
+		 * Adds Fronts {@code heightMm} by {@code widthMm}: cut from {@code made}, banded all round
+		 * with the grain running up ({@code grainUp}) or across, or ordered in the Cabinet's style.
+		 */
+		void front(PartRole role, Material made, double heightMm, double widthMm, boolean grainUp,
+				UUID edgeBandingId, int quantity) {
+			if (orderedStyle == null) {
+				add(role, made, grainUp ? heightMm : widthMm, grainUp ? widthMm : heightMm, 2, 2, edgeBandingId,
+						quantity);
+				return;
+			}
+			for (int index = 0; index < quantity; index++) {
+				parts.add(Part.builder()
+						.cabinetId(cabinet.getId())
+						.cabinetLabel(label)
+						.role(role)
+						.materialId(orderedStyle.getId())
+						.lengthMm(round(heightMm))
+						.widthMm(round(widthMm))
+						.ordered(true)
+						.build());
+			}
+		}
+
 		/**
 		 * Adds {@code quantity} Parts. {@code grainSide} is the dimension the grain should follow;
 		 * banded edge counts refer to the edges along each of the two given dimensions.

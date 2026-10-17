@@ -8,3 +8,9 @@
   color: var(--oc-text-tertiary);
   font-size: var(--oc-font-size-sm);
 }
+
+.ordered-title {
+  font-size: var(--oc-font-size-md);
+  font-weight: 600;
+  margin: var(--oc-space-6) 0 var(--oc-space-3);
+}

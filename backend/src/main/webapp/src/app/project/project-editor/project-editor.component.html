@@ -32,14 +32,14 @@
       [invalidIds]="invalidIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
-      [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
+      [violations]="violations" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">
     <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
     <div *ngIf="loadingOutput" i18n="@@editor.computing">Calcul en cours…</div>
     <ng-container *ngIf="output && !loadingOutput">
-      <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [units]="units" />
+      <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [orderedFronts]="output.orderedFronts ?? []" [units]="units" />
       <nesting *ngIf="tab === 'nesting'" [nesting]="output.nesting" [units]="units" />
       <bill-of-materials *ngIf="tab === 'materials'" [lines]="output.billOfMaterials" [total]="output.materialsTotal"
         [operations]="output.operations" [currency]="memberService.shop()!.currency" />

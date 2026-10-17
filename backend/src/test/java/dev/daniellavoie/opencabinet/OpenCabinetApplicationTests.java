@@ -76,7 +76,7 @@ class OpenCabinetApplicationTests {
 
 		mockMvc.perform(as(owner, get("/api/material")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(11)));
+				.andExpect(jsonPath("$", hasSize(12)));
 
 		var exported = mockMvc.perform(as(owner, get("/api/material/export")))
 				.andExpect(status().isOk())
@@ -89,7 +89,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.applied").value(true))
 				.andExpect(jsonPath("$.created").value(1))
-				.andExpect(jsonPath("$.updated").value(11));
+				.andExpect(jsonPath("$.updated").value(12));
 		mockMvc.perform(as(owner, post("/api/material/import"))
 				.contentType("text/csv")
 				.content("kind,name,sku,price\nSHEET,Mélamine,MEL-WH-58,abc\nHARDWARE,Coulisse,MEL-WH-14,1\n"))
@@ -97,7 +97,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.errors", hasSize(2)))
 				.andExpect(jsonPath("$.errors[1].line").value(3));
 		mockMvc.perform(as(owner, get("/api/material")))
-				.andExpect(jsonPath("$", hasSize(12)));
+				.andExpect(jsonPath("$", hasSize(13)));
 
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)

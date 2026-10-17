@@ -148,42 +148,49 @@
         <source>Prix unitaire</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">74,76</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="catalog.pricePerSquareMeter" datatype="html">
+        <source>Prix par m²</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
+          <context context-type="linenumber">75,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.thickness" datatype="html">
         <source>Épaisseur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">81,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.length" datatype="html">
         <source>Longueur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">85,86</context>
+          <context context-type="linenumber">86,87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.width" datatype="html">
         <source>Largeur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">89,90</context>
+          <context context-type="linenumber">90,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.hasGrain" datatype="html">
         <source>Le fil suit la longueur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">95,97</context>
+          <context context-type="linenumber">96,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="common.save" datatype="html">
         <source>Enregistrer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">100,101</context>
+          <context context-type="linenumber">101,102</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/client/clients/clients.component.html</context>
@@ -202,7 +209,7 @@
         <source>Annuler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">101,102</context>
+          <context context-type="linenumber">102,103</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/client/clients/clients.component.html</context>
@@ -213,7 +220,7 @@
         <source>Retirer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.html</context>
-          <context context-type="linenumber">102,104</context>
+          <context context-type="linenumber">103,105</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/member/members/members.component.html</context>
@@ -233,7 +240,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">133,135</context>
+          <context context-type="linenumber">145,147</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/quote/quotes/quotes.component.html</context>
@@ -446,12 +453,20 @@
           <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
           <context context-type="linenumber">6,7</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="cutList.quantity" datatype="html">
         <source>Qté</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
           <context context-type="linenumber">8</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cutList.length" datatype="html">
@@ -466,6 +481,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
           <context context-type="linenumber">9,10</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">38,39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cutList.grain" datatype="html">
@@ -487,6 +506,31 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
           <context context-type="linenumber">12,15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">39,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cutList.orderedFronts" datatype="html">
+        <source>Façades à commander</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cutList.style" datatype="html">
+        <source>Style</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cutList.height" datatype="html">
+        <source>Hauteur</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/cut-list/cut-list.component.html</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="nesting.empty" datatype="html">
@@ -833,7 +877,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">148,149</context>
+          <context context-type="linenumber">160,161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.length" datatype="html">
@@ -1041,46 +1085,81 @@
           <context context-type="linenumber">119,121</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="design.frontSource" datatype="html">
+        <source>Façades</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">122,123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.frontsMade" datatype="html">
+        <source>Fabriquées à l&apos;atelier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">124,125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.frontsOrdered" datatype="html">
+        <source>Commandées</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">125,127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.frontStyle" datatype="html">
+        <source>Style</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">128,129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.defaultFrontStyle" datatype="html">
+        <source>Style par défaut de l&apos;atelier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">130,131</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="design.shelvesPerSection" datatype="html">
         <source>Tablettes par section</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">123,124</context>
+          <context context-type="linenumber">135,136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.dividers" datatype="html">
         <source>Séparateurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">129,130</context>
+          <context context-type="linenumber">141,142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.dividerNumber" datatype="html">
         <source>Séparateur <x id="INTERPOLATION" equiv-text="{{ index + 1 }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">131,132</context>
+          <context context-type="linenumber">143,144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.dividerHint" datatype="html">
         <source>Distance depuis le côté gauche. Glissez les séparateurs dans la vue 3D.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">135,136</context>
+          <context context-type="linenumber">147,148</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.addDivider" datatype="html">
         <source>Ajouter un séparateur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">136,140</context>
+          <context context-type="linenumber">148,152</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.violations" datatype="html">
         <source>Règles de construction</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">143,145</context>
+          <context context-type="linenumber">155,157</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.back" datatype="html">
@@ -1157,63 +1236,63 @@
         <source>Conception</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.cutList" datatype="html">
         <source>Liste de coupe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.nesting" datatype="html">
         <source>Optimisation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.materials" datatype="html">
         <source>Matériaux</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.quotes" datatype="html">
         <source>Soumissions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.rulesBroken" datatype="html">
         <source>Le serveur a refusé la conception : corrigez les règles de construction.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">244</context>
+          <context context-type="linenumber">251</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.lockLost" datatype="html">
         <source>Quelqu&apos;un d&apos;autre modifie ce projet : vos changements n&apos;ont pas été enregistrés.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">246</context>
+          <context context-type="linenumber">253</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.saveError" datatype="html">
         <source>Impossible d&apos;enregistrer le projet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">249</context>
+          <context context-type="linenumber">256</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.outputError" datatype="html">
         <source>Impossible de calculer la liste de coupe.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">263</context>
+          <context context-type="linenumber">270</context>
         </context-group>
       </trans-unit>
       <trans-unit id="projects.title" datatype="html">
@@ -1690,88 +1769,95 @@
           <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="settings.orderedFront" datatype="html">
+        <source>Façades commandées</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="settings.hinge" datatype="html">
         <source>Charnière</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.shelfPin" datatype="html">
         <source>Taquet de tablette</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.leg" datatype="html">
         <source>Patte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.pull" datatype="html">
         <source>Poignée</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.slide" datatype="html">
         <source>Coulisse</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">43</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.drawerBox" datatype="html">
         <source>Boîte de tiroir</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.doorGap" datatype="html">
         <source>Jeu des façades</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.toeKick" datatype="html">
         <source>Hauteur du coup de pied</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.kerf" datatype="html">
         <source>Trait de scie</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.trim" datatype="html">
         <source>Rognage des panneaux</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.saved" datatype="html">
         <source>Paramètres enregistrés.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="settings.saveError" datatype="html">
         <source>Impossible d&apos;enregistrer les paramètres.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="partRole.side" datatype="html">
@@ -2159,18 +2245,25 @@
           <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="materialKind.front" datatype="html">
+        <source>Façades commandées</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="role.owner" datatype="html">
         <source>Propriétaire</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">88</context>
+          <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="role.designer" datatype="html">
         <source>Concepteur</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="startup.title" datatype="html">

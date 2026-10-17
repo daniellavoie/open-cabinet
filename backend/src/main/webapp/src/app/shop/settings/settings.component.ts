@@ -14,7 +14,7 @@ import { ConstructionStandard, LabourMethod, ShopSettings } from "../model/shop"
 import { ShopService } from "../shop-service";
 
 type StandardMaterialField = keyof Pick<ConstructionStandard,
-  "carcassMaterialId" | "backMaterialId" | "frontMaterialId" | "carcassEdgeBandingId" | "frontEdgeBandingId"
+  "carcassMaterialId" | "backMaterialId" | "frontMaterialId" | "carcassEdgeBandingId" | "frontEdgeBandingId" | "orderedFrontId"
   | "hingeId" | "shelfPinId" | "legId" | "pullId" | "drawerSlideId" | "drawerBoxId">;
 
 type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKickHeightMm" | "kerfMm" | "sheetTrimMm">;
@@ -36,6 +36,7 @@ export class SettingsComponent {
     { field: "frontMaterialId", kind: "SHEET", label: $localize`:@@settings.front:Façades` },
     { field: "carcassEdgeBandingId", kind: "EDGE_BANDING", label: $localize`:@@settings.carcassBanding:Bande de chant du caisson` },
     { field: "frontEdgeBandingId", kind: "EDGE_BANDING", label: $localize`:@@settings.frontBanding:Bande de chant des façades` },
+    { field: "orderedFrontId", kind: "FRONT", label: $localize`:@@settings.orderedFront:Façades commandées` },
     { field: "hingeId", kind: "HARDWARE", label: $localize`:@@settings.hinge:Charnière` },
     { field: "shelfPinId", kind: "HARDWARE", label: $localize`:@@settings.shelfPin:Taquet de tablette` },
     { field: "legId", kind: "HARDWARE", label: $localize`:@@settings.leg:Patte` },

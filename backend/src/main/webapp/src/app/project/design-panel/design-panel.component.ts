@@ -2,6 +2,7 @@ import { NgFor, NgIf } from "@angular/common";
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { Material } from "../../catalog/model/material";
 import { APPLIANCE_KIND_LABELS, OPENING_KIND_LABELS, TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
@@ -41,6 +42,8 @@ export class DesignPanelComponent implements OnChanges {
   @Input() violations: Violation[] = [];
   @Input() cabinetLabels = new Map<string, string>();
   @Input() readOnly = false;
+  /** The Shop's ordered Front styles. */
+  @Input() frontStyles: Material[] = [];
 
   @Output() designChange = new EventEmitter<Design>();
   @Output() selectItem = new EventEmitter<string | null>();

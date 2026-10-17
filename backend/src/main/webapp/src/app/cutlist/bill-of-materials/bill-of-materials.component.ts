@@ -26,6 +26,8 @@ export class BillOfMaterialsComponent {
         return $localize`:@@bom.sheets:panneau(x)`;
       case "EDGE_BANDING":
         return "m";
+      case "FRONT":
+        return "m²";
       default:
         return $localize`:@@bom.units:unité(s)`;
     }

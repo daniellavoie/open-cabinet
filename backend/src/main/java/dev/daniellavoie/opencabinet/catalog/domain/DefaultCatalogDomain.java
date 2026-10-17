@@ -144,6 +144,7 @@ public class DefaultCatalogDomain implements CatalogDomain {
 		var pull = seed(shopId, hardware("Poignée", "PULL-128", "8.00"));
 		var slide = seed(shopId, hardware("Coulisse à fermeture douce (paire)", "SLD-21", "48.00"));
 		var drawerBox = seed(shopId, hardware("Boîte de tiroir", "DRW-BOX", "45.00"));
+		var orderedFront = seed(shopId, orderedFront("Façade shaker MDF peinte (commandée)", "FRT-SHAKER", "300.00"));
 
 		return ConstructionStandard.builder()
 				.carcassMaterialId(carcass.getId())
@@ -151,6 +152,7 @@ public class DefaultCatalogDomain implements CatalogDomain {
 				.frontMaterialId(front.getId())
 				.carcassEdgeBandingId(carcassBanding.getId())
 				.frontEdgeBandingId(frontBanding.getId())
+				.orderedFrontId(orderedFront.getId())
 				.hingeId(hinge.getId())
 				.shelfPinId(shelfPin.getId())
 				.legId(leg.getId())
@@ -200,6 +202,15 @@ public class DefaultCatalogDomain implements CatalogDomain {
 				.build();
 	}
 
+	private static MaterialRequest orderedFront(String name, String sku, String pricePerSquareMeter) {
+		return MaterialRequest.builder()
+				.kind(MaterialKind.FRONT)
+				.name(name)
+				.sku(sku)
+				.price(new BigDecimal(pricePerSquareMeter))
+				.build();
+	}
+
 	private static double round(double millimetres) {
 		return Math.round(millimetres * 10) / 10d;
 	}
@@ -235,7 +246,7 @@ public class DefaultCatalogDomain implements CatalogDomain {
 	private static Stream<UUID> usedIds(ConstructionStandard standard) {
 		return Stream.of(standard.getCarcassMaterialId(), standard.getBackMaterialId(),
 				standard.getFrontMaterialId(), standard.getCarcassEdgeBandingId(), standard.getFrontEdgeBandingId(),
-				standard.getHingeId(), standard.getShelfPinId(), standard.getLegId(), standard.getPullId(),
+				standard.getOrderedFrontId(), standard.getHingeId(), standard.getShelfPinId(), standard.getLegId(), standard.getPullId(),
 				standard.getDrawerSlideId(), standard.getDrawerBoxId());
 	}
 }

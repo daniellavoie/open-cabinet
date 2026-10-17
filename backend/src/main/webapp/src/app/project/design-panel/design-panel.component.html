@@ -119,6 +119,18 @@
         <option value="RIGHT" i18n="@@design.right">Droite</option>
       </select>
     </ng-container>
+    <label for="cabinetFrontSource" i18n="@@design.frontSource">Façades</label>
+    <select class="form-select form-select-sm" id="cabinetFrontSource" [ngModel]="selected.frontSource ?? 'MADE'" (ngModelChange)="updateSelected({ frontSource: $event })">
+      <option value="MADE" i18n="@@design.frontsMade">Fabriquées à l'atelier</option>
+      <option value="ORDERED" i18n="@@design.frontsOrdered">Commandées</option>
+    </select>
+    <ng-container *ngIf="selected.frontSource === 'ORDERED'">
+      <label for="cabinetFrontStyle" i18n="@@design.frontStyle">Style</label>
+      <select class="form-select form-select-sm" id="cabinetFrontStyle" [ngModel]="selected.orderedFrontId ?? ''" (ngModelChange)="updateSelected({ orderedFrontId: $event || null })">
+        <option value="" i18n="@@design.defaultFrontStyle">Style par défaut de l'atelier</option>
+        <option *ngFor="let style of frontStyles" [value]="style.id">{{ style.name }}</option>
+      </select>
+    </ng-container>
     <ng-container *ngIf="selectedTemplate.maxShelfCount > 0">
       <label for="cabinetShelves" i18n="@@design.shelvesPerSection">Tablettes par section</label>
       <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"

@@ -5,6 +5,8 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from "rxjs";
 
+import { CatalogService } from "../../catalog/catalog-service";
+import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
@@ -69,6 +71,8 @@ export class ProjectEditorComponent implements OnDestroy {
   draft?: Project;
   templates: CabinetTemplate[] = [];
   clients: Client[] = [];
+  /** The Shop's ordered Front styles. */
+  frontStyles: Material[] = [];
   violations: Violation[] = [];
   invalidIds = new Set<string>();
   cabinetLabels = new Map<string, string>();
@@ -89,6 +93,7 @@ export class ProjectEditorComponent implements OnDestroy {
     public memberService: MemberService,
     private projectService: ProjectService,
     clientService: ClientService,
+    catalogService: CatalogService,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -96,10 +101,12 @@ export class ProjectEditorComponent implements OnDestroy {
         this.projectService.findById(projectId),
         this.projectService.templates(),
         clientService.findAll(),
+        catalogService.findAll(),
       ])))
-      .pipe(tap(([project, templates, clients]) => {
+      .pipe(tap(([project, templates, clients, materials]) => {
         this.templates = templates;
         this.clients = clients;
+        this.frontStyles = materials.filter(material => material.kind === "FRONT");
         this.saved = project;
         this.setDraft(structuredClone(project));
         this.takeLock();

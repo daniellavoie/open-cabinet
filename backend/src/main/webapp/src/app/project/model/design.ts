@@ -4,6 +4,8 @@ export type FrontKind = "DOOR" | "DRAWER" | "FALSE_FRONT" | "OPENING";
 
 export type Side = "LEFT" | "RIGHT";
 
+export type FrontSource = "MADE" | "ORDERED";
+
 /**
  * One row of a Cabinet's front, from the top: a fixed height, or a share
  * (weight, 1 when unset) of the height left by the fixed rows.
@@ -40,6 +42,10 @@ export class Cabinet {
    * divider's centre, left to right. Each section gets `shelfCount` shelves.
    */
   dividerPositionsMm?: number[] | null;
+  /** Made in the Shop when unset. */
+  frontSource?: FrontSource | null;
+  /** The ordered Front style (a FRONT catalog entry), when not the Construction Standard's. */
+  orderedFrontId?: string | null;
 }
 
 export type OpeningKind = "WINDOW" | "DOORWAY";

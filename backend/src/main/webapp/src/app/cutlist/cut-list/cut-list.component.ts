@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
 import { PART_ROLE_LABELS } from "../../util/labels";
 import { formatLength, Units } from "../../util/units/units";
-import { CutListRow } from "../model/project-output";
+import { CutListRow, OrderedFrontRow } from "../model/project-output";
 
 @Component({
   selector: "cut-list",
@@ -18,6 +18,8 @@ export class CutListComponent {
   readonly formatLength = formatLength;
 
   @Input() rows: CutListRow[] = [];
+  /** Fronts ordered from a supplier rather than cut. */
+  @Input() orderedFronts: OrderedFrontRow[] = [];
   @Input() units: Units = "IMPERIAL";
 
   /**

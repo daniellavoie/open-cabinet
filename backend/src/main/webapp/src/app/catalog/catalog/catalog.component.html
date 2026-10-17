@@ -72,6 +72,7 @@
           <span *ngIf="form.kind === 'SHEET'" i18n="@@catalog.pricePerSheet">Prix par panneau</span>
           <span *ngIf="form.kind === 'EDGE_BANDING'" i18n="@@catalog.pricePerMeter">Prix par mètre</span>
           <span *ngIf="form.kind === 'HARDWARE'" i18n="@@catalog.pricePerUnit">Prix unitaire</span>
+          <span *ngIf="form.kind === 'FRONT'" i18n="@@catalog.pricePerSquareMeter">Prix par m²</span>
         </label>
         <input class="form-control" id="price" name="price" type="number" min="0" step="0.01" [(ngModel)]="form.price" />
       </div>
