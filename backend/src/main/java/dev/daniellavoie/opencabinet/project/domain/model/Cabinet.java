@@ -21,4 +21,12 @@ public class Cabinet {
 	double depthMm;
 	double elevationMm;
 	int shelfCount;
+	/**
+	 * Which side of a blind corner Cabinet is left without fronts.
+	 */
+	Side blindSide;
+
+	public Side effectiveBlindSide() {
+		return blindSide == null ? Side.RIGHT : blindSide;
+	}
 }

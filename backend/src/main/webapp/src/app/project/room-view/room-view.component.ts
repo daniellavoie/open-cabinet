@@ -2,7 +2,8 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmi
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import { Cabinet, CabinetTemplate, Design } from "../model/design";
+import { doorLeaves, frontRows, frontWidth } from "../front-layout";
+import { Cabinet, CabinetTemplate, Design, standsOnFloor } from "../model/design";
 import { cabinetCentre, layoutWalls, WallPlacement } from "../room-layout";
 
 const MM = 1 / 1000;
@@ -10,7 +11,7 @@ const WALL_THICKNESS_MM = 100;
 const FRONT_THICKNESS_MM = 19;
 const FRONT_GAP_MM = 3;
 const TOE_KICK_SETBACK_MM = 75;
-const DOUBLE_DOOR_MIN_WIDTH_MM = 609.6;
+const OPENING_DEPTH_MM = 40;
 const CLICK_TOLERANCE_PX = 4;
 
 export interface CabinetMove {
@@ -213,7 +214,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     group.position.set(centre.x * MM, cabinet.elevationMm * MM, centre.z * MM);
     group.rotation.y = -placement.angleRadians;
 
-    const base = template.type === "BASE";
+    const base = standsOnFloor(template.type);
     const boxBottom = base ? this.toeKickHeightMm : 0;
     const boxHeight = cabinet.heightMm - boxBottom;
     const boxDepth = cabinet.depthMm - FRONT_THICKNESS_MM;
@@ -229,8 +230,9 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     for (const front of fronts(cabinet, template, boxHeight)) {
-      const mesh = box(front.width, front.height, FRONT_THICKNESS_MM, colors.front);
-      mesh.position.set(front.x * MM, (boxBottom + front.y) * MM, (cabinet.depthMm / 2 - FRONT_THICKNESS_MM / 2) * MM);
+      const depth = front.opening ? OPENING_DEPTH_MM : FRONT_THICKNESS_MM;
+      const mesh = box(front.width, front.height, depth, front.opening ? colors.toeKick : colors.front);
+      mesh.position.set(front.x * MM, (boxBottom + front.y) * MM, (cabinet.depthMm / 2 - depth / 2) * MM);
       group.add(mesh);
     }
 
@@ -377,28 +379,34 @@ function box(widthMm: number, heightMm: number, depthMm: number, color: string):
 }
 
 /**
- * Door and drawer fronts in the Cabinet's frame: x is the centre along the
- * Wall, y the centre above the box bottom.
+ * Fronts in the Cabinet's frame: x is the centre along the Wall, y the centre
+ * above the box bottom. Openings (for appliances) are drawn as dark recesses.
  */
-function fronts(cabinet: Cabinet, template: CabinetTemplate, boxHeight: number): { x: number; y: number; width: number; height: number }[] {
-  const result: { x: number; y: number; width: number; height: number }[] = [];
+function fronts(cabinet: Cabinet, template: CabinetTemplate, boxHeight: number): { x: number; y: number; width: number; height: number; opening: boolean }[] {
+  const result: { x: number; y: number; width: number; height: number; opening: boolean }[] = [];
+  const width = frontWidth(template, cabinet.widthMm);
+  const blind = template.blindWidthMm ?? 0;
+  const blindOnLeft = cabinet.blindSide === "LEFT";
+  // Centre of the fronted part, from the cabinet's centre.
+  const centre = blind === 0 ? 0 : (blindOnLeft ? blind / 2 : -blind / 2);
 
-  if (template.drawerCount > 0) {
-    const height = (boxHeight - FRONT_GAP_MM * template.drawerCount) / template.drawerCount;
-    for (let index = 0; index < template.drawerCount; index++) {
-      result.push({ x: 0, y: FRONT_GAP_MM / 2 + index * (height + FRONT_GAP_MM) + height / 2, width: cabinet.widthMm - FRONT_GAP_MM, height });
+  for (const row of frontRows(template, boxHeight, FRONT_GAP_MM)) {
+    const y = row.bottomMm + row.heightMm / 2;
+    if (row.kind === "DOOR") {
+      const leaves = doorLeaves(width);
+      const leafWidth = (width - FRONT_GAP_MM * leaves) / leaves;
+      for (let index = 0; index < leaves; index++) {
+        const x = centre - width / 2 + FRONT_GAP_MM / 2 + index * (leafWidth + FRONT_GAP_MM) + leafWidth / 2;
+        result.push({ x, y, width: leafWidth, height: row.heightMm, opening: false });
+      }
+    } else {
+      result.push({ x: centre, y, width: width - FRONT_GAP_MM, height: row.heightMm, opening: row.kind === "OPENING" });
     }
-  } else if (template.doors) {
-    const doors = cabinet.widthMm > DOUBLE_DOOR_MIN_WIDTH_MM ? 2 : 1;
-    const width = (cabinet.widthMm - FRONT_GAP_MM * doors) / doors;
-    for (let index = 0; index < doors; index++) {
-      result.push({
-        x: -cabinet.widthMm / 2 + FRONT_GAP_MM / 2 + index * (width + FRONT_GAP_MM) + width / 2,
-        y: boxHeight / 2,
-        width,
-        height: boxHeight - FRONT_GAP_MM,
-      });
-    }
+  }
+
+  if (blind > 0) {
+    const x = blindOnLeft ? -cabinet.widthMm / 2 + blind / 2 : cabinet.widthMm / 2 - blind / 2;
+    result.push({ x, y: boxHeight / 2, width: blind - FRONT_GAP_MM, height: boxHeight - FRONT_GAP_MM, opening: false });
   }
 
   return result;

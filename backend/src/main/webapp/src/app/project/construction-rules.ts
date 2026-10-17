@@ -1,4 +1,4 @@
-import { Cabinet, CabinetTemplate, Design, Violation, Wall } from "./model/design";
+import { Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
 
 /**
  * The Construction Rules, run in the browser for live feedback while
@@ -52,7 +52,7 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
     if (cabinet.shelfCount < 0 || cabinet.shelfCount > template.maxShelfCount) {
       violations.push(cabinetViolation("SHELF_COUNT_OUT_OF_RANGE", cabinet));
     }
-    if (template.type === "BASE" && Math.abs(cabinet.elevationMm) > TOLERANCE_MM) {
+    if (standsOnFloor(template.type) && Math.abs(cabinet.elevationMm) > TOLERANCE_MM) {
       violations.push(cabinetViolation("BASE_NOT_ON_FLOOR", cabinet));
     } else if (cabinet.elevationMm < -TOLERANCE_MM) {
       violations.push(cabinetViolation("BELOW_FLOOR", cabinet));

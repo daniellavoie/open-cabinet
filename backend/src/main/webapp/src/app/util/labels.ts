@@ -13,10 +13,16 @@ export const PART_ROLE_LABELS: Record<PartRole, string> = {
   SHELF: $localize`:@@partRole.shelf:Tablette`,
   DOOR: $localize`:@@partRole.door:Porte`,
   DRAWER_FRONT: $localize`:@@partRole.drawerFront:Façade de tiroir`,
+  FALSE_FRONT: $localize`:@@partRole.falseFront:Fausse façade`,
+  BLIND_PANEL: $localize`:@@partRole.blindPanel:Panneau d'angle aveugle`,
 };
 
 export const TEMPLATE_LABELS: Record<string, string> = {
   BASE_DOOR: $localize`:@@template.baseDoor:Bas, portes`,
+  BASE_DOOR_DRAWER: $localize`:@@template.baseDoorDrawer:Bas, tiroir et portes`,
+  BASE_BLIND_CORNER: $localize`:@@template.baseBlindCorner:Bas, coin aveugle`,
+  TALL_PANTRY: $localize`:@@template.tallPantry:Colonne garde-manger`,
+  TALL_OVEN: $localize`:@@template.tallOven:Colonne four`,
   BASE_SINK: $localize`:@@template.baseSink:Bas d'évier`,
   BASE_DRAWERS: $localize`:@@template.baseDrawers:Bas, tiroirs`,
   WALL_DOOR: $localize`:@@template.wallDoor:Haut, portes`,

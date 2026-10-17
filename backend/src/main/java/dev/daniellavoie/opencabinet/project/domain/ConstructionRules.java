@@ -85,7 +85,7 @@ public final class ConstructionRules {
 			if (cabinet.getShelfCount() < 0 || cabinet.getShelfCount() > template.getMaxShelfCount()) {
 				violations.add(cabinetViolation(SHELF_COUNT_OUT_OF_RANGE, cabinet));
 			}
-			if (template.getType() == CabinetType.BASE && Math.abs(cabinet.getElevationMm()) > TOLERANCE_MM) {
+			if (template.getType().standsOnFloor() && Math.abs(cabinet.getElevationMm()) > TOLERANCE_MM) {
 				violations.add(cabinetViolation(BASE_NOT_ON_FLOOR, cabinet));
 			} else if (cabinet.getElevationMm() < -TOLERANCE_MM) {
 				violations.add(cabinetViolation(BELOW_FLOOR, cabinet));

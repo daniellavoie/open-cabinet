@@ -102,6 +102,55 @@ class PartGeneratorTest {
 	}
 
 	@Test
+	void sinkHasAFalseFrontAboveItsDoorsAndNoPullOnIt() {
+		var cabinet = Cabinet.builder()
+				.id("c1").templateCode("BASE_SINK").wallId("w1")
+				.widthMm(914.4).heightMm(876.3).depthMm(609.6)
+				.build();
+
+		var set = PartGenerator.generate(cabinet, BASE_SINK, "C1", STANDARD, MATERIALS);
+
+		var boxHeight = 876.3 - 101.6;
+		assertThat(count(set, PartRole.FALSE_FRONT)).isEqualTo(1);
+		assertThat(first(set, PartRole.FALSE_FRONT).getWidthMm()).isEqualTo(152.4);
+		assertThat(count(set, PartRole.DOOR)).isEqualTo(2);
+		assertThat(first(set, PartRole.DOOR).getLengthMm()).isEqualTo(round(boxHeight - 2 * 3 - 152.4));
+		assertThat(set.hardware()).containsEntry(PULL.getId(), 2);
+	}
+
+	@Test
+	void blindCornerFrontsCoverOnlyTheOpenSide() {
+		var cabinet = Cabinet.builder()
+				.id("c1").templateCode("BASE_BLIND_CORNER").wallId("w1")
+				.widthMm(1066.8).heightMm(876.3).depthMm(609.6).shelfCount(1)
+				.build();
+
+		var set = PartGenerator.generate(cabinet, BASE_BLIND_CORNER, "C1", STANDARD, MATERIALS);
+
+		assertThat(count(set, PartRole.DOOR)).as("457.2 mm of front: one leaf").isEqualTo(1);
+		assertThat(first(set, PartRole.DOOR).getWidthMm()).isEqualTo(round(1066.8 - 609.6 - 3));
+		assertThat(first(set, PartRole.BLIND_PANEL).getWidthMm()).isEqualTo(round(609.6 - 3));
+		assertThat(set.hardware()).containsEntry(LEG.getId(), 6);
+	}
+
+	@Test
+	void ovenTowerLeavesTheOpeningEmpty() {
+		var cabinet = Cabinet.builder()
+				.id("c1").templateCode("TALL_OVEN").wallId("w1")
+				.widthMm(762).heightMm(2286).depthMm(609.6).shelfCount(1)
+				.build();
+
+		var set = PartGenerator.generate(cabinet, TALL_OVEN, "C1", STANDARD, MATERIALS);
+
+		assertThat(count(set, PartRole.DOOR)).as("the top door: 762 mm of front makes two leaves").isEqualTo(2);
+		assertThat(first(set, PartRole.DOOR).getLengthMm()).isEqualTo(381);
+		assertThat(count(set, PartRole.DRAWER_FRONT)).isEqualTo(2);
+		assertThat(count(set, PartRole.TOP)).isEqualTo(1);
+		assertThat(count(set, PartRole.STRETCHER)).isZero();
+		assertThat(set.hardware()).containsEntry(SLIDE.getId(), 2).containsEntry(LEG.getId(), 4);
+	}
+
+	@Test
 	void hingeCountGrowsWithDoorHeight() {
 		assertThat(PartGenerator.hingesPerDoor(700)).isEqualTo(2);
 		assertThat(PartGenerator.hingesPerDoor(1200)).isEqualTo(3);

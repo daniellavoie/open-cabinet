@@ -62,6 +62,13 @@
       <label for="cabinetElevation" i18n="@@design.elevation">Hauteur du bas</label>
       <length-input inputId="cabinetElevation" [units]="units" [valueMm]="selected.elevationMm" (valueMmChange)="updateSelected({ elevationMm: $event })" />
     </ng-container>
+    <ng-container *ngIf="(selectedTemplate.blindWidthMm ?? 0) > 0">
+      <label for="cabinetBlindSide" i18n="@@design.blindSide">Côté aveugle</label>
+      <select class="form-select form-select-sm" id="cabinetBlindSide" [ngModel]="selected.blindSide ?? 'RIGHT'" (ngModelChange)="updateSelected({ blindSide: $event })">
+        <option value="LEFT" i18n="@@design.left">Gauche</option>
+        <option value="RIGHT" i18n="@@design.right">Droite</option>
+      </select>
+    </ng-container>
     <ng-container *ngIf="selectedTemplate.maxShelfCount > 0">
       <label for="cabinetShelves" i18n="@@design.shelves">Tablettes</label>
       <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"

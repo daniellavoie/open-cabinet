@@ -2,7 +2,14 @@
   {
     "name": "an empty room is valid",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": []
     },
     "violations": []
@@ -10,11 +17,48 @@
   {
     "name": "a base and a wall cabinet side by side are valid",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "BASE_DRAWERS", "wallId": "w1", "offsetMm": 457.2, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 0 },
-        { "id": "c3", "templateCode": "WALL_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 914.4, "heightMm": 762, "depthMm": 304.8, "elevationMm": 1371.6, "shelfCount": 2 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DRAWERS",
+          "wallId": "w1",
+          "offsetMm": 457.2,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 0
+        },
+        {
+          "id": "c3",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
       ]
     },
     "violations": []
@@ -22,10 +66,37 @@
   {
     "name": "values within the tolerance pass",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 914.4, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 914.4,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": -0.4, "widthMm": 457.6, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0.3, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 456.9, "widthMm": 457.8, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": -0.4,
+          "widthMm": 457.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0.3,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 456.9,
+          "widthMm": 457.8,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
       ]
     },
     "violations": []
@@ -34,95 +105,391 @@
     "name": "a wall needs a length and a height",
     "design": {
       "walls": [
-        { "id": "w1", "lengthMm": 0, "heightMm": 2438.4, "angleToNextDegrees": 90 },
-        { "id": "w2", "lengthMm": 3000, "heightMm": -1, "angleToNextDegrees": 90 }
+        {
+          "id": "w1",
+          "lengthMm": 0,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3000,
+          "heightMm": -1,
+          "angleToNextDegrees": 90
+        }
       ],
       "cabinets": []
     },
     "violations": [
-      { "code": "INVALID_WALL", "wallId": "w1", "cabinetId": null },
-      { "code": "INVALID_WALL", "wallId": "w2", "cabinetId": null }
+      {
+        "code": "INVALID_WALL",
+        "wallId": "w1",
+        "cabinetId": null
+      },
+      {
+        "code": "INVALID_WALL",
+        "wallId": "w2",
+        "cabinetId": null
+      }
     ]
   },
   {
     "name": "a cabinet must reference a known wall and template",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "missing", "offsetMm": 0, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "UNKNOWN", "wallId": "w1", "offsetMm": 0, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "missing",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "UNKNOWN",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
       ]
     },
     "violations": [
-      { "code": "UNKNOWN_WALL", "wallId": "missing", "cabinetId": "c1" },
-      { "code": "UNKNOWN_TEMPLATE", "wallId": "w1", "cabinetId": "c2" }
+      {
+        "code": "UNKNOWN_WALL",
+        "wallId": "missing",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "UNKNOWN_TEMPLATE",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      }
     ]
   },
   {
     "name": "dimensions and shelves must stay within the template's ranges",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 200, "heightMm": 1000, "depthMm": 800, "elevationMm": 0, "shelfCount": 5 },
-        { "id": "c2", "templateCode": "BASE_SINK", "wallId": "w1", "offsetMm": 1000, "widthMm": 914.4, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 200,
+          "heightMm": 1000,
+          "depthMm": 800,
+          "elevationMm": 0,
+          "shelfCount": 5
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_SINK",
+          "wallId": "w1",
+          "offsetMm": 1000,
+          "widthMm": 914.4,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
       ]
     },
     "violations": [
-      { "code": "WIDTH_OUT_OF_RANGE", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "HEIGHT_OUT_OF_RANGE", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "DEPTH_OUT_OF_RANGE", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "SHELF_COUNT_OUT_OF_RANGE", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "SHELF_COUNT_OUT_OF_RANGE", "wallId": "w1", "cabinetId": "c2" }
+      {
+        "code": "WIDTH_OUT_OF_RANGE",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "HEIGHT_OUT_OF_RANGE",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "DEPTH_OUT_OF_RANGE",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "SHELF_COUNT_OUT_OF_RANGE",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "SHELF_COUNT_OUT_OF_RANGE",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      }
     ]
   },
   {
     "name": "base cabinets stand on the floor and wall cabinets stay above it",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 100, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "WALL_DOOR", "wallId": "w1", "offsetMm": 1000, "widthMm": 609.6, "heightMm": 762, "depthMm": 304.8, "elevationMm": -10, "shelfCount": 2 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 100,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 1000,
+          "widthMm": 609.6,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": -10,
+          "shelfCount": 2
+        }
       ]
     },
     "violations": [
-      { "code": "BASE_NOT_ON_FLOOR", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "BELOW_FLOOR", "wallId": "w1", "cabinetId": "c2" }
+      {
+        "code": "BASE_NOT_ON_FLOOR",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "BELOW_FLOOR",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      }
     ]
   },
   {
     "name": "cabinets must fit along and under the wall",
     "design": {
-      "walls": [{ "id": "w1", "lengthMm": 1000, "heightMm": 2000, "angleToNextDegrees": 90 }],
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 1000,
+          "heightMm": 2000,
+          "angleToNextDegrees": 90
+        }
+      ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": -10, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 600, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c3", "templateCode": "WALL_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 609.6, "heightMm": 762, "depthMm": 304.8, "elevationMm": 1371.6, "shelfCount": 2 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": -10,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 600,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c3",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
       ]
     },
     "violations": [
-      { "code": "OUTSIDE_WALL", "wallId": "w1", "cabinetId": "c1" },
-      { "code": "OUTSIDE_WALL", "wallId": "w1", "cabinetId": "c2" },
-      { "code": "ABOVE_WALL", "wallId": "w1", "cabinetId": "c3" }
+      {
+        "code": "OUTSIDE_WALL",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "OUTSIDE_WALL",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      },
+      {
+        "code": "ABOVE_WALL",
+        "wallId": "w1",
+        "cabinetId": "c3"
+      }
     ]
   },
   {
     "name": "overlapping cabinets on the same wall are reported once, on the later cabinet",
     "design": {
       "walls": [
-        { "id": "w1", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 },
-        { "id": "w2", "lengthMm": 3657.6, "heightMm": 2438.4, "angleToNextDegrees": 90 }
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
       ],
       "cabinets": [
-        { "id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 609.6, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c2", "templateCode": "BASE_DOOR", "wallId": "w1", "offsetMm": 300, "widthMm": 609.6, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c3", "templateCode": "BASE_DRAWERS", "wallId": "w1", "offsetMm": 500, "widthMm": 457.2, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 0 },
-        { "id": "c4", "templateCode": "BASE_DOOR", "wallId": "w2", "offsetMm": 0, "widthMm": 609.6, "heightMm": 876.3, "depthMm": 609.6, "elevationMm": 0, "shelfCount": 1 },
-        { "id": "c5", "templateCode": "WALL_DOOR", "wallId": "w1", "offsetMm": 0, "widthMm": 609.6, "heightMm": 762, "depthMm": 304.8, "elevationMm": 1371.6, "shelfCount": 2 }
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 300,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c3",
+          "templateCode": "BASE_DRAWERS",
+          "wallId": "w1",
+          "offsetMm": 500,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 0
+        },
+        {
+          "id": "c4",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c5",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
       ]
     },
     "violations": [
-      { "code": "OVERLAP", "wallId": "w1", "cabinetId": "c2" },
-      { "code": "OVERLAP", "wallId": "w1", "cabinetId": "c3" }
+      {
+        "code": "OVERLAP",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      },
+      {
+        "code": "OVERLAP",
+        "wallId": "w1",
+        "cabinetId": "c3"
+      }
+    ]
+  },
+  {
+    "name": "tall cabinets stand on the floor",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "TALL_PANTRY",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 2286,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 5
+        },
+        {
+          "id": "c2",
+          "templateCode": "TALL_OVEN",
+          "wallId": "w1",
+          "offsetMm": 700,
+          "widthMm": 762,
+          "heightMm": 2286,
+          "depthMm": 609.6,
+          "elevationMm": 50,
+          "shelfCount": 1
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "BASE_NOT_ON_FLOOR",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      }
     ]
   }
 ]
