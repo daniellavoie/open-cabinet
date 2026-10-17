@@ -14,26 +14,38 @@ const TOE_KICK_SETBACK_MM = 75;
 const OPENING_DEPTH_MM = 40;
 const CLICK_TOLERANCE_PX = 4;
 const OPENING_THICKNESS_MM = 20;
+const PANEL_THICKNESS_MM = 19;
+const SHELF_SETBACK_MM = 25;
 
 /**
- * A Cabinet, Opening or Appliance dragged along its Wall.
+ * A Cabinet, Opening or Appliance dragged along its Wall, or with
+ * `dividerIndex`, one of a Cabinet's dividers, `offsetMm` from its left side.
  */
 export interface ItemMove {
   id: string;
   offsetMm: number;
   done: boolean;
+  dividerIndex?: number;
 }
 
 interface Drag {
   id: string;
   placement: WallPlacement;
   grabAlongMm: number;
+  dividerIndex?: number;
+}
+
+interface Pick {
+  id: string;
+  dividerIndex?: number;
 }
 
 /**
  * The Room, its Openings, Appliances and Cabinets in 3D. Each is picked by
  * clicking and dragged along its Wall; the editor applies the move and the
- * Construction Rules, then hands back the updated design.
+ * Construction Rules, then hands back the updated design. The selected
+ * Cabinet turns see-through to show its dividers and shelves, and its
+ * dividers can be dragged too.
  */
 @Component({
   selector: "room-view",
@@ -281,9 +293,14 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     const boxHeight = cabinet.heightMm - boxBottom;
     const boxDepth = cabinet.depthMm - FRONT_THICKNESS_MM;
 
-    const carcass = box(cabinet.widthMm, boxHeight, boxDepth, colors.carcass);
+    const interior = cabinet.id === this.selectedId;
+    const carcass = box(cabinet.widthMm, boxHeight, boxDepth, colors.carcass, interior ? 0.3 : 1);
     carcass.position.set(0, (boxBottom + boxHeight / 2) * MM, -FRONT_THICKNESS_MM / 2 * MM);
     group.add(carcass);
+
+    if (interior) {
+      this.addInterior(group, cabinet, boxBottom, boxHeight, boxDepth, colors);
+    }
 
     if (base && boxBottom > 0) {
       const toeKick = box(cabinet.widthMm, boxBottom, boxDepth - TOE_KICK_SETBACK_MM, colors.toeKick);
@@ -293,13 +310,41 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     for (const front of fronts(cabinet, template, boxHeight)) {
       const depth = front.opening ? OPENING_DEPTH_MM : FRONT_THICKNESS_MM;
-      const mesh = box(front.width, front.height, depth, front.opening ? colors.toeKick : colors.front);
+      const mesh = box(front.width, front.height, depth, front.opening ? colors.toeKick : colors.front, interior && !front.opening ? 0.25 : 1);
       mesh.position.set(front.x * MM, (boxBottom + front.y) * MM, (cabinet.depthMm / 2 - depth / 2) * MM);
       group.add(mesh);
     }
 
     this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);
     return tagged(group, cabinet.id);
+  }
+
+  /**
+   * Dividers, tagged with their index for dragging, and the shelves of each
+   * section, evenly spaced.
+   */
+  private addInterior(group: THREE.Group, cabinet: Cabinet, boxBottom: number, boxHeight: number, boxDepth: number, colors: Colors) {
+    const dividers = cabinet.dividerPositionsMm ?? [];
+    const inside = boxHeight - 2 * PANEL_THICKNESS_MM;
+    const z = -FRONT_THICKNESS_MM / 2 * MM;
+    dividers.forEach((position, index) => {
+      const divider = box(PANEL_THICKNESS_MM, inside, boxDepth, colors.front);
+      divider.position.set((position - cabinet.widthMm / 2) * MM, (boxBottom + boxHeight / 2) * MM, z);
+      divider.userData["dividerIndex"] = index;
+      group.add(divider);
+    });
+
+    const bounds = [PANEL_THICKNESS_MM / 2, ...dividers, cabinet.widthMm - PANEL_THICKNESS_MM / 2];
+    for (let section = 0; section < bounds.length - 1; section++) {
+      const left = bounds[section] + PANEL_THICKNESS_MM / 2;
+      const right = bounds[section + 1] - PANEL_THICKNESS_MM / 2;
+      for (let shelf = 1; shelf <= cabinet.shelfCount; shelf++) {
+        const mesh = box(Math.max(right - left, 1), PANEL_THICKNESS_MM, boxDepth - SHELF_SETBACK_MM, colors.carcass);
+        const y = boxBottom + PANEL_THICKNESS_MM + inside * shelf / (cabinet.shelfCount + 1);
+        mesh.position.set(((left + right) / 2 - cabinet.widthMm / 2) * MM, y * MM, z - SHELF_SETBACK_MM / 2 * MM);
+        group.add(mesh);
+      }
+    }
   }
 
   private clearContent() {
@@ -314,10 +359,10 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private onPointerDown(event: PointerEvent) {
     this.pointerDown = { x: event.clientX, y: event.clientY };
-    const id = this.pick(event);
+    const picked = this.pick(event);
     const item: OnWall | undefined = [...this.design.cabinets, ...this.design.openings ?? [], ...this.design.appliances ?? []]
-      .find(candidate => candidate.id === id);
-    if (!item) {
+      .find(candidate => candidate.id === picked?.id);
+    if (!picked || !item) {
       return;
     }
 
@@ -326,7 +371,12 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.ngZone.run(() => this.selectItem.emit(item.id));
 
     if (placement && along !== null && !this.readOnly) {
-      this.drag = { id: item.id, placement, grabAlongMm: along - item.offsetMm };
+      const dividerIndex = picked.dividerIndex;
+      const cabinet = this.design.cabinets.find(candidate => candidate.id === item.id);
+      const grabbed = dividerIndex !== undefined && cabinet
+        ? item.offsetMm + (cabinet.dividerPositionsMm ?? [])[dividerIndex]
+        : item.offsetMm;
+      this.drag = { id: item.id, placement, grabAlongMm: along - grabbed, dividerIndex };
       this.controls!.enabled = false;
       this.canvasRef.nativeElement.setPointerCapture(event.pointerId);
     }
@@ -338,7 +388,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
     const along = this.alongWall(event, this.drag.placement);
     if (along !== null) {
-      const move = { id: this.drag.id, offsetMm: along - this.drag.grabAlongMm, done: false };
+      const move = this.dragMove(this.drag, along, false);
       this.ngZone.run(() => this.move.emit(move));
     }
   }
@@ -351,7 +401,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.canvasRef.nativeElement.releasePointerCapture(event.pointerId);
       const along = this.alongWall(event, drag.placement);
       if (along !== null) {
-        const move = { id: drag.id, offsetMm: along - drag.grabAlongMm, done: true };
+        const move = this.dragMove(drag, along, true);
         this.ngZone.run(() => this.move.emit(move));
       }
     } else if (this.pointerDown
@@ -362,11 +412,27 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.pointerDown = null;
   }
 
-  private pick(event: PointerEvent): string | null {
+  private dragMove(drag: Drag, along: number, done: boolean): ItemMove {
+    if (drag.dividerIndex === undefined) {
+      return { id: drag.id, offsetMm: along - drag.grabAlongMm, done };
+    }
+    const cabinet = this.design.cabinets.find(candidate => candidate.id === drag.id)!;
+    return { id: drag.id, offsetMm: along - drag.grabAlongMm - cabinet.offsetMm, done, dividerIndex: drag.dividerIndex };
+  }
+
+  /**
+   * What is under the pointer: the nearest thing, or a divider of the
+   * selected Cabinet, seen through its see-through box.
+   */
+  private pick(event: PointerEvent): Pick | null {
     this.aim(event);
-    const hit = this.raycaster.intersectObjects(this.content.children, true)
-      .find(intersection => intersection.object.userData["pickId"]);
-    return hit ? hit.object.userData["pickId"] as string : null;
+    const hits = this.raycaster.intersectObjects(this.content.children, true)
+      .filter(intersection => intersection.object.userData["pickId"]);
+    const divider = hits.find(intersection => intersection.object.userData["dividerIndex"] !== undefined);
+    if (divider) {
+      return { id: divider.object.userData["pickId"] as string, dividerIndex: divider.object.userData["dividerIndex"] as number };
+    }
+    return hits.length > 0 ? { id: hits[0].object.userData["pickId"] as string } : null;
   }
 
   /**
@@ -439,10 +505,10 @@ function tagged(group: THREE.Group, id: string): THREE.Group {
   return group;
 }
 
-function box(widthMm: number, heightMm: number, depthMm: number, color: string): THREE.Mesh {
+function box(widthMm: number, heightMm: number, depthMm: number, color: string, opacity = 1): THREE.Mesh {
   return new THREE.Mesh(
     new THREE.BoxGeometry(widthMm * MM, heightMm * MM, depthMm * MM),
-    new THREE.MeshStandardMaterial({ color }),
+    new THREE.MeshStandardMaterial({ color, transparent: opacity < 1, opacity, depthWrite: opacity === 1 }),
   );
 }
 

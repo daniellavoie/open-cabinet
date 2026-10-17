@@ -232,6 +232,10 @@
           <context context-type="linenumber">96,98</context>
         </context-group>
         <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">133,135</context>
+        </context-group>
+        <context-group purpose="location">
           <context context-type="sourcefile">src/app/quote/quotes/quotes.component.html</context>
           <context context-type="linenumber">23,25</context>
         </context-group>
@@ -829,7 +833,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">138,139</context>
+          <context context-type="linenumber">148,149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.length" datatype="html">
@@ -1037,18 +1041,46 @@
           <context context-type="linenumber">119,121</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="design.shelves" datatype="html">
-        <source>Tablettes</source>
-        <target>Shelves</target><context-group purpose="location">
+      <trans-unit id="design.shelvesPerSection" datatype="html">
+        <source>Tablettes par section</source>
+        <target>Shelves per section</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
           <context context-type="linenumber">123,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.dividers" datatype="html">
+        <source>Séparateurs</source>
+        <target>Dividers</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">129,130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.dividerNumber" datatype="html">
+        <source>Séparateur <x id="INTERPOLATION" equiv-text="{{ index + 1 }}" /></source>
+        <target>Divider <x id="INTERPOLATION" equiv-text="{{ index + 1 }}" /></target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">131,132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.dividerHint" datatype="html">
+        <source>Distance depuis le côté gauche. Glissez les séparateurs dans la vue 3D.</source>
+        <target>Distance from the left side. Drag dividers in the 3D view.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">135,136</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.addDivider" datatype="html">
+        <source>Ajouter un séparateur</source>
+        <target>Add a divider</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">136,140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="design.violations" datatype="html">
         <source>Règles de construction</source>
         <target>Construction rules</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
-          <context context-type="linenumber">133,135</context>
+          <context context-type="linenumber">143,145</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.back" datatype="html">
@@ -1160,28 +1192,28 @@
         <source>Le serveur a refusé la conception : corrigez les règles de construction.</source>
         <target>The server rejected the design: fix the construction rules.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">228</context>
+          <context context-type="linenumber">244</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.lockLost" datatype="html">
         <source>Quelqu'un d'autre modifie ce projet : vos changements n'ont pas été enregistrés.</source>
         <target>Someone else is editing this project: your changes were not saved.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">230</context>
+          <context context-type="linenumber">246</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.saveError" datatype="html">
         <source>Impossible d'enregistrer le projet.</source>
         <target>Could not save the project.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">233</context>
+          <context context-type="linenumber">249</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.outputError" datatype="html">
         <source>Impossible de calculer la liste de coupe.</source>
         <target>Could not compute the cut list.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">247</context>
+          <context context-type="linenumber">263</context>
         </context-group>
       </trans-unit>
       <trans-unit id="projects.title" datatype="html">
@@ -1812,312 +1844,333 @@
           <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="partRole.divider" datatype="html">
+        <source>Séparateur</source>
+        <target>Divider</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="template.baseDoor" datatype="html">
         <source>Bas, portes</source>
         <target>Base, doors</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.baseDoorDrawer" datatype="html">
         <source>Bas, tiroir et portes</source>
         <target>Base, drawer and doors</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.baseBlindCorner" datatype="html">
         <source>Bas, coin aveugle</source>
         <target>Base, blind corner</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.tallPantry" datatype="html">
         <source>Colonne garde-manger</source>
         <target>Tall pantry</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">25</context>
+          <context context-type="linenumber">26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.tallOven" datatype="html">
         <source>Colonne four</source>
         <target>Oven tower</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.baseSink" datatype="html">
         <source>Bas d'évier</source>
         <target>Sink base</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.baseDrawers" datatype="html">
         <source>Bas, tiroirs</source>
         <target>Base, drawers</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="template.wallDoor" datatype="html">
         <source>Haut, portes</source>
         <target>Wall, doors</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">29</context>
+          <context context-type="linenumber">30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.invalidWall" datatype="html">
         <source>Le mur doit avoir une longueur et une hauteur.</source>
         <target>A wall needs a length and a height.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.unknownWall" datatype="html">
         <source>Le caisson est sur un mur qui n'existe plus.</source>
         <target>The cabinet is on a wall that no longer exists.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.unknownTemplate" datatype="html">
         <source>Le modèle du caisson est inconnu.</source>
         <target>The cabinet's template is unknown.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">36</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.width" datatype="html">
         <source>La largeur est hors des limites du modèle.</source>
         <target>The width is outside the template's limits.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.height" datatype="html">
         <source>La hauteur est hors des limites du modèle.</source>
         <target>The height is outside the template's limits.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">37</context>
+          <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.depth" datatype="html">
         <source>La profondeur est hors des limites du modèle.</source>
         <target>The depth is outside the template's limits.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.shelves" datatype="html">
         <source>Le nombre de tablettes est hors des limites du modèle.</source>
         <target>The number of shelves is outside the template's limits.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.baseNotOnFloor" datatype="html">
         <source>Un caisson du bas doit reposer au sol.</source>
         <target>A base cabinet must stand on the floor.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.belowFloor" datatype="html">
         <source>Le caisson descend sous le plancher.</source>
         <target>The cabinet goes below the floor.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.outsideWall" datatype="html">
         <source>Le caisson dépasse du mur.</source>
         <target>The cabinet extends past the wall.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.aboveWall" datatype="html">
         <source>Le caisson dépasse le plafond.</source>
         <target>The cabinet goes above the ceiling.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">43</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.overlap" datatype="html">
         <source>Chevauche un autre élément du même genre.</source>
         <target>Overlaps another item of the same kind.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.itemOutsideWall" datatype="html">
         <source>Dépasse du mur.</source>
         <target>Extends past the wall.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.blocksOpening" datatype="html">
         <source>Le caisson bloque une fenêtre ou une porte.</source>
         <target>The cabinet blocks a window or doorway.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.overlapsAppliance" datatype="html">
         <source>Le caisson chevauche un électroménager.</source>
         <target>The cabinet overlaps an appliance.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.cornerOverlap" datatype="html">
         <source>Le caisson heurte un caisson ou un électroménager du mur voisin.</source>
         <target>The cabinet runs into a cabinet or appliance on the next wall.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="violation.dividersNotAllowed" datatype="html">
+        <source>Les séparateurs ne vont que derrière des portes.</source>
+        <target>Dividers only go behind doors.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="violation.sectionTooNarrow" datatype="html">
+        <source>Une section entre séparateurs fait moins de 6 po (152 mm).</source>
+        <target>A section between dividers is narrower than 6 in (152 mm).</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="violation.frontBlocked" datatype="html">
         <source>Un élément du mur voisin bloque les portes ou tiroirs du caisson.</source>
         <target>Something on the next wall blocks the cabinet's doors or drawers.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="openingKind.window" datatype="html">
         <source>Fenêtre</source>
         <target>Window</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">53</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="openingKind.doorway" datatype="html">
         <source>Porte</source>
         <target>Doorway</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">54</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="applianceKind.fridge" datatype="html">
         <source>Réfrigérateur</source>
         <target>Fridge</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="applianceKind.range" datatype="html">
         <source>Cuisinière</source>
         <target>Range</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="applianceKind.dishwasher" datatype="html">
         <source>Lave-vaisselle</source>
         <target>Dishwasher</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="applianceKind.hood" datatype="html">
         <source>Hotte</source>
         <target>Hood</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quoteStatus.draft" datatype="html">
         <source>Brouillon</source>
         <target>Draft</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quoteStatus.sent" datatype="html">
         <source>Envoyée</source>
         <target>Sent</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quoteStatus.accepted" datatype="html">
         <source>Acceptée</source>
         <target>Accepted</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quoteStatus.declined" datatype="html">
         <source>Refusée</source>
         <target>Declined</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quoteStatus.superseded" datatype="html">
         <source>Remplacée</source>
         <target>Superseded</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="labourMethod.operation" datatype="html">
         <source>Par opération</source>
         <target>Per operation</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="labourMethod.linearFoot" datatype="html">
         <source>Au pied linéaire</source>
         <target>Per linear foot</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">74</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="labourMethod.hourly" datatype="html">
         <source>À l'heure</source>
         <target>Hourly</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="materialKind.sheet" datatype="html">
         <source>Panneau</source>
         <target>Sheet</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="materialKind.edgeBanding" datatype="html">
         <source>Bande de chant</source>
         <target>Edge banding</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="materialKind.hardware" datatype="html">
         <source>Quincaillerie</source>
         <target>Hardware</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="role.owner" datatype="html">
         <source>Propriétaire</source>
         <target>Owner</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="role.designer" datatype="html">
         <source>Concepteur</source>
         <target>Designer</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/util/labels.ts</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="startup.title" datatype="html">

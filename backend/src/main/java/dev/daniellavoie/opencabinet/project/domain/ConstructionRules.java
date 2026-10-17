@@ -44,6 +44,8 @@ public final class ConstructionRules {
 	public static final String OVERLAPS_APPLIANCE = "OVERLAPS_APPLIANCE";
 	public static final String CORNER_OVERLAP = "CORNER_OVERLAP";
 	public static final String FRONT_BLOCKED = "FRONT_BLOCKED";
+	public static final String DIVIDERS_NOT_ALLOWED = "DIVIDERS_NOT_ALLOWED";
+	public static final String SECTION_TOO_NARROW = "SECTION_TOO_NARROW";
 
 	/**
 	 * Slack allowed on every comparison, in millimetres, so values rounded for display still pass.
@@ -54,6 +56,11 @@ public final class ConstructionRules {
 	 * Depth of the strip in front of a Cabinet's fronts that nothing may stand in.
 	 */
 	static final double FRONT_STRIP_MM = 2;
+
+	/**
+	 * Narrowest section between dividers (or a divider and a side), centre to centre.
+	 */
+	static final double MIN_SECTION_MM = 152.4;
 
 	private ConstructionRules() {
 	}
@@ -119,6 +126,11 @@ public final class ConstructionRules {
 			}
 			if (cabinet.getShelfCount() < 0 || cabinet.getShelfCount() > template.getMaxShelfCount()) {
 				violations.add(cabinetViolation(SHELF_COUNT_OUT_OF_RANGE, cabinet));
+			}
+			if (!cabinet.dividers().isEmpty() && !template.allowsDividers()) {
+				violations.add(cabinetViolation(DIVIDERS_NOT_ALLOWED, cabinet));
+			} else if (sectionTooNarrow(cabinet)) {
+				violations.add(cabinetViolation(SECTION_TOO_NARROW, cabinet));
 			}
 			if (template.getType().standsOnFloor() && Math.abs(cabinet.getElevationMm()) > TOLERANCE_MM) {
 				violations.add(cabinetViolation(BASE_NOT_ON_FLOOR, cabinet));
@@ -252,6 +264,17 @@ public final class ConstructionRules {
 			double heightMm) {
 		return intersect(cabinet.getOffsetMm(), cabinet.getWidthMm(), offsetMm, widthMm)
 				&& intersect(cabinet.getElevationMm(), cabinet.getHeightMm(), elevationMm, heightMm);
+	}
+
+	private static boolean sectionTooNarrow(Cabinet cabinet) {
+		var previous = 0d;
+		for (var position : cabinet.dividers()) {
+			if (position == null || position - previous < MIN_SECTION_MM - TOLERANCE_MM) {
+				return true;
+			}
+			previous = position;
+		}
+		return !cabinet.dividers().isEmpty() && cabinet.getWidthMm() - previous < MIN_SECTION_MM - TOLERANCE_MM;
 	}
 
 	private static boolean outsideWall(double offsetMm, double widthMm, double elevationMm, double heightMm,

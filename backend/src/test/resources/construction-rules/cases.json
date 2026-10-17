@@ -944,5 +944,110 @@
         "cabinetId": "c1"
       }
     ]
+  },
+  {
+    "name": "dividers fit behind doors only, with sections at least 6 inches wide",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            304.8,
+            609.6
+          ]
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR_DRAWER",
+          "wallId": "w1",
+          "offsetMm": 914.4,
+          "widthMm": 914.4,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            457.2
+          ]
+        },
+        {
+          "id": "c3",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 1828.8,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            100
+          ]
+        },
+        {
+          "id": "c4",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 2438.4,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            400,
+            300
+          ]
+        },
+        {
+          "id": "c5",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 3048,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            152.2,
+            457.4
+          ]
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "DIVIDERS_NOT_ALLOWED",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      },
+      {
+        "code": "SECTION_TOO_NARROW",
+        "wallId": "w1",
+        "cabinetId": "c3"
+      },
+      {
+        "code": "SECTION_TOO_NARROW",
+        "wallId": "w1",
+        "cabinetId": "c4"
+      }
+    ]
   }
 ]

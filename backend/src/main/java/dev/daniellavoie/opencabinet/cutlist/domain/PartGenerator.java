@@ -24,7 +24,8 @@ import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
  * The box is built from two full-height sides with the bottom and top (or two stretchers on base
  * cabinets) between them, and the back applied over the whole rear. Base and tall cabinets stand on
  * legs, so their box is the cabinet height minus the toe kick. Fronts are full overlay and follow
- * the template's front rows ({@link FrontLayout}).
+ * the template's front rows ({@link FrontLayout}). Dividers stand between the bottom and the top (or
+ * stretchers) and split the interior into sections, each with its own shelves.
  */
 final class PartGenerator {
 	static final double STRETCHER_WIDTH_MM = 101.6;
@@ -67,10 +68,19 @@ final class PartGenerator {
 		}
 		builder.add(PartRole.BACK, back, width, boxHeight, 0, 0, null, 1);
 
+		var dividers = cabinet.dividers();
+		if (!dividers.isEmpty()) {
+			builder.add(PartRole.DIVIDER, carcass, boxHeight - 2 * t, carcassDepth, 1, 0,
+					standard.getCarcassEdgeBandingId(), dividers.size());
+		}
+
 		if (cabinet.getShelfCount() > 0) {
-			builder.add(PartRole.SHELF, carcass, innerWidth - SHELF_SIDE_CLEARANCE_MM,
-					carcassDepth - SHELF_SETBACK_MM, 1, 0, standard.getCarcassEdgeBandingId(), cabinet.getShelfCount());
-			add(hardware, standard.getShelfPinId(), 4 * cabinet.getShelfCount());
+			for (var sectionWidth : sectionWidths(width, t, dividers)) {
+				builder.add(PartRole.SHELF, carcass, sectionWidth - SHELF_SIDE_CLEARANCE_MM,
+						carcassDepth - SHELF_SETBACK_MM, 1, 0, standard.getCarcassEdgeBandingId(),
+						cabinet.getShelfCount());
+				add(hardware, standard.getShelfPinId(), 4 * cabinet.getShelfCount());
+			}
 		}
 
 		var frontWidth = FrontLayout.frontWidth(template, width);
@@ -110,6 +120,21 @@ final class PartGenerator {
 		}
 
 		return new PartSet(parts, hardware);
+	}
+
+	/**
+	 * Clear width of each section, left to right, between the sides and dividers of thickness
+	 * {@code t}.
+	 */
+	static List<Double> sectionWidths(double width, double t, List<Double> dividers) {
+		var widths = new ArrayList<Double>();
+		var left = t;
+		for (var position : dividers) {
+			widths.add(position - t / 2 - left);
+			left = position + t / 2;
+		}
+		widths.add(width - t - left);
+		return widths;
 	}
 
 	static int hingesPerDoor(double doorHeightMm) {

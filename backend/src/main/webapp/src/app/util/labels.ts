@@ -16,6 +16,7 @@ export const PART_ROLE_LABELS: Record<PartRole, string> = {
   DRAWER_FRONT: $localize`:@@partRole.drawerFront:Façade de tiroir`,
   FALSE_FRONT: $localize`:@@partRole.falseFront:Fausse façade`,
   BLIND_PANEL: $localize`:@@partRole.blindPanel:Panneau d'angle aveugle`,
+  DIVIDER: $localize`:@@partRole.divider:Séparateur`,
 };
 
 export const TEMPLATE_LABELS: Record<string, string> = {
@@ -46,6 +47,8 @@ export const VIOLATION_LABELS: Record<string, string> = {
   BLOCKS_OPENING: $localize`:@@violation.blocksOpening:Le caisson bloque une fenêtre ou une porte.`,
   OVERLAPS_APPLIANCE: $localize`:@@violation.overlapsAppliance:Le caisson chevauche un électroménager.`,
   CORNER_OVERLAP: $localize`:@@violation.cornerOverlap:Le caisson heurte un caisson ou un électroménager du mur voisin.`,
+  DIVIDERS_NOT_ALLOWED: $localize`:@@violation.dividersNotAllowed:Les séparateurs ne vont que derrière des portes.`,
+  SECTION_TOO_NARROW: $localize`:@@violation.sectionTooNarrow:Une section entre séparateurs fait moins de 6 po (152 mm).`,
   FRONT_BLOCKED: $localize`:@@violation.frontBlocked:Un élément du mur voisin bloque les portes ou tiroirs du caisson.`,
 };
 

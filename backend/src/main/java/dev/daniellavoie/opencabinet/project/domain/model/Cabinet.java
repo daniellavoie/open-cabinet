@@ -1,5 +1,7 @@
 package dev.daniellavoie.opencabinet.project.domain.model;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -25,6 +27,16 @@ public class Cabinet {
 	 * Which side of a blind corner Cabinet is left without fronts.
 	 */
 	Side blindSide;
+	/**
+	 * Vertical dividers splitting the interior into sections, as the distance from the Cabinet's
+	 * left side to each divider's centre, left to right. Each section gets {@code shelfCount}
+	 * shelves.
+	 */
+	List<Double> dividerPositionsMm;
+
+	public List<Double> dividers() {
+		return dividerPositionsMm == null ? List.of() : dividerPositionsMm;
+	}
 
 	public Side effectiveBlindSide() {
 		return blindSide == null ? Side.RIGHT : blindSide;

@@ -16,9 +16,9 @@ import { QuotesComponent } from "../../quote/quotes/quotes.component";
 import { ErrorResponse } from "../../util/model/error-response";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
-import { updateCabinet, updateItem } from "../design-edits";
+import { moveDivider, updateCabinet, updateItem } from "../design-edits";
 import { DesignPanelComponent } from "../design-panel/design-panel.component";
-import { CabinetTemplate, Design, Violation } from "../model/design";
+import { Cabinet, CabinetTemplate, Design, Violation } from "../model/design";
 import { Project } from "../model/project";
 import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
@@ -172,6 +172,10 @@ export class ProjectEditorComponent implements OnDestroy {
   onMove(move: ItemMove) {
     const design = this.draft!.design;
     const cabinet = design.cabinets.find(item => item.id === move.id);
+    if (cabinet && move.dividerIndex !== undefined) {
+      this.onDividerMove(cabinet, move.dividerIndex, move.offsetMm);
+      return;
+    }
     const item = cabinet ?? onWall(design).find(candidate => candidate.id === move.id);
     const wall = design.walls.find(candidate => candidate.id === item?.wallId);
     if (!item || !wall) {
@@ -182,6 +186,18 @@ export class ProjectEditorComponent implements OnDestroy {
     const offsetMm = snapOffset(item, move.offsetMm, wall, others, step, SNAP_DISTANCE_MM);
     if (offsetMm !== item.offsetMm) {
       this.setDesign(cabinet ? updateCabinet(design, item.id, { offsetMm }) : updateItem(design, item.id, { offsetMm }));
+    }
+  }
+
+  /**
+   * Dividers snap to the grid; the Construction Rules flag sections left too narrow.
+   */
+  private onDividerMove(cabinet: Cabinet, index: number, positionMm: number) {
+    const step = this.units === "IMPERIAL" ? MM_PER_INCH / 4 : 5;
+    const clamped = Math.min(Math.max(positionMm, 0), cabinet.widthMm);
+    const snapped = Math.round(Math.round(clamped / step) * step * 10) / 10;
+    if (snapped !== (cabinet.dividerPositionsMm ?? [])[index]) {
+      this.setDesign(moveDivider(this.draft!.design, cabinet.id, index, snapped));
     }
   }
 

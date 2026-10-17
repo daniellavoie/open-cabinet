@@ -5,8 +5,8 @@ import { FormsModule } from "@angular/forms";
 import { APPLIANCE_KIND_LABELS, OPENING_KIND_LABELS, TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
-import { addAppliance, addCabinet, addOpening, addWall, ItemChanges, removeCabinet, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
-import { Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Opening, OpeningKind, Violation, Wall } from "../model/design";
+import { addAppliance, addCabinet, addDivider, addOpening, addWall, ItemChanges, moveDivider, removeCabinet, removeDivider, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
+import { allowsDividers, Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Opening, OpeningKind, Violation, Wall } from "../model/design";
 
 const OPENING_KINDS: OpeningKind[] = ["WINDOW", "DOORWAY"];
 const APPLIANCE_KINDS: ApplianceKind[] = ["FRIDGE", "RANGE", "DISHWASHER", "HOOD"];
@@ -26,6 +26,7 @@ const APPLIANCE_KINDS: ApplianceKind[] = ["FRIDGE", "RANGE", "DISHWASHER", "HOOD
 export class DesignPanelComponent implements OnChanges {
   readonly templateLabels = TEMPLATE_LABELS;
   readonly violationLabels = VIOLATION_LABELS;
+  readonly allowsDividers = allowsDividers;
   readonly openingKinds = OPENING_KINDS;
   readonly applianceKinds = APPLIANCE_KINDS;
   readonly itemLabels: Record<string, string> = { ...OPENING_KIND_LABELS, ...APPLIANCE_KIND_LABELS };
@@ -129,6 +130,18 @@ export class DesignPanelComponent implements OnChanges {
 
   updateSelected(changes: Partial<Cabinet>) {
     this.designChange.emit(updateCabinet(this.design, this.selectedId!, changes));
+  }
+
+  addDivider() {
+    this.designChange.emit(addDivider(this.design, this.selectedId!));
+  }
+
+  moveDivider(index: number, positionMm: number) {
+    this.designChange.emit(moveDivider(this.design, this.selectedId!, index, positionMm));
+  }
+
+  removeDivider(index: number) {
+    this.designChange.emit(removeDivider(this.design, this.selectedId!, index));
   }
 
   removeSelected() {

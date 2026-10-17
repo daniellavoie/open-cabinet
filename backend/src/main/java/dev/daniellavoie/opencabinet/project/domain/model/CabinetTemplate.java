@@ -31,4 +31,12 @@ public class CabinetTemplate {
 	int maxShelfCount;
 	List<FrontRow> frontRows;
 	double blindWidthMm;
+
+	/**
+	 * Dividers fit behind doors only: drawers, false fronts and appliance openings span the width.
+	 */
+	public boolean allowsDividers() {
+		return frontRows != null && !frontRows.isEmpty()
+				&& frontRows.stream().allMatch(row -> row.getKind() == FrontKind.DOOR);
+	}
 }

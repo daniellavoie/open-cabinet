@@ -1,7 +1,7 @@
 import templates from "../../../../resources/cabinet-templates.json";
 
 import { checkConstructionRules } from "./construction-rules";
-import { addAppliance, addCabinet, addOpening, addWall, removeItem, removeWall, updateItem } from "./design-edits";
+import { addAppliance, addCabinet, addDivider, addOpening, addWall, moveDivider, removeDivider, removeItem, removeWall, updateItem } from "./design-edits";
 import { CabinetTemplate, Design } from "./model/design";
 
 const TEMPLATES = templates as CabinetTemplate[];
@@ -72,5 +72,20 @@ describe("openings and appliances", () => {
     design = removeWall(design, secondWall);
     expect(design.openings).toEqual([]);
     expect(design.appliances).toEqual([]);
+  });
+});
+
+describe("dividers", () => {
+  it("are added in the widest section, moved and removed", () => {
+    let design = addCabinet(room(), { ...BASE_DOOR, defaultWidthMm: 914.4 }, "w1", TEMPLATES).design;
+    const cabinetId = design.cabinets[0].id;
+    design = addDivider(design, cabinetId);
+    design = addDivider(design, cabinetId);
+    expect(design.cabinets[0].dividerPositionsMm).toEqual([228.6, 457.2]);
+
+    design = moveDivider(design, cabinetId, 0, 300);
+    expect(design.cabinets[0].dividerPositionsMm).toEqual([300, 457.2]);
+    expect(checkConstructionRules(design, TEMPLATES)).toEqual([]);
+    expect(removeDivider(design, cabinetId, 0).cabinets[0].dividerPositionsMm).toEqual([457.2]);
   });
 });

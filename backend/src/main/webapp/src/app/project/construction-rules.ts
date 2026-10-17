@@ -1,4 +1,4 @@
-import { Appliance, Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
+import { allowsDividers, Appliance, Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
 import { layoutWalls, PlanPoint, polygonsOverlap, wallRectangle, WallPlacement } from "./room-layout";
 
 interface Placed {
@@ -21,6 +21,11 @@ export const TOLERANCE_MM = 0.5;
  * Depth of the strip in front of a Cabinet's fronts that nothing may stand in.
  */
 const FRONT_STRIP_MM = 2;
+
+/**
+ * Narrowest section between dividers (or a divider and a side), centre to centre.
+ */
+export const MIN_SECTION_MM = 152.4;
 
 export function checkConstructionRules(design: Design, templates: CabinetTemplate[]): Violation[] {
   const violations: Violation[] = [];
@@ -84,6 +89,11 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
     }
     if (cabinet.shelfCount < 0 || cabinet.shelfCount > template.maxShelfCount) {
       violations.push(cabinetViolation("SHELF_COUNT_OUT_OF_RANGE", cabinet));
+    }
+    if ((cabinet.dividerPositionsMm ?? []).length > 0 && !allowsDividers(template)) {
+      violations.push(cabinetViolation("DIVIDERS_NOT_ALLOWED", cabinet));
+    } else if (sectionTooNarrow(cabinet)) {
+      violations.push(cabinetViolation("SECTION_TOO_NARROW", cabinet));
     }
     if (standsOnFloor(template.type) && Math.abs(cabinet.elevationMm) > TOLERANCE_MM) {
       violations.push(cabinetViolation("BASE_NOT_ON_FLOOR", cabinet));
@@ -206,6 +216,18 @@ function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[
 function covers(first: Placed, second: Placed): boolean {
   return intersect(first.offsetMm, first.widthMm, second.offsetMm, second.widthMm)
     && intersect(first.elevationMm, first.heightMm, second.elevationMm, second.heightMm);
+}
+
+function sectionTooNarrow(cabinet: Cabinet): boolean {
+  const dividers = cabinet.dividerPositionsMm ?? [];
+  let previous = 0;
+  for (const position of dividers) {
+    if (typeof position !== "number" || position - previous < MIN_SECTION_MM - TOLERANCE_MM) {
+      return true;
+    }
+    previous = position;
+  }
+  return dividers.length > 0 && cabinet.widthMm - previous < MIN_SECTION_MM - TOLERANCE_MM;
 }
 
 function outsideWall(item: Placed, wall: Wall): boolean {

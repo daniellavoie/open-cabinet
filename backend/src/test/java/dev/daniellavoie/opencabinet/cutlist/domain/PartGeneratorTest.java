@@ -3,6 +3,7 @@ package dev.daniellavoie.opencabinet.cutlist.domain;
 import static dev.daniellavoie.opencabinet.cutlist.domain.CutListFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -59,6 +60,29 @@ class PartGeneratorTest {
 				.containsEntry(SHELF_PIN.getId(), 4)
 				.containsEntry(PULL.getId(), 1)
 				.containsEntry(LEG.getId(), 4);
+	}
+
+	@Test
+	void dividersSplitTheShelves() {
+		var cabinet = Cabinet.builder()
+				.id("c1").templateCode("WALL_DOOR").wallId("w1")
+				.widthMm(914.4).heightMm(762).depthMm(304.8).elevationMm(1371.6).shelfCount(2)
+				.dividerPositionsMm(List.of(300d))
+				.build();
+
+		var set = PartGenerator.generate(cabinet, WALL_DOOR, "C1", STANDARD, MATERIALS);
+
+		var shelfDepth = 304.8 - 15.9 - 6.4 - 25;
+		var divider = first(set, PartRole.DIVIDER);
+		assertThat(count(set, PartRole.DIVIDER)).isEqualTo(1);
+		assertThat(divider.getLengthMm()).isEqualTo(round(762 - 2 * 15.9));
+		assertThat(divider.getWidthMm()).isEqualTo(round(304.8 - 15.9 - 6.4));
+		assertThat(set.parts().stream().filter(part -> part.getRole() == PartRole.SHELF)
+				.map(part -> part.getLengthMm() == round(shelfDepth) ? part.getWidthMm() : part.getLengthMm()))
+				.as("two shelves per section, each as wide as its section")
+				.containsExactly(round(300 - 15.9 * 1.5 - 2), round(300 - 15.9 * 1.5 - 2),
+						round(914.4 - 300 - 15.9 * 1.5 - 2), round(914.4 - 300 - 15.9 * 1.5 - 2));
+		assertThat(set.hardware()).containsEntry(SHELF_PIN.getId(), 16);
 	}
 
 	@Test

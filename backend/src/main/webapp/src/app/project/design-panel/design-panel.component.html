@@ -120,10 +120,20 @@
       </select>
     </ng-container>
     <ng-container *ngIf="selectedTemplate.maxShelfCount > 0">
-      <label for="cabinetShelves" i18n="@@design.shelves">Tablettes</label>
+      <label for="cabinetShelves" i18n="@@design.shelvesPerSection">Tablettes par section</label>
       <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"
         [ngModel]="selected.shelfCount" (ngModelChange)="updateSelected({ shelfCount: $event })" />
     </ng-container>
+  </div>
+  <div class="dividers" *ngIf="allowsDividers(selectedTemplate)">
+    <h3 i18n="@@design.dividers">Séparateurs</h3>
+    <div class="divider" *ngFor="let position of selected.dividerPositionsMm ?? []; let index = index">
+      <label [for]="'divider' + index" i18n="@@design.dividerNumber">Séparateur {{ index + 1 }}</label>
+      <length-input [inputId]="'divider' + index" [units]="units" [valueMm]="position" (valueMmChange)="moveDivider(index, $event)" />
+      <button class="btn btn-sm btn-link text-danger" (click)="removeDivider(index)" i18n="@@common.remove">Retirer</button>
+    </div>
+    <p class="hint" i18n="@@design.dividerHint">Distance depuis le côté gauche. Glissez les séparateurs dans la vue 3D.</p>
+    <button class="btn btn-sm btn-outline-secondary" (click)="addDivider()" i18n="@@design.addDivider">Ajouter un séparateur</button>
   </div>
 </section>
 

@@ -132,6 +132,40 @@ export function updateCabinet(design: Design, cabinetId: string, changes: Partia
   };
 }
 
+/**
+ * Adds a divider in the middle of the Cabinet's widest section.
+ */
+export function addDivider(design: Design, cabinetId: string): Design {
+  return withDividers(design, cabinetId, (dividers, cabinet) => {
+    const bounds = [0, ...dividers, cabinet.widthMm];
+    let widest = 0;
+    for (let index = 1; index < bounds.length - 1; index++) {
+      if (bounds[index + 1] - bounds[index] > bounds[widest + 1] - bounds[widest]) {
+        widest = index;
+      }
+    }
+    const middle = Math.round((bounds[widest] + bounds[widest + 1]) / 2 * 10) / 10;
+    return [...dividers.slice(0, widest), middle, ...dividers.slice(widest)];
+  });
+}
+
+export function moveDivider(design: Design, cabinetId: string, index: number, positionMm: number): Design {
+  return withDividers(design, cabinetId, dividers => dividers.map((position, at) => at === index ? positionMm : position));
+}
+
+export function removeDivider(design: Design, cabinetId: string, index: number): Design {
+  return withDividers(design, cabinetId, dividers => dividers.filter((_, at) => at !== index));
+}
+
+function withDividers(design: Design, cabinetId: string, change: (dividers: number[], cabinet: Cabinet) => number[]): Design {
+  return {
+    ...design,
+    cabinets: design.cabinets.map(cabinet => cabinet.id === cabinetId
+      ? { ...cabinet, dividerPositionsMm: change(cabinet.dividerPositionsMm ?? [], cabinet) }
+      : cabinet),
+  };
+}
+
 export function removeCabinet(design: Design, cabinetId: string): Design {
   return { ...design, cabinets: design.cabinets.filter(cabinet => cabinet.id !== cabinetId) };
 }

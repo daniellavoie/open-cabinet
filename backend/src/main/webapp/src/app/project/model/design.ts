@@ -35,6 +35,11 @@ export class Cabinet {
    * Which side of a blind corner Cabinet has no fronts; right when unset.
    */
   blindSide?: Side | null;
+  /**
+   * Vertical dividers, as the distance from the Cabinet's left side to each
+   * divider's centre, left to right. Each section gets `shelfCount` shelves.
+   */
+  dividerPositionsMm?: number[] | null;
 }
 
 export type OpeningKind = "WINDOW" | "DOORWAY";
@@ -92,6 +97,14 @@ export class CabinetTemplate {
   maxShelfCount!: number;
   frontRows!: FrontRow[];
   blindWidthMm?: number;
+}
+
+/**
+ * Dividers fit behind doors only: drawers, false fronts and appliance
+ * openings span the width.
+ */
+export function allowsDividers(template: CabinetTemplate): boolean {
+  return template.frontRows.length > 0 && template.frontRows.every(row => row.kind === "DOOR");
 }
 
 /**
