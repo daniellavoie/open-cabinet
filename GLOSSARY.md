@@ -82,6 +82,24 @@ _Avoid_: Validation, constraints
 A construction method where doors mount directly on the cabinet box with no face frame, using the 32 mm hole system.
 _Avoid_: European, Euro-style, full-access
 
+## Design Assistant
+
+**Design Assistant**:
+An AI assistant that Members ask, in conversation, to change a Project's design. It only ever suggests; a Member decides.
+_Avoid_: Bot, AI, copilot, agent
+
+**Conversation**:
+The messages and attachments exchanged with the Design Assistant about one Project, including forwarded emails, kept with the Project for every Member to see.
+_Avoid_: Chat, thread, session
+
+**Design Proposal**:
+A candidate design for a Project, produced by the Design Assistant, that must pass the Construction Rules and lists its open questions and assumptions. It changes nothing until a Member accepts it.
+_Avoid_: Revision, draft, suggestion, version
+
+**Inbox**:
+A Shop's emails, forwarded by its Members, waiting to be matched to a Client and Project.
+_Avoid_: Mailbox, queue
+
 ## Pricing
 
 **Material Catalog**:

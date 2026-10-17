@@ -4,24 +4,22 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 
 ## Current step
 
-**Milestone 3 review, then production.** Milestone 3 (Design depth) is done on `claude/milestone-3`, waiting for review and merge. Milestones 0–2 are merged into `main` (PRs #1, #2 and #3), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
+**Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
-1. Add `KUBECONFIG_BASE64` and `GHCR_PAT` to the `open-cabinet-production` GitHub environment.
-2. Create the `open-cabinet` realm and `open-cabinet-web` client: [`docs/operations/keycloak-realm.md`](operations/keycloak-realm.md).
-3. Re-run the latest `Build and Deploy` run, then smoke-test `https://cabinet.arendal.ca`: sign in, create a Shop, design a Project, download a Quote PDF.
-
-The next successful deploy ships everything merged into `main`. After Milestone 3 is merged, start Milestone 4.
+1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
+2. Start Milestone 4.
 
 ## Status
 
 | Milestone | Status |
 |---|---|
-| 0. Foundation and delivery | Done (PR #1); deploy pending, see Current step |
-| 1. First end-to-end slice | Done (PR #2); deploy pending, see Current step |
-| 2. Shop-ready | Done (PR #3); deploy pending, see Current step |
-| 3. Design depth | Done (`claude/milestone-3`), in review |
+| 0. Foundation and delivery | Done (PR #1), in production |
+| 1. First end-to-end slice | Done (PR #2), in production |
+| 2. Shop-ready | Done (PR #3), in production |
+| 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | Next |
-| 5. After v1 | Not scheduled |
+| 5. Design Assistant | Planned |
+| 6. After v1 | Not scheduled |
 
 ## 0. Foundation and delivery: done
 
@@ -55,7 +53,7 @@ Follow-ups found while building it:
 - Email delivery for Invitations.
 - The Keycloak login page follows the realm's default language, not the app's.
 
-## 3. Design depth: done, in review
+## 3. Design depth: done
 
 The design freedom ADR 0001 allows: free 3D editing, constrained to buildable Parts.
 
@@ -79,7 +77,25 @@ Follow-ups found while building it:
 3. **Printable and exportable outputs**: Cut List, Nesting layouts and Bill of Materials as PDF and CSV.
 4. **Better Nesting**: fill partly used sheets before opening new ones, compare layouts, keep grain and saw constraints.
 
-## 5. After v1: not scheduled
+## 5. Design Assistant: planned
+
+Members describe changes in a Conversation, or forward a Client's email thread, and the Design Assistant answers with a Design Proposal they review in 3D and accept or discard (ADR 0004). Built with Spring AI on Claude: Sonnet builds Proposals, Haiku sorts the Inbox, both set in configuration.
+
+Ground rules for every step:
+- Off until an Owner opts the Shop in; Settings say what is sent to the model provider and to Resend (which keeps received mail 30 days). A monthly budget per Shop, in dollars, stops the assistant clearly when spent.
+- Owners and Designers use it. It reads the current design, Cabinet Templates (starter and Shop), the Construction Standard, material and Front style names and the Client's name; never prices, Quotes or other Projects.
+- It answers in the Member's language. Email content is untrusted: it is quoted to the model, never followed as instructions.
+
+1. **Foundation.** The `assistant` module (hexagonal: Spring AI and Resend in adapters only), the model port, the Shop opt-in and budget, the glossary terms and ADR 0004.
+2. **Conversation → Design Proposal.** Tools for every editor action, each checked by the Construction Rules, with a test that fails when an editor action has no tool. One open Proposal per Project; it must pass the rules and lists its open questions and assumptions. Each request runs as a background job, one at a time per Conversation, streaming progress to the page. A Live / Proposal toggle in the editor marks what is added, changed or removed. Accepting takes the editing lock and replays the Proposal's steps onto the current design, stopping at the first step that breaks a rule; Undo accept restores the earlier design if nobody has edited since. Chatting needs no lock; Proposals change only through the Conversation. Conversations start on an existing Project and are kept with it.
+3. **Attachments.** Photos, sketches and PDFs in the Conversation, stored in PostgreSQL behind a port (25 MB per message). Measurements read from a photo are always assumptions; only typed numbers or a dimensioned plan count as given.
+4. **Scenario suite.** Real-model scenarios ("galley kitchen from this sketch": passes the rules, expected Cabinets and Openings) as shared test data next to `construction-rules/cases.json`, run on demand, not on every pull request; use it to choose between Sonnet and Opus. Unit tests use recorded model replies.
+5. **Email with Resend.** Sending first: Invitation emails (closes the Milestone 2 follow-up) and notices to Members. Then receiving: one address per Shop at `in.cabinet.arendal.ca` (MX record from the Helm chart's DNSEndpoint), the signed `email.received` webhook, body, headers and attachments copied on arrival (Resend's download links expire after an hour). Only a Member's own address is accepted, with DMARC passing, or DKIM when the domain has no DMARC; everything else is dropped silently. Free plan to start, with a warning at 80% of the daily limit.
+6. **Inbox.** Forwarded emails land in the Shop's Inbox, seen by every Member with who forwarded each. Haiku summarises each one and suggests the Client (from addresses in the thread) and Project; a Member confirms, or creates the Client and Project from the email, and only then is a Proposal built. Later emails in the same thread join the same Conversation and refine the open Proposal. The forwarding Member is told in the app and by email when the Proposal is ready; Clients are never emailed. Unassigned Inbox items are deleted after 30 days.
+
+To confirm when building step 5: Resend's maximum message size, and whether `In-Reply-To` and `References` come as named headers or only in the raw message.
+
+## 6. After v1: not scheduled
 
 - Client portal: Clients design in the Shop's space and send a Quote Request.
 - CNC export (DXF or machine files, with drilling).
@@ -89,5 +105,5 @@ Follow-ups found while building it:
 
 ## Housekeeping
 
-- Delete the merged branches `claude/build-and-deploy`, `claude/first-milestone` and `claude/milestone-2`, and the old `claude/add-grill-skills`, from GitHub.
+- Delete the merged branches `claude/build-and-deploy`, `claude/first-milestone`, `claude/milestone-2` and `claude/milestone-3`, and the old `claude/add-grill-skills`, from GitHub.
 - Keep this file's **Current step** and **Status** up to date as milestones land.
