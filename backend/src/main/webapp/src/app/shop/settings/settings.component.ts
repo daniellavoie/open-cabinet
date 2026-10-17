@@ -1,11 +1,12 @@
 import { NgFor, NgIf } from "@angular/common";
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
 import { CatalogService } from "../../catalog/catalog-service";
 import { Material, MaterialKind } from "../../catalog/model/material";
 import { MemberService } from "../../member/member-service";
+import { StaleDraftsComponent } from "../../quote/stale-drafts/stale-drafts.component";
 import { LABOUR_METHOD_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
@@ -22,7 +23,7 @@ type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKi
   selector: "settings",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, LengthInputComponent, NgFor, NgIf],
+  imports: [FormsModule, LengthInputComponent, NgFor, NgIf, StaleDraftsComponent],
   styleUrls: ["./settings.component.css"],
   templateUrl: "./settings.component.html",
 })
@@ -49,6 +50,8 @@ export class SettingsComponent {
     { field: "kerfMm", label: $localize`:@@settings.kerf:Trait de scie` },
     { field: "sheetTrimMm", label: $localize`:@@settings.trim:Rognage des panneaux` },
   ];
+
+  @ViewChild(StaleDraftsComponent) staleDrafts?: StaleDraftsComponent;
 
   name = "";
   currency = "";
@@ -95,6 +98,7 @@ export class SettingsComponent {
       .pipe(tap(shop => {
         this.memberService.setShop(shop);
         this.message = $localize`:@@settings.saved:Paramètres enregistrés.`;
+        this.staleDrafts?.check();
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@settings.saveError:Impossible d'enregistrer les paramètres.` });

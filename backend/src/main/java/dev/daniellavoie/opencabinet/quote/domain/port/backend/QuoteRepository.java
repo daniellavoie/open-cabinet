@@ -11,6 +11,8 @@ public interface QuoteRepository {
 
 	Quote findById(UUID quoteId, UUID shopId);
 
+	List<Quote> findDrafts(UUID shopId);
+
 	Quote create(Quote quote, UUID shopId);
 
 	Quote update(Quote quote, UUID shopId);

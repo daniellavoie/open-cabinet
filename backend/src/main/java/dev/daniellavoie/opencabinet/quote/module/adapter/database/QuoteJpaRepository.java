@@ -26,4 +26,6 @@ public interface QuoteJpaRepository extends JpaRepository<QuoteEntity, UUID> {
 			@Param("sent") QuoteStatus sent, @Param("superseded") QuoteStatus superseded);
 
 	Optional<QuoteEntity> findByIdAndShopId(UUID id, UUID shopId);
+
+	List<QuoteEntity> findByShopIdAndStatusOrderByNumberAsc(UUID shopId, QuoteStatus status);
 }

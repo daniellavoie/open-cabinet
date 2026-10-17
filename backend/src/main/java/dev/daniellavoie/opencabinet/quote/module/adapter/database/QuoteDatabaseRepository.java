@@ -40,6 +40,15 @@ public class QuoteDatabaseRepository implements QuoteRepository {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Quote> findDrafts(UUID shopId) {
+		return jpaRepository.findByShopIdAndStatusOrderByNumberAsc(shopId, QuoteStatus.DRAFT)
+				.stream()
+				.map(QuoteEntity::to)
+				.toList();
+	}
+
+	@Override
 	@Transactional
 	public Quote create(Quote quote, UUID shopId) {
 		log.info("Creating quote {}/{} number {} with: { total = {}, currency = {} }", shopId, quote.getId(),

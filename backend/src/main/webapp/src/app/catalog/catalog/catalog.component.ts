@@ -1,9 +1,10 @@
 import { CurrencyPipe, NgFor, NgIf } from "@angular/common";
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
 import { MemberService } from "../../member/member-service";
+import { StaleDraftsComponent } from "../../quote/stale-drafts/stale-drafts.component";
 import { MATERIAL_KIND_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { formatLength } from "../../util/units/units";
@@ -15,7 +16,7 @@ import { Material, MaterialKind } from "../model/material";
   selector: "catalog",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [CurrencyPipe, FormsModule, LengthInputComponent, NgFor, NgIf],
+  imports: [CurrencyPipe, FormsModule, LengthInputComponent, NgFor, NgIf, StaleDraftsComponent],
   styleUrls: ["./catalog.component.css"],
   templateUrl: "./catalog.component.html",
 })
@@ -23,6 +24,8 @@ export class CatalogComponent {
   readonly kinds = Object.entries(MATERIAL_KIND_LABELS) as [MaterialKind, string][];
   readonly kindLabels = MATERIAL_KIND_LABELS;
   readonly formatLength = formatLength;
+
+  @ViewChild(StaleDraftsComponent) staleDrafts?: StaleDraftsComponent;
 
   materials?: Material[];
   editing: Material | null = null;
@@ -69,6 +72,7 @@ export class CatalogComponent {
         this.importResult = result;
         if (result.applied) {
           this.load();
+          this.staleDrafts?.check();
         }
       }))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@catalog.importError:Impossible d'importer le fichier.` }));
@@ -95,6 +99,7 @@ export class CatalogComponent {
       .pipe(tap(() => {
         this.edit(null);
         this.load();
+        this.staleDrafts?.check();
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@catalog.saveError:Impossible d'enregistrer le matériau.` });

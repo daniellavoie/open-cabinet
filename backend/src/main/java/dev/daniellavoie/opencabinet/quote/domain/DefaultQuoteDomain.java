@@ -50,6 +50,11 @@ public class DefaultQuoteDomain implements QuoteDomain {
 	}
 
 	@Override
+	public List<Quote> findDrafts(Principal principal) {
+		return repository.findDrafts(memberDomain.current(principal).getShopId());
+	}
+
+	@Override
 	public Quote create(UUID projectId, Principal principal) {
 		var shopId = memberDomain.current(principal).getShopId();
 		var draft = draft(projectId, shopId);

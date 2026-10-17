@@ -12,6 +12,10 @@ export class QuoteService {
     return this.httpClient.get<Quote[]>(`/api/project/${projectId}/quote`);
   }
 
+  findDrafts(): Observable<Quote[]> {
+    return this.httpClient.get<Quote[]>("/api/quote/draft");
+  }
+
   create(projectId: string): Observable<Quote> {
     return this.httpClient.post<Quote>(`/api/project/${projectId}/quote`, {});
   }

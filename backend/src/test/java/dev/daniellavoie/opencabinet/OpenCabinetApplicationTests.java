@@ -157,6 +157,10 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.content.lines", hasSize(2))));
 		var quoteId = quote.get("id").asText();
 
+		mockMvc.perform(as(owner, get("/api/quote/draft")))
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].content.projectName").value("Cuisine"));
+
 		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/send")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("SENT"));
