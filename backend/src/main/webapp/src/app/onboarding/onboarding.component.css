@@ -24,3 +24,8 @@ h1 {
   color: var(--oc-text-secondary);
   font-size: var(--oc-font-size-md);
 }
+
+.hint {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+}

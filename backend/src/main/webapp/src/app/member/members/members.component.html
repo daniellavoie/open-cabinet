@@ -1,0 +1,72 @@
+<div class="page">
+  <section class="list">
+    <h1 i18n="@@members.title">Membres</h1>
+    <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th i18n="@@members.name">Nom</th>
+          <th i18n="@@members.email">Courriel</th>
+          <th i18n="@@members.role">Rôle</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let member of members">
+          <td>{{ member.name }} <span class="meta" *ngIf="member.id === memberService.member()?.id" i18n="@@members.you">(vous)</span></td>
+          <td>{{ member.email }}</td>
+          <td>
+            <select class="form-select form-select-sm" [ngModel]="member.role" (ngModelChange)="changeRole(member, $event)" [disabled]="busy"
+              i18n-aria-label="@@members.role" aria-label="Rôle">
+              <option *ngFor="let role of roles" [value]="role[0]">{{ role[1] }}</option>
+            </select>
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-link text-danger" *ngIf="member.id !== memberService.member()?.id" (click)="remove(member)" [disabled]="busy"
+              i18n="@@common.remove">Retirer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 i18n="@@members.pending">Invitations en attente</h2>
+    <p class="meta" *ngIf="invitations.length === 0" i18n="@@members.noPending">Aucune invitation en attente.</p>
+    <table class="table table-sm" *ngIf="invitations.length > 0">
+      <tbody>
+        <tr *ngFor="let invitation of invitations">
+          <td>{{ invitation.email ?? "—" }}</td>
+          <td>{{ roleLabels[invitation.role] }}</td>
+          <td class="meta" i18n="@@members.expires">Expire le {{ invitation.expirationTimestamp | date: "mediumDate" }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-link text-danger" (click)="revoke(invitation)" [disabled]="busy" i18n="@@members.revoke">Annuler l'invitation</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <aside class="panel">
+    <h2 i18n="@@members.invite">Inviter quelqu'un</h2>
+    <form (ngSubmit)="invite()">
+      <div class="mb-2">
+        <label class="form-label" for="inviteEmail" i18n="@@members.inviteEmail">Courriel (facultatif)</label>
+        <input class="form-control" id="inviteEmail" name="email" type="email" [(ngModel)]="email" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="inviteRole" i18n="@@members.role">Rôle</label>
+        <select class="form-select" id="inviteRole" name="role" [(ngModel)]="role">
+          <option *ngFor="let entry of roles" [value]="entry[0]">{{ entry[1] }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="busy" i18n="@@members.createLink">Créer un lien d'invitation</button>
+    </form>
+    <div class="link" *ngIf="link">
+      <p class="hint" i18n="@@members.linkHint">Envoyez ce lien à la personne invitée. Il est valide 14 jours et ne sera plus affiché.</p>
+      <input class="form-control form-control-sm" id="inviteLink" readonly [value]="link" i18n-aria-label="@@members.link" aria-label="Lien d'invitation" />
+      <button class="btn btn-sm btn-outline-secondary" (click)="copy()">
+        <span *ngIf="!copied" i18n="@@members.copy">Copier</span>
+        <span *ngIf="copied" i18n="@@members.copied">Copié</span>
+      </button>
+    </div>
+  </aside>
+</div>

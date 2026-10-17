@@ -1,6 +1,7 @@
 package dev.daniellavoie.opencabinet.member.domain;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,6 +44,11 @@ public class DefaultMemberDomain implements MemberDomain {
 
 	@Override
 	public Member createOwner(UUID shopId, String name, String email, Principal principal) {
+		return join(shopId, Role.OWNER, name, email, principal);
+	}
+
+	@Override
+	public Member join(UUID shopId, Role role, String name, String email, Principal principal) {
 		if (findCurrent(principal).isPresent()) {
 			throw new IllegalStateException("you are already a member of a shop");
 		}
@@ -55,7 +61,54 @@ public class DefaultMemberDomain implements MemberDomain {
 						.filter(value -> !value.isBlank())
 						.orElseThrow(() -> new IllegalArgumentException("a member name is required")))
 				.email(email)
-				.role(Role.OWNER)
+				.role(Optional.ofNullable(role)
+						.orElseThrow(() -> new IllegalArgumentException("a role is required")))
 				.build());
+	}
+
+	@Override
+	public List<Member> findByShop(Principal principal) {
+		return repository.findByShop(currentOwner(principal).getShopId());
+	}
+
+	@Override
+	public Member updateRole(UUID memberId, Role role, Principal principal) {
+		var owner = currentOwner(principal);
+		var member = repository.findById(memberId, owner.getShopId());
+		var newRole = Optional.ofNullable(role)
+				.orElseThrow(() -> new IllegalArgumentException("a role is required"));
+
+		if (member.getRole() == Role.OWNER && newRole != Role.OWNER) {
+			requireAnotherOwner(member);
+		}
+
+		return repository.update(member.toBuilder().role(newRole).build());
+	}
+
+	@Override
+	public void remove(UUID memberId, Principal principal) {
+		var owner = currentOwner(principal);
+		var member = repository.findById(memberId, owner.getShopId());
+
+		if (member.getId().equals(owner.getId())) {
+			throw new IllegalStateException("you cannot remove yourself from the shop");
+		}
+		if (member.getRole() == Role.OWNER) {
+			requireAnotherOwner(member);
+		}
+
+		repository.delete(memberId, owner.getShopId());
+	}
+
+	/**
+	 * A Shop always keeps at least one Owner.
+	 */
+	private void requireAnotherOwner(Member member) {
+		var otherOwners = repository.findByShop(member.getShopId()).stream()
+				.filter(other -> other.getRole() == Role.OWNER && !other.getId().equals(member.getId()))
+				.count();
+		if (otherOwners == 0) {
+			throw new IllegalStateException("a shop needs at least one owner");
+		}
 	}
 }

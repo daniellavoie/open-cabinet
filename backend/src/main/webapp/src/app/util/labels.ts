@@ -1,4 +1,5 @@
 import { MaterialKind } from "../catalog/model/material";
+import { Role } from "../member/model/member";
 import { PartRole } from "../cutlist/model/project-output";
 import { QuoteStatus } from "../quote/model/quote";
 import { LabourMethod } from "../shop/model/shop";
@@ -53,4 +54,9 @@ export const MATERIAL_KIND_LABELS: Record<MaterialKind, string> = {
   SHEET: $localize`:@@materialKind.sheet:Panneau`,
   EDGE_BANDING: $localize`:@@materialKind.edgeBanding:Bande de chant`,
   HARDWARE: $localize`:@@materialKind.hardware:Quincaillerie`,
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  OWNER: $localize`:@@role.owner:Propriétaire`,
+  DESIGNER: $localize`:@@role.designer:Concepteur`,
 };

@@ -1,0 +1,26 @@
+.invite {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--oc-bg-default);
+  padding: var(--oc-space-6);
+}
+
+.card-panel {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--oc-bg-raise);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-lg);
+  padding: var(--oc-space-8);
+}
+
+h1 {
+  font-size: var(--oc-font-size-2xl);
+}
+
+.lead {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-md);
+}

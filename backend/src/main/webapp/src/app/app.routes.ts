@@ -1,15 +1,18 @@
 import { Routes } from "@angular/router";
 
 import { CatalogComponent } from "./catalog/catalog/catalog.component";
+import { AcceptInvitationComponent } from "./invitation/accept/accept-invitation.component";
 import { ClientsComponent } from "./client/clients/clients.component";
 import { LayoutComponent } from "./layout/layout.component";
 import { memberGuardFn, ownerGuardFn } from "./member/member-guard";
+import { MembersComponent } from "./member/members/members.component";
 import { OnboardingComponent } from "./onboarding/onboarding.component";
 import { ProjectsComponent } from "./project/projects/projects.component";
 import { SettingsComponent } from "./shop/settings/settings.component";
 
 export const routes: Routes = [
   { path: "onboarding", component: OnboardingComponent },
+  { path: "invite/:token", component: AcceptInvitationComponent },
   {
     path: "",
     component: LayoutComponent,
@@ -24,6 +27,7 @@ export const routes: Routes = [
       { path: "clients", component: ClientsComponent },
       { path: "settings", component: SettingsComponent, canActivate: [ownerGuardFn] },
       { path: "catalog", component: CatalogComponent, canActivate: [ownerGuardFn] },
+      { path: "members", component: MembersComponent, canActivate: [ownerGuardFn] },
     ],
   },
   { path: "**", redirectTo: "" },

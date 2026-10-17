@@ -3,12 +3,15 @@ package dev.daniellavoie.opencabinet;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +141,73 @@ class OpenCabinetApplicationTests {
 
 		mockMvc.perform(as("stranger-" + System.nanoTime(), get("/api/project/" + projectId)))
 				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void ownersInviteMembersWhoJoinWithTheirRole() throws Exception {
+		var owner = "owner-" + System.nanoTime();
+		var designer = "designer-" + System.nanoTime();
+
+		mockMvc.perform(as(owner, post("/api/shop"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"shopName\":\"Atelier Villeray\",\"memberName\":\"Luc\"}"))
+				.andExpect(status().isOk());
+
+		var created = read(mockMvc.perform(as(owner, post("/api/invitation"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"sophie@example.ca\",\"role\":\"DESIGNER\"}"))
+				.andExpect(status().isOk()));
+		var token = created.get("token").asText();
+
+		mockMvc.perform(as(owner, get("/api/invitation")))
+				.andExpect(jsonPath("$", hasSize(1)));
+
+		mockMvc.perform(as(designer, get("/api/invitation/token/" + token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.shopName").value("Atelier Villeray"))
+				.andExpect(jsonPath("$.role").value("DESIGNER"))
+				.andExpect(jsonPath("$.invitedByName").value("Luc"));
+
+		mockMvc.perform(as(designer, post("/api/invitation/token/" + token + "/accept"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"memberName\":\"Sophie\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.role").value("DESIGNER"))
+				.andExpect(jsonPath("$.email").value("sophie@example.ca"));
+
+		mockMvc.perform(as("someone-" + System.nanoTime(), post("/api/invitation/token/" + token + "/accept"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"memberName\":\"Again\"}"))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(as(owner, get("/api/invitation")))
+				.andExpect(jsonPath("$", hasSize(0)));
+		mockMvc.perform(as(owner, get("/api/member")))
+				.andExpect(jsonPath("$", hasSize(2)));
+
+		mockMvc.perform(as(designer, get("/api/shop")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Atelier Villeray"));
+		mockMvc.perform(as(designer, get("/api/member")))
+				.andExpect(status().isForbidden());
+		mockMvc.perform(as(designer, post("/api/invitation"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"role\":\"OWNER\"}"))
+				.andExpect(status().isForbidden());
+
+		var members = read(mockMvc.perform(as(owner, get("/api/member"))));
+		var ownerId = StreamSupport.stream(members.spliterator(), false)
+				.filter(member -> member.get("role").asText().equals("OWNER"))
+				.map(member -> member.get("id").asText())
+				.findFirst()
+				.orElseThrow();
+
+		mockMvc.perform(as(owner, put("/api/member/" + ownerId + "/role"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"role\":\"DESIGNER\"}"))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, delete("/api/member/" + ownerId)))
+				.andExpect(status().isConflict());
 	}
 
 	private ObjectNode cabinet(String id, String template, String wallId, double offset, double width, double height,
