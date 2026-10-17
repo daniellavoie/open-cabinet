@@ -5,6 +5,7 @@ import { finalize, tap } from "rxjs";
 
 import { MemberService } from "../../member/member-service";
 import { StaleDraftsComponent } from "../../quote/stale-drafts/stale-drafts.component";
+import { saveBlob } from "../../util/download";
 import { MATERIAL_KIND_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { formatLength } from "../../util/units/units";
@@ -49,14 +50,7 @@ export class CatalogComponent {
 
   exportCsv() {
     this.catalogService.exportCsv()
-      .pipe(tap(blob => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "catalogue.csv";
-        link.click();
-        URL.revokeObjectURL(url);
-      }))
+      .pipe(tap(blob => saveBlob(blob, "catalogue.csv")))
       .subscribe();
   }
 

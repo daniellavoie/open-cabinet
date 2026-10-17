@@ -165,6 +165,16 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.operations.cabinets").value(3))
 				.andExpect(jsonPath("$.nesting[0].sheets[0].placements").isNotEmpty());
 
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/drawing").param("lang", "en")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1 + 1 + 3)))
+				.andExpect(jsonPath("$[0].kind").value("PLAN"))
+				.andExpect(jsonPath("$[1].title").value("Elevation — Wall 1"))
+				.andExpect(jsonPath("$[2].svg").value(org.hamcrest.Matchers.startsWith("<svg")));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/drawing/pdf")))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_PDF));
+
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("DRAFT"))

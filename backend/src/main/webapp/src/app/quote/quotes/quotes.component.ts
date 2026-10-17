@@ -5,6 +5,7 @@ import { finalize, Observable, tap } from "rxjs";
 
 import { ManualLine, Project } from "../../project/model/project";
 import { LabourMethod } from "../../shop/model/shop";
+import { saveBlob } from "../../util/download";
 import { LABOUR_METHOD_LABELS, QUOTE_STATUS_LABELS } from "../../util/labels";
 import { Quote, QuoteStatus } from "../model/quote";
 import { QuoteService } from "../quote-service";
@@ -115,14 +116,7 @@ export class QuotesComponent implements OnChanges {
 
   download(quote: Quote) {
     this.quoteService.pdf(quote.id)
-      .pipe(tap(blob => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${quote.displayNumber}.pdf`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }))
+      .pipe(tap(blob => saveBlob(blob, `${quote.displayNumber}.pdf`)))
       .subscribe({ error: () => this.error = $localize`:@@quotes.pdfError:Impossible de télécharger la soumission.` });
   }
 

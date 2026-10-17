@@ -40,6 +40,9 @@
   --oc-3d-doorway: var(--oc-palette-gray-700);
   --oc-3d-appliance: var(--oc-palette-gray-300);
 
+  /* Shop Drawings are printed matter: white paper in every theme */
+  --oc-drawing-paper: var(--oc-palette-white);
+
   /* Spacing (4px grid) */
   --oc-space-1: 4px;
   --oc-space-2: 8px;

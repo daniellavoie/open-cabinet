@@ -12,12 +12,12 @@ import dev.daniellavoie.opencabinet.project.domain.model.Wall;
  * each next Wall turns by the previous Wall's {@code angleToNextDegrees}. Things stand on the
  * Wall's left, the side {@code normal} points to.
  */
-final class RoomLayout {
-	record Point(double x, double z) {
+public final class RoomLayout {
+	public record Point(double x, double z) {
 	}
 
-	record Placement(Point start, Point direction) {
-		Point normal() {
+	public record Placement(Point start, Point direction) {
+		public Point normal() {
 			return new Point(-direction.z(), direction.x());
 		}
 
@@ -25,12 +25,12 @@ final class RoomLayout {
 		 * The plan-view rectangle spanning {@code alongStart..alongEnd} along the Wall and
 		 * {@code outStart..outEnd} out from it.
 		 */
-		List<Point> rectangle(double alongStart, double alongEnd, double outStart, double outEnd) {
+		public List<Point> rectangle(double alongStart, double alongEnd, double outStart, double outEnd) {
 			return List.of(at(alongStart, outStart), at(alongEnd, outStart), at(alongEnd, outEnd),
 					at(alongStart, outEnd));
 		}
 
-		private Point at(double along, double out) {
+		public Point at(double along, double out) {
 			var normal = normal();
 			return new Point(start.x() + direction.x() * along + normal.x() * out,
 					start.z() + direction.z() * along + normal.z() * out);
@@ -40,7 +40,7 @@ final class RoomLayout {
 	private RoomLayout() {
 	}
 
-	static Map<String, Placement> layout(List<Wall> walls) {
+	public static Map<String, Placement> layout(List<Wall> walls) {
 		var placements = new HashMap<String, Placement>();
 		double x = 0;
 		double z = 0;

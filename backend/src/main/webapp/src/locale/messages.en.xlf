@@ -275,21 +275,21 @@
         <source>Impossible d'importer le fichier.</source>
         <target>Could not import the file.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.saveError" datatype="html">
         <source>Impossible d'enregistrer le matériau.</source>
         <target>Could not save the material.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.ts</context>
-          <context context-type="linenumber">105</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.deleteError" datatype="html">
         <source>Impossible de retirer le matériau.</source>
         <target>Could not remove the material.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/catalog/catalog/catalog.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="clients.title" datatype="html">
@@ -575,6 +575,52 @@
         <target>Sheet <x id="INTERPOLATION" equiv-text="{{ index + 1 }}" /> — <x id="INTERPOLATION_1" equiv-text="{{ sheet.utilization | percent: &quot;1.0-0&quot; }}" /> used</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
           <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="drawings.saveFirst" datatype="html">
+        <source>Les dessins montrent le projet enregistré. Enregistrez pour les mettre à jour.</source>
+        <target>The drawings show the saved project. Save to update them.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.html</context>
+          <context context-type="linenumber">2,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="drawings.downloadPdf" datatype="html">
+        <source>Télécharger le PDF</source>
+        <target>Download the PDF</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.html</context>
+          <context context-type="linenumber">3,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.computing" datatype="html">
+        <source>Calcul en cours…</source>
+        <target>Computing…</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">42,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="drawings.error" datatype="html">
+        <source>Impossible de préparer les dessins.</source>
+        <target>The drawings could not be prepared.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="drawings.fileName" datatype="html">
+        <source>dessins d'atelier</source>
+        <target>shop drawings</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="drawings.pdfError" datatype="html">
+        <source>Impossible de télécharger les dessins.</source>
+        <target>The drawings could not be downloaded.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/drawing/shop-drawings/shop-drawings.component.ts</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="invite.invalidTitle" datatype="html">
@@ -1304,88 +1350,88 @@
           <context context-type="linenumber">41,42</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="editor.computing" datatype="html">
-        <source>Calcul en cours…</source>
-        <target>Computing…</target><context-group purpose="location">
-          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
-          <context context-type="linenumber">42,43</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="editor.design" datatype="html">
         <source>Conception</source>
         <target>Design</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.cutList" datatype="html">
         <source>Liste de coupe</source>
         <target>Cut list</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.nesting" datatype="html">
         <source>Optimisation</source>
         <target>Nesting</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.materials" datatype="html">
         <source>Matériaux</source>
         <target>Materials</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.drawings" datatype="html">
+        <source>Dessins</source>
+        <target>Drawings</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.quotes" datatype="html">
         <source>Soumissions</source>
         <target>Quotes</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.templateSaved" datatype="html">
         <source>Modèle « <x id="name" equiv-text="template.name" /> » enregistré.</source>
         <target>Template “<x id="name" equiv-text="template.name" />” saved.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">222</context>
+          <context context-type="linenumber">225</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.templateError" datatype="html">
         <source>Impossible d'enregistrer le modèle.</source>
         <target>The template could not be saved.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">225</context>
+          <context context-type="linenumber">228</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.rulesBroken" datatype="html">
         <source>Le serveur a refusé la conception : corrigez les règles de construction.</source>
         <target>The server rejected the design: fix the construction rules.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">268</context>
+          <context context-type="linenumber">271</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.lockLost" datatype="html">
         <source>Quelqu'un d'autre modifie ce projet : vos changements n'ont pas été enregistrés.</source>
         <target>Someone else is editing this project: your changes were not saved.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">270</context>
+          <context context-type="linenumber">273</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.saveError" datatype="html">
         <source>Impossible d'enregistrer le projet.</source>
         <target>Could not save the project.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">273</context>
+          <context context-type="linenumber">276</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.outputError" datatype="html">
         <source>Impossible de calculer la liste de coupe.</source>
         <target>Could not compute the cut list.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">287</context>
+          <context context-type="linenumber">290</context>
         </context-group>
       </trans-unit>
       <trans-unit id="projects.title" datatype="html">
@@ -1656,14 +1702,14 @@
         <source>Impossible de télécharger la soumission.</source>
         <target>Could not download the quote.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/quote/quotes/quotes.component.ts</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="quotes.error" datatype="html">
         <source>L'opération a échoué.</source>
         <target>The operation failed.</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/quote/quotes/quotes.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="staleDrafts.message" datatype="html">

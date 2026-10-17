@@ -1,0 +1,12 @@
+<header class="drawings-header">
+  <p class="hint" *ngIf="dirty" i18n="@@drawings.saveFirst">Les dessins montrent le projet enregistré. Enregistrez pour les mettre à jour.</p>
+  <button class="btn btn-primary" (click)="downloadPdf()" [disabled]="downloading || drawings.length === 0" i18n="@@drawings.downloadPdf">Télécharger le PDF</button>
+</header>
+<div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+<div *ngIf="loading" i18n="@@editor.computing">Calcul en cours…</div>
+<div class="drawings" *ngIf="!loading">
+  <figure class="drawing" *ngFor="let drawing of drawings" [class.wide]="drawing.wide">
+    <figcaption>{{ drawing.title }}</figcaption>
+    <img [src]="drawing.src" [alt]="drawing.title" />
+  </figure>
+</div>

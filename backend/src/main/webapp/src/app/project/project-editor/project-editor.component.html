@@ -48,6 +48,8 @@
     </ng-container>
   </section>
 
+  <shop-drawings *ngIf="tab === 'drawings' && saved" [project]="saved" [dirty]="dirty" />
+
   <quotes *ngIf="tab === 'quotes'" [project]="draft" [dirty]="dirty" [readOnly]="readOnly" [currency]="memberService.shop()!.currency"
     [defaultLabourMethod]="memberService.shop()!.settings.labour.defaultMethod" (projectChange)="setDraft($event)" />
 </div>
