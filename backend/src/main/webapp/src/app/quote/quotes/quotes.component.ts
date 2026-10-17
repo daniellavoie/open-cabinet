@@ -28,6 +28,10 @@ export class QuotesComponent implements OnChanges {
 
   @Input() project!: Project;
   @Input() dirty = false;
+  /**
+   * Another Member is editing: pricing inputs are locked, quotes can still be managed.
+   */
+  @Input() readOnly = false;
   @Input() currency = "CAD";
   @Input() defaultLabourMethod: LabourMethod = "OPERATION";
   @Output() projectChange = new EventEmitter<Project>();

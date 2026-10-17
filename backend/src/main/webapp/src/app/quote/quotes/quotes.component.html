@@ -1,5 +1,5 @@
 <div class="quotes">
-  <section class="block">
+  <fieldset class="block" [disabled]="readOnly">
     <h2 i18n="@@quotes.pricing">Prix du projet</h2>
     <div class="fields">
       <label for="labourMethod" i18n="@@quotes.labourMethod">Main-d'œuvre</label>
@@ -23,7 +23,7 @@
       <button class="btn btn-sm btn-link text-danger" (click)="removeManualLine(index)" i18n="@@common.remove">Retirer</button>
     </div>
     <button class="btn btn-sm btn-outline-secondary" (click)="addManualLine()" i18n="@@quotes.addLine">Ajouter une ligne</button>
-  </section>
+  </fieldset>
 
   <section class="block">
     <h2>

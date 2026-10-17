@@ -4,7 +4,7 @@ CREATE TABLE invitation (
 	token_hash CHAR(64) NOT NULL UNIQUE,
 	email VARCHAR(320),
 	role VARCHAR(20) NOT NULL,
-	invited_by UUID NOT NULL REFERENCES member(id),
+	invited_by UUID REFERENCES member(id) ON DELETE SET NULL,
 	expiration_timestamp TIMESTAMP NOT NULL,
 	acceptance_timestamp TIMESTAMP,
 	creation_timestamp TIMESTAMP NOT NULL

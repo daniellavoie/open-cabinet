@@ -81,7 +81,9 @@ public class DefaultInvitationDomain implements InvitationDomain {
 		return InvitationPreview.builder()
 				.shopName(shopRepository.findById(invitation.getShopId()).getName())
 				.role(invitation.getRole())
-				.invitedByName(memberRepository.findById(invitation.getInvitedBy(), invitation.getShopId()).getName())
+				.invitedByName(Optional.ofNullable(invitation.getInvitedBy())
+						.map(memberId -> memberRepository.findById(memberId, invitation.getShopId()).getName())
+						.orElse(null))
 				.build();
 	}
 

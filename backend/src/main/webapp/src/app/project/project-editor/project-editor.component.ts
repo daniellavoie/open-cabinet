@@ -1,9 +1,9 @@
 import { NgFor, NgIf } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, OnDestroy } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
-import { finalize, forkJoin, map, switchMap, tap } from "rxjs";
+import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from "rxjs";
 
 import { ClientService } from "../../client/client-service";
 import { Client } from "../../client/model/client";
@@ -20,6 +20,7 @@ import { updateCabinet } from "../design-edits";
 import { DesignPanelComponent } from "../design-panel/design-panel.component";
 import { CabinetTemplate, Design, Violation } from "../model/design";
 import { Project } from "../model/project";
+import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
 import { snapOffset } from "../room-layout";
 import { CabinetMove, RoomViewComponent } from "../room-view/room-view.component";
@@ -27,11 +28,14 @@ import { CabinetMove, RoomViewComponent } from "../room-view/room-view.component
 type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
 
 const SNAP_DISTANCE_MM = 30;
+const LOCK_RENEWAL_MS = 45_000;
 
 /**
  * Designs a Project. Edits apply to a draft checked live against the
  * Construction Rules; saving sends it to the server, which checks again and
  * has the final word (docs/adr/0002-construction-rules-run-in-browser-and-server.md).
+ * One Member edits at a time: the editor holds the Project's lock while open,
+ * and is read-only for everyone else.
  */
 @Component({
   selector: "project-editor",
@@ -52,7 +56,7 @@ const SNAP_DISTANCE_MM = 30;
   styleUrls: ["./project-editor.component.css"],
   templateUrl: "./project-editor.component.html",
 })
-export class ProjectEditorComponent {
+export class ProjectEditorComponent implements OnDestroy {
   readonly tabs: { id: Tab; label: string }[] = [
     { id: "design", label: $localize`:@@editor.design:Conception` },
     { id: "cutList", label: $localize`:@@editor.cutList:Liste de coupe` },
@@ -74,6 +78,8 @@ export class ProjectEditorComponent {
   loadingOutput = false;
   saving = false;
   error = "";
+  lock?: ProjectLock;
+  private renewal?: Subscription;
 
   constructor(
     route: ActivatedRoute,
@@ -93,6 +99,41 @@ export class ProjectEditorComponent {
         this.clients = clients;
         this.saved = project;
         this.setDraft(structuredClone(project));
+        this.takeLock();
+      }))
+      .subscribe();
+  }
+
+  ngOnDestroy() {
+    this.renewal?.unsubscribe();
+    if (this.lock?.mine && this.saved) {
+      this.projectService.unlock(this.saved.id).subscribe();
+    }
+  }
+
+  get readOnly(): boolean {
+    return !this.lock?.mine;
+  }
+
+  /**
+   * Takes the lock and keeps renewing it; drops to read-only if it is lost.
+   */
+  takeLock() {
+    this.renewal?.unsubscribe();
+    this.projectService.lock(this.saved!.id)
+      .pipe(tap(lock => {
+        this.lock = lock;
+        if (lock.mine) {
+          this.renewal = interval(LOCK_RENEWAL_MS)
+            .pipe(switchMap(() => this.projectService.lock(this.saved!.id)))
+            .pipe(tap(renewed => {
+              this.lock = renewed;
+              if (!renewed.mine) {
+                this.renewal?.unsubscribe();
+              }
+            }))
+            .subscribe();
+        }
       }))
       .subscribe();
   }
@@ -102,6 +143,9 @@ export class ProjectEditorComponent {
   }
 
   get dirty(): boolean {
+    if (this.readOnly) {
+      return false;
+    }
     return !!this.saved && JSON.stringify(this.saved) !== JSON.stringify(this.draft);
   }
 
@@ -175,6 +219,9 @@ export class ProjectEditorComponent {
       this.violations = body.details as Violation[];
       this.invalidCabinetIds = new Set(this.violations.map(violation => violation.cabinetId).filter(id => id !== null));
       this.error = $localize`:@@editor.rulesBroken:Le serveur a refusé la conception : corrigez les règles de construction.`;
+    } else if (response.status === 409) {
+      this.error = $localize`:@@editor.lockLost:Quelqu'un d'autre modifie ce projet : vos changements n'ont pas été enregistrés.`;
+      this.takeLock();
     } else {
       this.error = body?.message ?? $localize`:@@editor.saveError:Impossible d'enregistrer le projet.`;
     }

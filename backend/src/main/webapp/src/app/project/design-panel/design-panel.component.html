@@ -1,3 +1,4 @@
+<fieldset class="edits" [disabled]="readOnly">
 <section class="block">
   <h2 i18n="@@design.walls">Murs</h2>
   <div class="wall" *ngFor="let wall of design.walls; let index = index">
@@ -68,6 +69,8 @@
     </ng-container>
   </div>
 </section>
+
+</fieldset>
 
 <section class="block" *ngIf="violations.length > 0">
   <h2 class="text-danger" i18n="@@design.violations">Règles de construction</h2>

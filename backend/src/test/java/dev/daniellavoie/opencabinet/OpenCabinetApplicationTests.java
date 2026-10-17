@@ -101,6 +101,14 @@ class OpenCabinetApplicationTests {
 		update.set("design", design);
 		update.putArray("manualLines").addObject().put("description", "Installation").put("amount", 400);
 
+		mockMvc.perform(as(owner, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, post("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.mine").value(true));
+
 		var overlapping = update.deepCopy();
 		((ObjectNode) overlapping.at("/design/cabinets/1")).put("offsetMm", 100);
 		mockMvc.perform(as(owner, put("/api/project/" + projectId))
@@ -201,6 +209,38 @@ class OpenCabinetApplicationTests {
 				.map(member -> member.get("id").asText())
 				.findFirst()
 				.orElseThrow();
+
+		var client = read(mockMvc.perform(as(owner, post("/api/client"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\":\"Nadia\"}")));
+		var project = read(mockMvc.perform(as(owner, post("/api/project"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"clientId\":\"" + client.get("id").asText() + "\",\"name\":\"Vanité\"}")));
+		var projectId = project.get("id").asText();
+		var update = objectMapper.createObjectNode()
+				.put("clientId", client.get("id").asText())
+				.put("name", "Vanité")
+				.set("design", project.get("design"));
+
+		mockMvc.perform(as(owner, post("/api/project/" + projectId + "/lock")))
+				.andExpect(jsonPath("$.mine").value(true));
+		mockMvc.perform(as(designer, post("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.mine").value(false))
+				.andExpect(jsonPath("$.holderName").value("Luc"));
+		mockMvc.perform(as(designer, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("this project is being edited by Luc"));
+		mockMvc.perform(as(owner, delete("/api/project/" + projectId + "/lock")))
+				.andExpect(status().isNoContent());
+		mockMvc.perform(as(designer, post("/api/project/" + projectId + "/lock")))
+				.andExpect(jsonPath("$.mine").value(true));
+		mockMvc.perform(as(designer, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isOk());
 
 		mockMvc.perform(as(owner, put("/api/member/" + ownerId + "/role"))
 				.contentType(MediaType.APPLICATION_JSON)

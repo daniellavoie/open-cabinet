@@ -42,6 +42,8 @@ public class ProjectEntity {
 	BigDecimal labourHours;
 	@JdbcTypeCode(SqlTypes.JSON)
 	List<ManualLine> manualLines;
+	UUID lockedBy;
+	LocalDateTime lockExpirationTimestamp;
 	LocalDateTime creationTimestamp;
 	LocalDateTime updateTimestamp;
 

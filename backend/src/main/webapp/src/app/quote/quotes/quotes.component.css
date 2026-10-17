@@ -5,6 +5,11 @@
   align-items: start;
 }
 
+fieldset.block {
+  margin: 0;
+  min-width: 0;
+}
+
 .block {
   background-color: var(--oc-bg-raise);
   border: 1px solid var(--oc-border-default);

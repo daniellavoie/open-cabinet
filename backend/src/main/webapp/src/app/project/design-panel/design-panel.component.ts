@@ -30,6 +30,7 @@ export class DesignPanelComponent implements OnChanges {
   @Input() selectedCabinetId: string | null = null;
   @Input() violations: Violation[] = [];
   @Input() cabinetLabels = new Map<string, string>();
+  @Input() readOnly = false;
 
   @Output() designChange = new EventEmitter<Design>();
   @Output() selectCabinet = new EventEmitter<string | null>();

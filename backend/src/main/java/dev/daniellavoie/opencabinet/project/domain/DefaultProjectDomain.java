@@ -2,6 +2,8 @@ package dev.daniellavoie.opencabinet.project.domain;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -13,12 +15,14 @@ import org.springframework.stereotype.Service;
 
 import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
+import dev.daniellavoie.opencabinet.member.domain.port.backend.MemberRepository;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.ConstructionRuleException;
 import dev.daniellavoie.opencabinet.project.domain.model.CreateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.ManualLine;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
+import dev.daniellavoie.opencabinet.project.domain.model.ProjectLock;
 import dev.daniellavoie.opencabinet.project.domain.model.UpdateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
@@ -33,10 +37,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DefaultProjectDomain implements ProjectDomain {
 	private static final double FOOT = 304.8;
+	static final Duration LOCK_DURATION = Duration.ofMinutes(2);
 
 	ProjectRepository repository;
 	CabinetTemplateRepository templateRepository;
 	MemberDomain memberDomain;
+	MemberRepository memberRepository;
 	ClientDomain clientDomain;
 
 	@Override
@@ -80,8 +86,16 @@ public class DefaultProjectDomain implements ProjectDomain {
 
 	@Override
 	public Project update(UUID projectId, UpdateProjectRequest request, Principal principal) {
-		var shopId = memberDomain.current(principal).getShopId();
+		var member = memberDomain.current(principal);
+		var shopId = member.getShopId();
 		var project = repository.findById(projectId, shopId);
+
+		var holder = repository.lockState(projectId, shopId);
+		if (holder.isEmpty() || !holder.get().holderId().equals(member.getId())) {
+			throw new IllegalStateException(holder
+					.map(state -> "this project is being edited by " + memberRepository.findById(state.holderId(), shopId).getName())
+					.orElse("open the project for editing before saving it"));
+		}
 
 		var clientId = Optional.ofNullable(request.getClientId())
 				.orElseThrow(() -> new IllegalArgumentException("a client is required"));
@@ -120,6 +134,30 @@ public class DefaultProjectDomain implements ProjectDomain {
 	@Override
 	public List<CabinetTemplate> templates() {
 		return templateRepository.findAll();
+	}
+
+	@Override
+	public ProjectLock lock(UUID projectId, Principal principal) {
+		var member = memberDomain.current(principal);
+		var shopId = member.getShopId();
+		repository.findById(projectId, shopId);
+
+		repository.tryLock(projectId, shopId, member.getId(), LocalDateTime.now().plus(LOCK_DURATION));
+
+		return repository.lockState(projectId, shopId)
+				.map(state -> ProjectLock.builder()
+						.holderId(state.holderId())
+						.holderName(memberRepository.findById(state.holderId(), shopId).getName())
+						.expirationTimestamp(state.expirationTimestamp())
+						.mine(state.holderId().equals(member.getId()))
+						.build())
+				.orElseThrow(() -> new IllegalStateException("could not lock the project"));
+	}
+
+	@Override
+	public void unlock(UUID projectId, Principal principal) {
+		var member = memberDomain.current(principal);
+		repository.unlock(projectId, member.getShopId(), member.getId());
 	}
 
 	private static String requireName(String name) {

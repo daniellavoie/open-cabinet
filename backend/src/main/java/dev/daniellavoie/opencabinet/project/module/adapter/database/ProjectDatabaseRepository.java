@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.project.module.adapter.database;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -59,5 +60,29 @@ public class ProjectDatabaseRepository implements ProjectRepository {
 				.updateTimestamp(now)
 				.build())
 				.to();
+	}
+
+	@Override
+	@Transactional
+	public boolean tryLock(UUID projectId, UUID shopId, UUID memberId, LocalDateTime expiration) {
+		return jpaRepository.tryLock(projectId, shopId, memberId, expiration, LocalDateTime.now()) == 1;
+	}
+
+	@Override
+	@Transactional
+	public void unlock(UUID projectId, UUID shopId, UUID memberId) {
+		jpaRepository.unlock(projectId, shopId, memberId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<LockState> lockState(UUID projectId, UUID shopId) {
+		var entity = jpaRepository.findByIdAndShopId(projectId, shopId)
+				.orElseThrow(() -> new NoSuchElementException("project " + projectId + " not found"));
+		if (entity.getLockedBy() == null || entity.getLockExpirationTimestamp() == null
+				|| entity.getLockExpirationTimestamp().isBefore(LocalDateTime.now())) {
+			return Optional.empty();
+		}
+		return Optional.of(new LockState(entity.getLockedBy(), entity.getLockExpirationTimestamp()));
 	}
 }
