@@ -56,6 +56,10 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 		document.add(new Paragraph(content.getShopName(), TITLE));
 		document.add(new Paragraph("Soumission " + quote.getDisplayNumber() + " — "
 				+ quote.getCreationTimestamp().format(DateTimeFormatter.ofPattern("d MMMM yyyy", LOCALE)), SMALL));
+		if (quote.getRevision() > 0) {
+			document.add(new Paragraph("Révision " + quote.getRevision()
+					+ " : remplace les versions précédentes de cette soumission.", SMALL));
+		}
 		document.add(spacer());
 
 		var parties = new PdfPTable(2);

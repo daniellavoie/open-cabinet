@@ -143,6 +143,20 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/send")))
 				.andExpect(status().isConflict());
 
+		var revision = read(mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/revise")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("DRAFT"))
+				.andExpect(jsonPath("$.displayNumber").value("S-0001-R1")));
+		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/revise")))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, post("/api/quote/" + revision.get("id").asText() + "/send")))
+				.andExpect(status().isOk());
+		mockMvc.perform(as(owner, get("/api/quote/" + quoteId)))
+				.andExpect(jsonPath("$.status").value("SUPERSEDED"));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/quote")))
+				.andExpect(jsonPath("$[0].displayNumber").value("S-0001-R1"))
+				.andExpect(jsonPath("$[1].displayNumber").value("S-0001"));
+
 		mockMvc.perform(as(owner, get("/api/quote/" + quoteId + "/pdf")))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Type", startsWith("application/pdf")));

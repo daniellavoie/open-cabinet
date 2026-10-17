@@ -52,6 +52,34 @@ public class DefaultQuoteDomain implements QuoteDomain {
 	@Override
 	public Quote create(UUID projectId, Principal principal) {
 		var shopId = memberDomain.current(principal).getShopId();
+		var draft = draft(projectId, shopId);
+
+		return repository.create(draft.toBuilder().number(shopRepository.nextQuoteNumber(shopId)).build(), shopId);
+	}
+
+	@Override
+	public Quote revise(UUID quoteId, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		var quote = repository.findById(quoteId, shopId);
+		var latest = repository.findLatestRevision(shopId, quote.getNumber()).orElseThrow();
+
+		if (latest.getRevision() != quote.getRevision()) {
+			throw new IllegalStateException("only the latest revision of a quote can be revised");
+		}
+		if (quote.getStatus() == QuoteStatus.DRAFT) {
+			throw new IllegalStateException("a draft quote is changed by recreating it, not revised");
+		}
+
+		return repository.create(draft(quote.getProjectId(), shopId).toBuilder()
+				.number(quote.getNumber())
+				.revision(quote.getRevision() + 1)
+				.build(), shopId);
+	}
+
+	/**
+	 * Prices the Project as it is now, without a number yet.
+	 */
+	private Quote draft(UUID projectId, UUID shopId) {
 		var shop = shopRepository.findById(shopId);
 		var project = projectDomain.findById(projectId, shopId);
 		var output = cutListDomain.output(project, shop.getSettings().getConstructionStandard(),
@@ -62,15 +90,14 @@ public class DefaultQuoteDomain implements QuoteDomain {
 			throw new IllegalStateException("add cabinets or manual lines before quoting");
 		}
 
-		return repository.create(Quote.builder()
+		return Quote.builder()
 				.id(UUID.randomUUID())
 				.projectId(projectId)
-				.number(shopRepository.nextQuoteNumber(shopId))
 				.status(QuoteStatus.DRAFT)
 				.content(QuoteCalculator.calculate(shop, project, clientDomain.findById(project.getClientId(), shopId),
 						output))
 				.creationTimestamp(LocalDateTime.now())
-				.build(), shopId);
+				.build();
 	}
 
 	@Override
@@ -82,10 +109,12 @@ public class DefaultQuoteDomain implements QuoteDomain {
 			throw new IllegalStateException("only a draft quote can be sent");
 		}
 
-		return repository.update(quote.toBuilder()
+		var sent = repository.update(quote.toBuilder()
 				.status(QuoteStatus.SENT)
 				.sentTimestamp(LocalDateTime.now())
 				.build(), shopId);
+		repository.supersedeEarlierRevisions(sent, shopId);
+		return sent;
 	}
 
 	@Override

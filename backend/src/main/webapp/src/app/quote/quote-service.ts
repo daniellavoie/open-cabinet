@@ -16,6 +16,10 @@ export class QuoteService {
     return this.httpClient.post<Quote>(`/api/project/${projectId}/quote`, {});
   }
 
+  revise(quoteId: string): Observable<Quote> {
+    return this.httpClient.post<Quote>(`/api/quote/${quoteId}/revise`, {});
+  }
+
   send(quoteId: string): Observable<Quote> {
     return this.httpClient.post<Quote>(`/api/quote/${quoteId}/send`, {});
   }

@@ -48,6 +48,11 @@ public class QuoteController {
 		return domain.findById(quoteId, principal);
 	}
 
+	@PostMapping("/quote/{quoteId}/revise")
+	public Quote revise(@PathVariable UUID quoteId, Principal principal) {
+		return domain.revise(quoteId, principal);
+	}
+
 	@PostMapping("/quote/{quoteId}/send")
 	public Quote send(@PathVariable UUID quoteId, Principal principal) {
 		return domain.send(quoteId, principal);

@@ -20,6 +20,10 @@ _Avoid_: Admin, manager, boss
 A Member who creates Projects and Quotes using the Shop's settings, without changing prices or standards.
 _Avoid_: Salesperson, drafter, user
 
+**Invitation**:
+An Owner's offer, sent as a link, for someone to join the Shop as an Owner or Designer. It expires after 14 days and works once.
+_Avoid_: Invite code, signup link, referral
+
 **Client**:
 The person a Shop designs and builds cabinets for, typically a homeowner. A Client can have several Projects.
 _Avoid_: Customer, end user, homeowner
@@ -111,7 +115,7 @@ The price a Shop offers a Client for building a Project. A Quote is frozen once 
 _Avoid_: Estimate, bid, price
 
 **Quote Revision**:
-A new, numbered version of a Quote, issued when a sent Quote needs to change.
+A new, numbered version of a sent Quote (S-0042-R1, R2…), priced from the Project as it is now. Sending it supersedes the earlier sent version.
 _Avoid_: Update, amendment, new quote
 
 **Elevation**:

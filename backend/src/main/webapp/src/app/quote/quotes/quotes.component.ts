@@ -89,6 +89,18 @@ export class QuotesComponent implements OnChanges {
     this.run(this.quoteService.create(this.project.id), quote => this.selected = quote);
   }
 
+  /**
+   * Only the latest revision of a sent Quote can be revised.
+   */
+  canRevise(quote: Quote): boolean {
+    return quote.status !== "DRAFT"
+      && !this.quotes.some(other => other.number === quote.number && other.revision > quote.revision);
+  }
+
+  revise(quote: Quote) {
+    this.run(this.quoteService.revise(quote.id), revision => this.selected = revision);
+  }
+
   send(quote: Quote) {
     this.run(this.quoteService.send(quote.id), sent => this.selected = sent);
   }

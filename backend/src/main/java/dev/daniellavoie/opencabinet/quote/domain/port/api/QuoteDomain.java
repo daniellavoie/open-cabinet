@@ -18,7 +18,13 @@ public interface QuoteDomain {
 	Quote create(UUID projectId, Principal principal);
 
 	/**
-	 * Freezes a DRAFT Quote: from then on it never changes.
+	 * Prices the Project as it is now into the next DRAFT revision of a sent Quote's number.
+	 */
+	Quote revise(UUID quoteId, Principal principal);
+
+	/**
+	 * Freezes a DRAFT Quote: from then on it never changes. Earlier sent revisions become
+	 * superseded.
 	 */
 	Quote send(UUID quoteId, Principal principal);
 

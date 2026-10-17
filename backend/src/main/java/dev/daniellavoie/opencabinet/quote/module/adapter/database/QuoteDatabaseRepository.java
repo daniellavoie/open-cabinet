@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.quote.module.adapter.database;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -26,7 +27,7 @@ public class QuoteDatabaseRepository implements QuoteRepository {
 	@Override
 	@Transactional(readOnly = true)
 	public List<Quote> findByProject(UUID projectId, UUID shopId) {
-		return jpaRepository.findByProjectIdAndShopIdOrderByNumberDesc(projectId, shopId)
+		return jpaRepository.findByProjectIdAndShopIdOrderByNumberDescRevisionDesc(projectId, shopId)
 				.stream()
 				.map(QuoteEntity::to)
 				.toList();
@@ -49,6 +50,7 @@ public class QuoteDatabaseRepository implements QuoteRepository {
 				.shopId(shopId)
 				.projectId(quote.getProjectId())
 				.number(quote.getNumber())
+				.revision(quote.getRevision())
 				.status(quote.getStatus())
 				.content(quote.getContent())
 				.creationTimestamp(quote.getCreationTimestamp())
@@ -72,6 +74,19 @@ public class QuoteDatabaseRepository implements QuoteRepository {
 				.sentTimestamp(quote.getSentTimestamp())
 				.build())
 				.to();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<Quote> findLatestRevision(UUID shopId, int number) {
+		return jpaRepository.findFirstByShopIdAndNumberOrderByRevisionDesc(shopId, number).map(QuoteEntity::to);
+	}
+
+	@Override
+	@Transactional
+	public void supersedeEarlierRevisions(Quote quote, UUID shopId) {
+		jpaRepository.supersede(shopId, quote.getNumber(), quote.getRevision(), QuoteStatus.SENT,
+				QuoteStatus.SUPERSEDED);
 	}
 
 	@Override

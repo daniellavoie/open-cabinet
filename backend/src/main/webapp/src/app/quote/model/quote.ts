@@ -1,6 +1,6 @@
 import { LabourMethod } from "../../shop/model/shop";
 
-export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
+export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED" | "SUPERSEDED";
 
 export class QuoteLine {
   kind!: "CABINETS" | "MANUAL";
@@ -44,6 +44,7 @@ export class Quote {
   id!: string;
   projectId!: string;
   number!: number;
+  revision!: number;
   displayNumber!: string;
   status!: QuoteStatus;
   content!: QuoteContent;

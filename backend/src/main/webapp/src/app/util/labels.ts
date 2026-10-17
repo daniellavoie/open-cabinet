@@ -42,6 +42,7 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   SENT: $localize`:@@quoteStatus.sent:Envoyée`,
   ACCEPTED: $localize`:@@quoteStatus.accepted:Acceptée`,
   DECLINED: $localize`:@@quoteStatus.declined:Refusée`,
+  SUPERSEDED: $localize`:@@quoteStatus.superseded:Remplacée`,
 };
 
 export const LABOUR_METHOD_LABELS: Record<LabourMethod, string> = {

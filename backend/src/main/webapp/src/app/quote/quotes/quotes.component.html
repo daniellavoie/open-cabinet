@@ -60,11 +60,13 @@
         <button class="btn btn-sm btn-outline-secondary" (click)="download(selected)" i18n="@@quotes.pdf">PDF</button>
         <button class="btn btn-sm btn-primary" *ngIf="selected.status === 'DRAFT'" (click)="send(selected)" [disabled]="busy" i18n="@@quotes.send">Marquer comme envoyée</button>
         <button class="btn btn-sm btn-outline-danger" *ngIf="selected.status === 'DRAFT'" (click)="remove(selected)" [disabled]="busy" i18n="@@common.remove">Retirer</button>
+        <button class="btn btn-sm btn-outline-primary" *ngIf="canRevise(selected)" (click)="revise(selected)" [disabled]="busy || dirty"
+          i18n="@@quotes.revise">Réviser</button>
         <button class="btn btn-sm btn-outline-success" *ngIf="selected.status === 'SENT'" (click)="setStatus(selected, 'ACCEPTED')" [disabled]="busy" i18n="@@quotes.accept">Acceptée</button>
         <button class="btn btn-sm btn-outline-danger" *ngIf="selected.status === 'SENT'" (click)="setStatus(selected, 'DECLINED')" [disabled]="busy" i18n="@@quotes.decline">Refusée</button>
       </span>
     </h2>
-    <p class="hint" *ngIf="selected.status !== 'DRAFT'" i18n="@@quotes.frozen">Envoyée, cette soumission ne change plus.</p>
+    <p class="hint" *ngIf="selected.status !== 'DRAFT'" i18n="@@quotes.frozen">Envoyée, cette soumission ne change plus. Pour la modifier, créez-en une révision.</p>
 
     <table class="table table-sm">
       <tbody>
