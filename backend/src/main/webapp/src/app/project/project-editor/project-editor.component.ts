@@ -8,6 +8,7 @@ import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from 
 import { CatalogService } from "../../catalog/catalog-service";
 import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
+import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
@@ -73,6 +74,8 @@ export class ProjectEditorComponent implements OnDestroy {
   clients: Client[] = [];
   /** The Shop's ordered Front styles. */
   frontStyles: Material[] = [];
+  shopTemplates: ShopCabinetTemplate[] = [];
+  message = "";
   violations: Violation[] = [];
   invalidIds = new Set<string>();
   cabinetLabels = new Map<string, string>();
@@ -94,6 +97,7 @@ export class ProjectEditorComponent implements OnDestroy {
     private projectService: ProjectService,
     clientService: ClientService,
     catalogService: CatalogService,
+    private shopTemplateService: ShopTemplateService,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -102,8 +106,10 @@ export class ProjectEditorComponent implements OnDestroy {
         this.projectService.templates(),
         clientService.findAll(),
         catalogService.findAll(),
+        shopTemplateService.findAll(),
       ])))
-      .pipe(tap(([project, templates, clients, materials]) => {
+      .pipe(tap(([project, templates, clients, materials, shopTemplates]) => {
+        this.shopTemplates = shopTemplates;
         this.templates = templates;
         this.clients = clients;
         this.frontStyles = materials.filter(material => material.kind === "FRONT");
@@ -206,6 +212,17 @@ export class ProjectEditorComponent implements OnDestroy {
     if (snapped !== (cabinet.dividerPositionsMm ?? [])[index]) {
       this.setDesign(moveDivider(this.draft!.design, cabinet.id, index, snapped));
     }
+  }
+
+  saveTemplate(request: { name: string; cabinet: Cabinet }) {
+    this.error = "";
+    this.shopTemplateService.create(request.name, request.cabinet)
+      .pipe(tap(template => {
+        this.shopTemplates = [...this.shopTemplates, template].sort((first, second) => first.name.localeCompare(second.name));
+        this.message = $localize`:@@editor.templateSaved:Modèle « ${template.name}:name: » enregistré.`;
+      }))
+      .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
+        ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
   }
 
   selectTab(tab: Tab) {

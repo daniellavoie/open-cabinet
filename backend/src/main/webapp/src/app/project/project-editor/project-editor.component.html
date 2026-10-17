@@ -21,6 +21,7 @@
   </div>
 
   <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
 
   <nav class="tabs" role="tablist">
     <button *ngFor="let item of tabs" role="tab" [class.active]="tab === item.id" [attr.aria-selected]="tab === item.id"
@@ -32,7 +33,8 @@
       [invalidIds]="invalidIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
-      [violations]="violations" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
+      [violations]="violations" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
+      (saveTemplate)="saveTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">

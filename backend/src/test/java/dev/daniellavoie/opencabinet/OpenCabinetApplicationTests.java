@@ -99,6 +99,21 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, get("/api/material")))
 				.andExpect(jsonPath("$", hasSize(14)));
 
+		mockMvc.perform(as(owner, post("/api/shop-template"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"name": "Vanité 30", "cabinet": {"id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1",
+						"offsetMm": 300, "widthMm": 762, "heightMm": 876.3, "depthMm": 533.4, "elevationMm": 0,
+						"shelfCount": 1, "dividerPositionsMm": [381], "finishedLeft": true}}
+						"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCode").value("BASE_DOOR"));
+		mockMvc.perform(as(owner, get("/api/shop-template")))
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].preset.widthMm").value(762))
+				.andExpect(jsonPath("$[0].preset.dividerPositionsMm[0]").value(381))
+				.andExpect(jsonPath("$[0].preset.finishedLeft").value(true));
+
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"name\":\"Jean Tremblay\",\"address\":\"123 rue Masson, Montréal\"}"))

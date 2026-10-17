@@ -57,3 +57,21 @@ h3 {
   color: var(--oc-text-tertiary);
   font-size: var(--oc-font-size-sm);
 }
+
+.shop-templates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.shop-templates li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-templates .meta {
+  color: var(--oc-text-tertiary);
+  font-size: var(--oc-font-size-sm);
+  margin-left: var(--oc-space-2);
+}

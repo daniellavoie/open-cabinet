@@ -72,7 +72,12 @@
   <h2 i18n="@@design.addCabinet">Ajouter un caisson</h2>
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
-      <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+      <optgroup i18n-label="@@design.starterTemplates" label="Modèles de départ">
+        <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.shopTemplates" label="Modèles de l'atelier" *ngIf="shopTemplates.length > 0">
+        <option *ngFor="let template of shopTemplates" [value]="'shop:' + template.id">{{ template.name }}</option>
+      </optgroup>
     </select>
     <select class="form-select form-select-sm" [(ngModel)]="newWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
       <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
@@ -153,6 +158,16 @@
       <label for="cabinetShelves" i18n="@@design.shelvesPerSection">Tablettes par section</label>
       <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"
         [ngModel]="selected.shelfCount" (ngModelChange)="updateSelected({ shelfCount: $event })" />
+    </ng-container>
+  </div>
+  <div class="save-template" *ngIf="canSaveTemplates">
+    <button class="btn btn-sm btn-outline-secondary" *ngIf="templateName === null" (click)="templateName = ''"
+      i18n="@@design.saveAsTemplate">Enregistrer comme modèle de l'atelier</button>
+    <ng-container *ngIf="templateName !== null">
+      <input class="form-control form-control-sm" id="templateName" [(ngModel)]="templateName" (keydown.enter)="saveSelectedAsTemplate()"
+        i18n-placeholder="@@design.templateName" placeholder="Nom du modèle" />
+      <button class="btn btn-sm btn-primary" (click)="saveSelectedAsTemplate()" [disabled]="!templateName.trim()" i18n="@@common.save">Enregistrer</button>
+      <button class="btn btn-sm btn-link" (click)="templateName = null" i18n="@@common.cancel">Annuler</button>
     </ng-container>
   </div>
   <div class="dividers" *ngIf="allowsDividers(selectedTemplate)">

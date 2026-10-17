@@ -134,3 +134,10 @@ h2 {
   font-size: var(--oc-font-size-sm);
   margin-bottom: var(--oc-space-1);
 }
+
+.save-template {
+  display: flex;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-top: var(--oc-space-4);
+}

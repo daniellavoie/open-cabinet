@@ -11,6 +11,8 @@ import { LABOUR_METHOD_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
 import { ConstructionStandard, LabourMethod, ShopSettings } from "../model/shop";
+import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
+import { TEMPLATE_LABELS } from "../../util/labels";
 import { ShopService } from "../shop-service";
 
 type StandardMaterialField = keyof Pick<ConstructionStandard,
@@ -28,6 +30,7 @@ type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKi
   templateUrl: "./settings.component.html",
 })
 export class SettingsComponent {
+  readonly templateLabels = TEMPLATE_LABELS;
   readonly labourMethods = Object.entries(LABOUR_METHOD_LABELS) as [LabourMethod, string][];
 
   readonly materialFields: { field: StandardMaterialField; kind: MaterialKind; label: string }[] = [
@@ -60,6 +63,7 @@ export class SettingsComponent {
   units: Units = "IMPERIAL";
   settings?: ShopSettings;
   materials: Material[] = [];
+  shopTemplates: ShopCabinetTemplate[] = [];
   saving = false;
   message = "";
   error = "";
@@ -68,6 +72,7 @@ export class SettingsComponent {
     private memberService: MemberService,
     private shopService: ShopService,
     catalogService: CatalogService,
+    private shopTemplateService: ShopTemplateService,
   ) {
     const shop = this.memberService.shop()!;
     this.name = shop.name;
@@ -77,6 +82,9 @@ export class SettingsComponent {
 
     catalogService.findAll()
       .pipe(tap(materials => this.materials = materials))
+      .subscribe();
+    shopTemplateService.findAll()
+      .pipe(tap(templates => this.shopTemplates = templates))
       .subscribe();
   }
 
@@ -104,5 +112,14 @@ export class SettingsComponent {
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@settings.saveError:Impossible d'enregistrer les paramètres.` });
+  }
+
+  /**
+   * Cabinets already added from the template keep their values.
+   */
+  deleteTemplate(template: ShopCabinetTemplate) {
+    this.shopTemplateService.delete(template.id)
+      .pipe(tap(() => this.shopTemplates = this.shopTemplates.filter(item => item.id !== template.id)))
+      .subscribe();
   }
 }
