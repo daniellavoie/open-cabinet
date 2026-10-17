@@ -51,3 +51,41 @@ figcaption,
   color: var(--oc-text-tertiary);
   font-size: var(--oc-font-size-sm);
 }
+
+.layouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--oc-space-2);
+  margin-bottom: var(--oc-space-3);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--oc-space-2);
+  align-items: center;
+  padding: var(--oc-space-2) var(--oc-space-3);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-md);
+  background-color: var(--oc-bg-raise);
+  cursor: pointer;
+}
+
+.layout.selected {
+  border-color: var(--oc-accent-default);
+  background-color: var(--oc-accent-muted);
+}
+
+.layout input {
+  grid-row: span 2;
+}
+
+.layout-title {
+  font-weight: 600;
+  font-size: var(--oc-font-size-sm);
+}
+
+.layout .meta {
+  font-size: var(--oc-font-size-xs);
+  color: var(--oc-text-secondary);
+}

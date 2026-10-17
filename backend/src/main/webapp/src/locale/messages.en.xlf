@@ -570,11 +570,88 @@
           <context context-type="linenumber">8,10</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="nesting.layouts" datatype="html">
+        <source>Dispositions</source>
+        <target>Layouts</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.chosen" datatype="html">
+        <source>Retenue : <x id="INTERPOLATION" equiv-text="{{ option.sheets.length }}" /> panneau(x)</source>
+        <target>Chosen: <x id="INTERPOLATION" equiv-text="{{ option.sheets.length }}" /> sheet(s)</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.alternative" datatype="html">
+        <source>Autre : <x id="INTERPOLATION" equiv-text="{{ option.sheets.length }}" /> panneau(x)</source>
+        <target>Other: <x id="INTERPOLATION" equiv-text="{{ option.sheets.length }}" /> sheet(s)</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.notBought" datatype="html">
+        <source>Pour comparer seulement : les matériaux suivent la disposition retenue.</source>
+        <target>For comparison only: materials follow the chosen layout.</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">21,23</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="nesting.caption" datatype="html">
         <source>Panneau <x id="INTERPOLATION" equiv-text="{{ index + 1 }}" /> — <x id="INTERPOLATION_1" equiv-text="{{ sheet.utilization | percent: &quot;1.0-0&quot; }}" /> utilisé</source>
         <target>Sheet <x id="INTERPOLATION" equiv-text="{{ index + 1 }}" /> — <x id="INTERPOLATION_1" equiv-text="{{ sheet.utilization | percent: &quot;1.0-0&quot; }}" /> used</target><context-group purpose="location">
           <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
-          <context context-type="linenumber">23,24</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.stripsAlong" datatype="html">
+        <source>Bandes en long</source>
+        <target>Strips along</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.stripsAcross" datatype="html">
+        <source>Bandes en travers</source>
+        <target>Strips across</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.widestFirst" datatype="html">
+        <source>plus larges d'abord</source>
+        <target>widest first</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.longestFirst" datatype="html">
+        <source>plus longues d'abord</source>
+        <target>longest first</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.largestFirst" datatype="html">
+        <source>plus grandes d'abord</source>
+        <target>largest first</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.grainlessAlong" datatype="html">
+        <source>pièces sans fil en long</source>
+        <target>grainless parts lengthwise</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.grainlessAcross" datatype="html">
+        <source>pièces sans fil en travers</source>
+        <target>grainless parts crosswise</target><context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.ts</context>
+          <context context-type="linenumber">21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="drawings.saveFirst" datatype="html">

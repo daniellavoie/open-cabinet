@@ -88,6 +88,75 @@ class NesterTest {
 		assertThat(nesting.getOversizedParts()).hasSize(1);
 	}
 
+	@Test
+	void stacksShortPartsInATallStripToSaveASheet() {
+		var parts = List.of(part(CARCASS, 2000, 1200), part(CARCASS, 400, 580), part(CARCASS, 400, 580));
+
+		var nesting = Nester.nest(CARCASS, parts, KERF, TRIM);
+
+		assertThat(nesting.getSheets()).as("both small parts stack beside the large one").hasSize(1);
+	}
+
+	@Test
+	void everyLayoutCanBeCutWithStraightSawCuts() {
+		var random = new java.util.Random(7);
+		var parts = new ArrayList<Part>();
+		for (int index = 0; index < 60; index++) {
+			parts.add(part(index % 3 == 0 ? FRONT : CARCASS, 150 + random.nextInt(1800), 80 + random.nextInt(700)));
+		}
+
+		for (var material : List.of(CARCASS, FRONT)) {
+			var nesting = Nester.nest(material, parts.stream()
+					.filter(part -> part.getMaterialId().equals(material.getId())).toList(), KERF, TRIM);
+			var layouts = new ArrayList<MaterialNesting>(nesting.getAlternatives());
+			layouts.add(0, nesting);
+
+			assertThat(nesting.getAlternatives()).allSatisfy(alternative ->
+					assertThat(alternative.getSheets().size()).isGreaterThanOrEqualTo(nesting.getSheets().size()));
+			for (var layout : layouts) {
+				assertThat(layout.getStrategy()).isNotNull();
+				for (var sheet : layout.getSheets()) {
+					assertThat(guillotine(sheet.getPlacements(), 0, 0, material.getLengthMm(), material.getWidthMm()))
+							.as("%s %s", material.getName(), layout.getStrategy())
+							.isTrue();
+					if (material.isGrain()) {
+						assertThat(sheet.getPlacements()).noneMatch(SheetPlacement::isRotated);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Whether the placements in the rectangle can be separated by a straight cut right across it, and
+	 * each side again, until every piece holds one Part.
+	 */
+	private static boolean guillotine(List<SheetPlacement> placements, double along, double across, double length,
+			double width) {
+		if (placements.size() <= 1) {
+			return true;
+		}
+		for (var placement : placements) {
+			for (var cut : List.of(placement.getAlongMm() + placement.getLengthMm(), placement.getAlongMm())) {
+				var before = placements.stream().filter(item -> item.getAlongMm() + item.getLengthMm() <= cut + 1e-6).toList();
+				var after = placements.stream().filter(item -> item.getAlongMm() >= cut - 1e-6).toList();
+				if (!before.isEmpty() && !after.isEmpty() && before.size() + after.size() == placements.size()) {
+					return guillotine(before, along, across, cut - along, width)
+							&& guillotine(after, cut, across, along + length - cut, width);
+				}
+			}
+			for (var cut : List.of(placement.getAcrossMm() + placement.getWidthMm(), placement.getAcrossMm())) {
+				var before = placements.stream().filter(item -> item.getAcrossMm() + item.getWidthMm() <= cut + 1e-6).toList();
+				var after = placements.stream().filter(item -> item.getAcrossMm() >= cut - 1e-6).toList();
+				if (!before.isEmpty() && !after.isEmpty() && before.size() + after.size() == placements.size()) {
+					return guillotine(before, along, across, length, cut - across)
+							&& guillotine(after, along, cut, length, across + width - cut);
+				}
+			}
+		}
+		return false;
+	}
+
 	private static List<SheetPlacement> placed(MaterialNesting nesting) {
 		return nesting.getSheets().stream().flatMap(sheet -> sheet.getPlacements().stream()).toList();
 	}
