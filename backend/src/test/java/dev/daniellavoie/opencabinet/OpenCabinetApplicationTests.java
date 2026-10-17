@@ -78,6 +78,27 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(11)));
 
+		var exported = mockMvc.perform(as(owner, get("/api/material/export")))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		var repriced = exported.replace("MEL-WH-58,68.00", "MEL-WH-58,72.00")
+				+ "HARDWARE,Pentures de porte,HNG-SOFT,7.25,,,,false\r\n";
+		mockMvc.perform(as(owner, post("/api/material/import"))
+				.contentType("text/csv")
+				.content(repriced))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.applied").value(true))
+				.andExpect(jsonPath("$.created").value(1))
+				.andExpect(jsonPath("$.updated").value(11));
+		mockMvc.perform(as(owner, post("/api/material/import"))
+				.contentType("text/csv")
+				.content("kind,name,sku,price\nSHEET,Mélamine,MEL-WH-58,abc\nHARDWARE,Coulisse,MEL-WH-14,1\n"))
+				.andExpect(jsonPath("$.applied").value(false))
+				.andExpect(jsonPath("$.errors", hasSize(2)))
+				.andExpect(jsonPath("$.errors[1].line").value(3));
+		mockMvc.perform(as(owner, get("/api/material")))
+				.andExpect(jsonPath("$", hasSize(12)));
+
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"name\":\"Jean Tremblay\",\"address\":\"123 rue Masson, Montréal\"}"))

@@ -1,10 +1,15 @@
 package dev.daniellavoie.opencabinet.catalog.module.web;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import dev.daniellavoie.opencabinet.catalog.domain.model.CatalogImportResult;
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialRequest;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
@@ -43,6 +49,20 @@ public class CatalogController {
 	public Material update(@PathVariable UUID materialId, @RequestBody MaterialRequest request,
 			Principal principal) {
 		return domain.update(materialId, request, principal);
+	}
+
+	@GetMapping("/export")
+	public ResponseEntity<String> exportCsv(Principal principal) {
+		return ResponseEntity.ok()
+				.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						ContentDisposition.attachment().filename("catalogue.csv").build().toString())
+				.body(domain.exportCsv(principal));
+	}
+
+	@PostMapping(path = "/import", consumes = { "text/csv", MediaType.TEXT_PLAIN_VALUE })
+	public CatalogImportResult importCsv(@RequestBody String csv, Principal principal) {
+		return domain.importCsv(csv, principal);
 	}
 
 	@DeleteMapping("/{materialId}")

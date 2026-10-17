@@ -65,6 +65,13 @@ public class MaterialDatabaseRepository implements MaterialRepository {
 
 	@Override
 	@Transactional
+	public List<Material> saveAll(List<Material> materials, UUID shopId) {
+		log.info("Saving {} materials for shop {}", materials.size(), shopId);
+		return materials.stream().map(material -> save(material, shopId)).toList();
+	}
+
+	@Override
+	@Transactional
 	public void delete(UUID materialId, UUID shopId) {
 		jpaRepository.delete(find(materialId, shopId));
 	}

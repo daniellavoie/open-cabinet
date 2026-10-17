@@ -2,13 +2,18 @@ package dev.daniellavoie.opencabinet.catalog.domain;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import dev.daniellavoie.opencabinet.catalog.domain.model.CatalogImportResult;
+import dev.daniellavoie.opencabinet.catalog.domain.model.CatalogImportResult.ImportError;
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialRequest;
@@ -70,6 +75,59 @@ public class DefaultCatalogDomain implements CatalogDomain {
 		}
 
 		repository.delete(materialId, owner.getShopId());
+	}
+
+	@Override
+	public String exportCsv(Principal principal) {
+		return CatalogCsv.write(repository.findByShop(memberDomain.currentOwner(principal).getShopId()));
+	}
+
+	@Override
+	public CatalogImportResult importCsv(String csv, Principal principal) {
+		var shopId = memberDomain.currentOwner(principal).getShopId();
+		var parsed = CatalogCsv.read(Optional.ofNullable(csv).orElse(""));
+		var errors = new ArrayList<ImportError>(parsed.errors());
+
+		Map<String, Material> bySku = new HashMap<>();
+		repository.findByShop(shopId).stream()
+				.filter(material -> material.getSku() != null)
+				.forEach(material -> bySku.put(material.getSku(), material));
+
+		var toSave = new ArrayList<Material>();
+		var created = 0;
+		var updated = 0;
+		var seenSkus = new HashMap<String, Integer>();
+		for (var row : parsed.rows()) {
+			var request = row.request();
+			try {
+				if (request.getSku() != null && seenSkus.putIfAbsent(request.getSku(), row.line()) != null) {
+					throw new IllegalArgumentException("SKU " + request.getSku() + " already appears on line "
+							+ seenSkus.get(request.getSku()));
+				}
+				var existing = Optional.ofNullable(request.getSku()).map(bySku::get);
+				if (existing.isPresent() && existing.get().getKind() != request.getKind()) {
+					throw new IllegalArgumentException("SKU " + request.getSku() + " is a " + existing.get().getKind()
+							+ " in the catalog; the kind of a material cannot change");
+				}
+				toSave.add(toMaterial(existing.map(Material::getId).orElseGet(UUID::randomUUID), request));
+				if (existing.isPresent()) {
+					updated++;
+				} else {
+					created++;
+				}
+			} catch (IllegalArgumentException exception) {
+				errors.add(CatalogCsv.error(row.line(), exception.getMessage()));
+			}
+		}
+
+		if (!errors.isEmpty()) {
+			errors.sort((first, second) -> Integer.compare(first.getLine(), second.getLine()));
+			return CatalogImportResult.builder().applied(false).errors(errors).build();
+		}
+
+		repository.saveAll(toSave, shopId);
+		return CatalogImportResult.builder().applied(true).created(created).updated(updated).errors(List.of())
+				.build();
 	}
 
 	@Override

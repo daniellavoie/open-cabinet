@@ -12,5 +12,10 @@ public interface MaterialRepository {
 
 	Material save(Material material, UUID shopId);
 
+	/**
+	 * Saves every material in one transaction.
+	 */
+	List<Material> saveAll(List<Material> materials, UUID shopId);
+
 	void delete(UUID materialId, UUID shopId);
 }
