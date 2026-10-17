@@ -1,4 +1,4 @@
-export type MaterialKind = "SHEET" | "EDGE_BANDING" | "HARDWARE" | "FRONT";
+export type MaterialKind = "SHEET" | "EDGE_BANDING" | "HARDWARE" | "FRONT" | "MOULDING";
 
 export class Material {
   id!: string;

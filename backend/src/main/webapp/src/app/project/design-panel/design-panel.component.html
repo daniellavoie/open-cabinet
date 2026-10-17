@@ -16,7 +16,7 @@
 </section>
 
 <section class="block">
-  <h2 i18n="@@design.items">Ouvertures et électroménagers</h2>
+  <h2 i18n="@@design.itemsAndTrim">Ouvertures, électroménagers et remplissages</h2>
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newItemKind" i18n-aria-label="@@design.itemKind" aria-label="Genre">
       <optgroup i18n-label="@@design.openings" label="Ouvertures">
@@ -24,6 +24,9 @@
       </optgroup>
       <optgroup i18n-label="@@design.appliances" label="Électroménagers">
         <option *ngFor="let kind of applianceKinds" [value]="kind">{{ itemLabels[kind] }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.trim" label="Garnitures">
+        <option value="FILLER">{{ itemLabels.FILLER }}</option>
       </optgroup>
     </select>
     <select class="form-select form-select-sm" [(ngModel)]="newItemWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
@@ -34,7 +37,7 @@
   <ul class="cabinets" *ngIf="items.length > 0">
     <li *ngFor="let item of items" [class.selected]="item.id === selectedId"
       [class.invalid]="violationsOf(item.id).length > 0" (click)="selectItem.emit(item.id)">
-      <span>{{ itemLabels[item.kind] }}</span>
+      <span>{{ itemLabels[kindOf(item)] }}</span>
       <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(item.wallId) }}</span>
     </li>
   </ul>
@@ -42,7 +45,7 @@
 
 <section class="block selected-cabinet" *ngIf="selectedItem as item">
   <h2>
-    <span>{{ itemLabels[item.kind] }}</span>
+    <span>{{ itemLabels[kindOf(item)] }}</span>
     <button class="btn btn-sm btn-link text-danger" (click)="removeSelectedItem()" i18n="@@common.remove">Retirer</button>
   </h2>
   <div class="fields">
@@ -58,9 +61,9 @@
     <length-input inputId="itemHeight" [units]="units" [valueMm]="item.heightMm" (valueMmChange)="updateSelectedItem({ heightMm: $event })" />
     <label for="itemElevation" i18n="@@design.elevation">Hauteur du bas</label>
     <length-input inputId="itemElevation" [units]="units" [valueMm]="item.elevationMm" (valueMmChange)="updateSelectedItem({ elevationMm: $event })" />
-    <ng-container *ngIf="selectedAppliance as appliance">
+    <ng-container *ngIf="selectedDeep as deep">
       <label for="itemDepth" i18n="@@design.depth">Profondeur</label>
-      <length-input inputId="itemDepth" [units]="units" [valueMm]="appliance.depthMm" (valueMmChange)="updateSelectedItem({ depthMm: $event })" />
+      <length-input inputId="itemDepth" [units]="units" [valueMm]="deep.depthMm" (valueMmChange)="updateSelectedItem({ depthMm: $event })" />
     </ng-container>
   </div>
 </section>
@@ -119,6 +122,21 @@
         <option value="RIGHT" i18n="@@design.right">Droite</option>
       </select>
     </ng-container>
+    <span class="trim-label" i18n="@@design.trimLabel">Garnitures</span>
+    <div class="trim">
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" id="cabinetFinishedLeft" [ngModel]="!!selected.finishedLeft" (ngModelChange)="updateSelected({ finishedLeft: $event })" />
+        <span i18n="@@design.finishedLeft">Panneau de finition à gauche</span>
+      </label>
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" id="cabinetFinishedRight" [ngModel]="!!selected.finishedRight" (ngModelChange)="updateSelected({ finishedRight: $event })" />
+        <span i18n="@@design.finishedRight">Panneau de finition à droite</span>
+      </label>
+      <label class="form-check" *ngIf="selectedTemplate.type !== 'BASE'">
+        <input class="form-check-input" type="checkbox" id="cabinetCrown" [ngModel]="!!selected.crown" (ngModelChange)="updateSelected({ crown: $event })" />
+        <span i18n="@@design.crown">Moulure couronne</span>
+      </label>
+    </div>
     <label for="cabinetFrontSource" i18n="@@design.frontSource">Façades</label>
     <select class="form-select form-select-sm" id="cabinetFrontSource" [ngModel]="selected.frontSource ?? 'MADE'" (ngModelChange)="updateSelected({ frontSource: $event })">
       <option value="MADE" i18n="@@design.frontsMade">Fabriquées à l'atelier</option>

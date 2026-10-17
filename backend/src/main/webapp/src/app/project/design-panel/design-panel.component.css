@@ -123,3 +123,14 @@ h2 {
   margin-bottom: var(--oc-space-2);
   font-size: var(--oc-font-size-sm);
 }
+
+.trim-label {
+  align-self: start;
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.trim .form-check {
+  font-size: var(--oc-font-size-sm);
+  margin-bottom: var(--oc-space-1);
+}

@@ -25,6 +25,7 @@ export class BillOfMaterialsComponent {
       case "SHEET":
         return $localize`:@@bom.sheets:panneau(x)`;
       case "EDGE_BANDING":
+      case "MOULDING":
         return "m";
       case "FRONT":
         return "m²";

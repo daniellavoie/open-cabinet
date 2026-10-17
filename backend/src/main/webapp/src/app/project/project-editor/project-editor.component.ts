@@ -173,8 +173,8 @@ export class ProjectEditorComponent implements OnDestroy {
   }
 
   /**
-   * Cabinets snap to each other and to Appliances; Openings and Appliances
-   * snap to everything on their Wall.
+   * Cabinets snap to each other, to Appliances and to Fillers; Openings,
+   * Appliances and Fillers snap to everything on their Wall.
    */
   onMove(move: ItemMove) {
     const design = this.draft!.design;
@@ -189,7 +189,7 @@ export class ProjectEditorComponent implements OnDestroy {
       return;
     }
     const step = this.units === "IMPERIAL" ? MM_PER_INCH / 2 : 5;
-    const others = cabinet ? [...design.cabinets, ...design.appliances ?? []] : onWall(design);
+    const others = cabinet ? [...design.cabinets, ...design.appliances ?? [], ...design.fillers ?? []] : onWall(design);
     const offsetMm = snapOffset(item, move.offsetMm, wall, others, step, SNAP_DISTANCE_MM);
     if (offsetMm !== item.offsetMm) {
       this.setDesign(cabinet ? updateCabinet(design, item.id, { offsetMm }) : updateItem(design, item.id, { offsetMm }));
@@ -272,7 +272,7 @@ export class ProjectEditorComponent implements OnDestroy {
 }
 
 function onWall(design: Design): OnWall[] {
-  return [...design.cabinets, ...design.openings ?? [], ...design.appliances ?? []];
+  return [...design.cabinets, ...design.openings ?? [], ...design.appliances ?? [], ...design.fillers ?? []];
 }
 
 /**

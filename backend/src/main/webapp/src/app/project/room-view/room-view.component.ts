@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { doorLeaves, frontRows, frontWidth } from "../front-layout";
-import { Appliance, Cabinet, CabinetTemplate, Design, Opening, standsOnFloor } from "../model/design";
+import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor } from "../model/design";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
 
 const MM = 1 / 1000;
@@ -16,6 +16,8 @@ const CLICK_TOLERANCE_PX = 4;
 const OPENING_THICKNESS_MM = 20;
 const PANEL_THICKNESS_MM = 19;
 const SHELF_SETBACK_MM = 25;
+const CROWN_HEIGHT_MM = 76.2;
+const CROWN_PROJECTION_MM = 50;
 
 /**
  * A Cabinet, Opening or Appliance dragged along its Wall, or with
@@ -198,6 +200,13 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }
 
+    for (const filler of this.design.fillers ?? []) {
+      const placement = placementsById.get(filler.wallId);
+      if (placement) {
+        this.content.add(this.fillerMesh(filler, placement, colors, highlightOf(filler.id)));
+      }
+    }
+
     for (const cabinet of this.design.cabinets) {
       const placement = placementsById.get(cabinet.wallId);
       const template = templates.get(cabinet.templateCode);
@@ -269,6 +278,18 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     return tagged(group, appliance.id);
   }
 
+  /**
+   * A Filler as a panel of Front material, its face flush with the Fronts.
+   */
+  private fillerMesh(filler: Filler, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
+    const group = this.onWallGroup(filler, filler.depthMm, placement);
+    const panel = box(filler.widthMm, filler.heightMm, FRONT_THICKNESS_MM, colors.front);
+    panel.position.set(0, filler.heightMm / 2 * MM, (filler.depthMm / 2 - FRONT_THICKNESS_MM / 2) * MM);
+    group.add(panel);
+    this.outline(group, filler.widthMm, filler.heightMm, filler.depthMm, highlight);
+    return tagged(group, filler.id);
+  }
+
   private outline(group: THREE.Group, widthMm: number, heightMm: number, depthMm: number, color: string | null) {
     if (!color) {
       return;
@@ -313,6 +334,19 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       const mesh = box(front.width, front.height, depth, front.opening ? colors.toeKick : colors.front, interior && !front.opening ? 0.25 : 1);
       mesh.position.set(front.x * MM, (boxBottom + front.y) * MM, (cabinet.depthMm / 2 - depth / 2) * MM);
       group.add(mesh);
+    }
+
+    const ends = [cabinet.finishedLeft ? -1 : 0, cabinet.finishedRight ? 1 : 0].filter(side => side !== 0);
+    for (const side of ends) {
+      const panel = box(FRONT_THICKNESS_MM, cabinet.heightMm, cabinet.depthMm, colors.front);
+      panel.position.set(side * (cabinet.widthMm + FRONT_THICKNESS_MM) / 2 * MM, cabinet.heightMm / 2 * MM, 0);
+      group.add(panel);
+    }
+
+    if (cabinet.crown && template.type !== "BASE") {
+      const crown = box(cabinet.widthMm, CROWN_HEIGHT_MM, CROWN_PROJECTION_MM, colors.front);
+      crown.position.set(0, (cabinet.heightMm + CROWN_HEIGHT_MM / 2) * MM, cabinet.depthMm / 2 * MM);
+      group.add(crown);
     }
 
     this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);
@@ -360,7 +394,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   private onPointerDown(event: PointerEvent) {
     this.pointerDown = { x: event.clientX, y: event.clientY };
     const picked = this.pick(event);
-    const item: OnWall | undefined = [...this.design.cabinets, ...this.design.openings ?? [], ...this.design.appliances ?? []]
+    const item: OnWall | undefined = [...this.design.cabinets, ...this.design.openings ?? [], ...this.design.appliances ?? [], ...this.design.fillers ?? []]
       .find(candidate => candidate.id === picked?.id);
     if (!picked || !item) {
       return;

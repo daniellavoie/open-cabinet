@@ -17,6 +17,9 @@ export const PART_ROLE_LABELS: Record<PartRole, string> = {
   FALSE_FRONT: $localize`:@@partRole.falseFront:Fausse façade`,
   BLIND_PANEL: $localize`:@@partRole.blindPanel:Panneau d'angle aveugle`,
   DIVIDER: $localize`:@@partRole.divider:Séparateur`,
+  FINISHED_END: $localize`:@@partRole.finishedEnd:Panneau de finition`,
+  FILLER: $localize`:@@partRole.filler:Remplissage`,
+  TOE_KICK: $localize`:@@partRole.toeKick:Plinthe`,
 };
 
 export const TEMPLATE_LABELS: Record<string, string> = {
@@ -57,6 +60,8 @@ export const OPENING_KIND_LABELS: Record<OpeningKind, string> = {
   DOORWAY: $localize`:@@openingKind.doorway:Porte`,
 };
 
+export const FILLER_LABEL = $localize`:@@itemKind.filler:Remplissage`;
+
 export const APPLIANCE_KIND_LABELS: Record<ApplianceKind, string> = {
   FRIDGE: $localize`:@@applianceKind.fridge:Réfrigérateur`,
   RANGE: $localize`:@@applianceKind.range:Cuisinière`,
@@ -83,6 +88,7 @@ export const MATERIAL_KIND_LABELS: Record<MaterialKind, string> = {
   EDGE_BANDING: $localize`:@@materialKind.edgeBanding:Bande de chant`,
   HARDWARE: $localize`:@@materialKind.hardware:Quincaillerie`,
   FRONT: $localize`:@@materialKind.front:Façades commandées`,
+  MOULDING: $localize`:@@materialKind.moulding:Moulures`,
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

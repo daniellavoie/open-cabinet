@@ -42,6 +42,15 @@ public class Cabinet {
 	 * The ordered Front style (a FRONT catalog entry), when not the Construction Standard's.
 	 */
 	UUID orderedFrontId;
+	/**
+	 * Finished end panels applied over an exposed side.
+	 */
+	boolean finishedLeft;
+	boolean finishedRight;
+	/**
+	 * Crown moulding along the top front, for wall and tall Cabinets.
+	 */
+	boolean crown;
 
 	public List<Double> dividers() {
 		return dividerPositionsMm == null ? List.of() : dividerPositionsMm;

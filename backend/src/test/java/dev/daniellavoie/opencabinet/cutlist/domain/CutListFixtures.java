@@ -26,15 +26,17 @@ final class CutListFixtures {
 	static final Material DRAWER_BOX = other(MaterialKind.HARDWARE, "Drawer box", "45.00");
 	static final Material SHAKER = other(MaterialKind.FRONT, "Shaker", "300.00");
 	static final Material SLAB = other(MaterialKind.FRONT, "Slab", "200.00");
+	static final Material CROWN = other(MaterialKind.MOULDING, "Crown", "9.50");
 
 	static final List<Material> CATALOG = List.of(CARCASS, BACK, FRONT, CARCASS_BANDING, FRONT_BANDING, HINGE,
-			SHELF_PIN, LEG, PULL, SLIDE, DRAWER_BOX, SHAKER, SLAB);
+			SHELF_PIN, LEG, PULL, SLIDE, DRAWER_BOX, SHAKER, SLAB, CROWN);
 
 	static final ConstructionStandard STANDARD = ConstructionStandard.builder()
 			.carcassMaterialId(CARCASS.getId())
 			.backMaterialId(BACK.getId())
 			.frontMaterialId(FRONT.getId())
 			.orderedFrontId(SHAKER.getId())
+			.crownMouldingId(CROWN.getId())
 			.carcassEdgeBandingId(CARCASS_BANDING.getId())
 			.frontEdgeBandingId(FRONT_BANDING.getId())
 			.hingeId(HINGE.getId())

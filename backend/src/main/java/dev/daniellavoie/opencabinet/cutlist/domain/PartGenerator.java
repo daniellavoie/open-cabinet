@@ -112,6 +112,12 @@ final class PartGenerator {
 			}
 		}
 
+		var finishedEnds = (cabinet.isFinishedLeft() ? 1 : 0) + (cabinet.isFinishedRight() ? 1 : 0);
+		if (finishedEnds > 0) {
+			builder.add(PartRole.FINISHED_END, front, cabinet.getHeightMm(), cabinet.getDepthMm(), 1, 1,
+					standard.getFrontEdgeBandingId(), finishedEnds);
+		}
+
 		if (template.getBlindWidthMm() > 0) {
 			builder.front(PartRole.BLIND_PANEL, front, boxHeight - gap, template.getBlindWidthMm() - gap, true,
 					standard.getFrontEdgeBandingId(), 1);

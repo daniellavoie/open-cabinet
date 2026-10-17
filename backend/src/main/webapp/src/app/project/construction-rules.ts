@@ -33,6 +33,7 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
   const cabinets = design.cabinets ?? [];
   const openings = design.openings ?? [];
   const appliances = design.appliances ?? [];
+  const fillers = design.fillers ?? [];
   const wallsById = new Map<string, Wall>();
   walls.forEach(wall => {
     if (!wallsById.has(wall.id)) {
@@ -62,6 +63,15 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
       violations.push(itemViolation("UNKNOWN_WALL", appliance.wallId, appliance.id));
     } else if (outsideWall(appliance, wall)) {
       violations.push(itemViolation("ITEM_OUTSIDE_WALL", appliance.wallId, appliance.id));
+    }
+  }
+
+  for (const filler of fillers) {
+    const wall = wallsById.get(filler.wallId);
+    if (!wall) {
+      violations.push(itemViolation("UNKNOWN_WALL", filler.wallId, filler.id));
+    } else if (outsideWall(filler, wall)) {
+      violations.push(itemViolation("ITEM_OUTSIDE_WALL", filler.wallId, filler.id));
     }
   }
 
@@ -138,6 +148,13 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
       }
     }
   }
+
+  fillers.forEach((filler, index) => {
+    const others: (Placed & { wallId: string })[] = [...cabinets, ...appliances, ...fillers.slice(0, index)];
+    if (wallsById.has(filler.wallId) && others.some(other => other.wallId === filler.wallId && covers(other, filler))) {
+      violations.push(itemViolation("OVERLAP", filler.wallId, filler.id));
+    }
+  });
 
   checkCorners(walls, cabinets, appliances, templatesByCode, violations);
 

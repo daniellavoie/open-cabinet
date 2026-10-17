@@ -3,14 +3,17 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Out
 import { FormsModule } from "@angular/forms";
 
 import { Material } from "../../catalog/model/material";
-import { APPLIANCE_KIND_LABELS, OPENING_KIND_LABELS, TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
+import { APPLIANCE_KIND_LABELS, FILLER_LABEL, OPENING_KIND_LABELS, TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
-import { addAppliance, addCabinet, addDivider, addOpening, addWall, ItemChanges, moveDivider, removeCabinet, removeDivider, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
-import { allowsDividers, Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Opening, OpeningKind, Violation, Wall } from "../model/design";
+import { addAppliance, addCabinet, addDivider, addFiller, addOpening, addWall, ItemChanges, moveDivider, removeCabinet, removeDivider, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
+import { allowsDividers, Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Filler, Opening, OpeningKind, Violation, Wall } from "../model/design";
 
 const OPENING_KINDS: OpeningKind[] = ["WINDOW", "DOORWAY"];
 const APPLIANCE_KINDS: ApplianceKind[] = ["FRIDGE", "RANGE", "DISHWASHER", "HOOD"];
+
+type ItemKind = OpeningKind | ApplianceKind | "FILLER";
+type Item = Opening | Appliance | Filler;
 
 /**
  * Walls, Openings, Appliances, Cabinets and the broken Construction Rules of
@@ -30,7 +33,7 @@ export class DesignPanelComponent implements OnChanges {
   readonly allowsDividers = allowsDividers;
   readonly openingKinds = OPENING_KINDS;
   readonly applianceKinds = APPLIANCE_KINDS;
-  readonly itemLabels: Record<string, string> = { ...OPENING_KIND_LABELS, ...APPLIANCE_KIND_LABELS };
+  readonly itemLabels: Record<ItemKind, string> = { ...OPENING_KIND_LABELS, ...APPLIANCE_KIND_LABELS, FILLER: FILLER_LABEL };
 
   @Input() design!: Design;
   @Input() templates: CabinetTemplate[] = [];
@@ -50,7 +53,7 @@ export class DesignPanelComponent implements OnChanges {
 
   newTemplateCode = "BASE_DOOR";
   newWallId = "";
-  newItemKind: OpeningKind | ApplianceKind = "WINDOW";
+  newItemKind: ItemKind = "WINDOW";
   newItemWallId = "";
 
   ngOnChanges() {
@@ -64,20 +67,31 @@ export class DesignPanelComponent implements OnChanges {
   }
 
   /**
-   * Openings, then Appliances, each along the Room.
+   * Openings, then Appliances, then Fillers, each along the Room.
    */
-  get items(): (Opening | Appliance)[] {
-    const byPlace = (first: Opening | Appliance, second: Opening | Appliance) =>
+  get items(): Item[] {
+    const byPlace = (first: Item, second: Item) =>
       this.wallNumber(first.wallId) - this.wallNumber(second.wallId) || first.offsetMm - second.offsetMm;
-    return [...[...this.design.openings ?? []].sort(byPlace), ...[...this.design.appliances ?? []].sort(byPlace)];
+    return [
+      ...[...this.design.openings ?? []].sort(byPlace),
+      ...[...this.design.appliances ?? []].sort(byPlace),
+      ...[...this.design.fillers ?? []].sort(byPlace),
+    ];
   }
 
-  get selectedItem(): Opening | Appliance | undefined {
+  get selectedItem(): Item | undefined {
     return this.items.find(item => item.id === this.selectedId);
   }
 
-  get selectedAppliance(): Appliance | undefined {
-    return this.design.appliances?.find(item => item.id === this.selectedId);
+  /**
+   * The selected Appliance or Filler, which have a depth.
+   */
+  get selectedDeep(): Appliance | Filler | undefined {
+    return [...this.design.appliances ?? [], ...this.design.fillers ?? []].find(item => item.id === this.selectedId);
+  }
+
+  kindOf(item: Item): ItemKind {
+    return "kind" in item ? item.kind : "FILLER";
   }
 
   /**
@@ -106,7 +120,7 @@ export class DesignPanelComponent implements OnChanges {
 
   itemLabel(itemId: string): string {
     const item = this.items.find(candidate => candidate.id === itemId);
-    return item ? this.itemLabels[item.kind] : "";
+    return item ? this.itemLabels[this.kindOf(item)] : "";
   }
 
   addWall() {
@@ -157,9 +171,11 @@ export class DesignPanelComponent implements OnChanges {
       return;
     }
     const kind = this.newItemKind;
-    const result = (OPENING_KINDS as string[]).includes(kind)
-      ? addOpening(this.design, kind as OpeningKind, this.newItemWallId)
-      : addAppliance(this.design, kind as ApplianceKind, this.newItemWallId);
+    const result = kind === "FILLER"
+      ? addFiller(this.design, this.newItemWallId)
+      : (OPENING_KINDS as string[]).includes(kind)
+        ? addOpening(this.design, kind as OpeningKind, this.newItemWallId)
+        : addAppliance(this.design, kind as ApplianceKind, this.newItemWallId);
     this.designChange.emit(result.design);
     this.selectItem.emit(result.itemId);
   }

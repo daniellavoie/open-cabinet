@@ -83,6 +83,8 @@ public class DefaultCutListDomain implements CutListDomain {
 			set.parts().forEach(part -> (part.isOrdered() ? orderedParts : parts).add(part));
 			set.hardware().forEach((materialId, quantity) -> hardware.merge(materialId, quantity, Integer::sum));
 		}
+		var trim = TrimGenerator.generate(project.getDesign(), labels, templates, standard, materials);
+		parts.addAll(trim.parts());
 
 		var nesting = parts.stream()
 				.map(Part::getMaterialId)
@@ -100,6 +102,8 @@ public class DefaultCutListDomain implements CutListDomain {
 		edgeBanding.forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId), meters)));
 		orderedSquareMeters(orderedParts).forEach((materialId, squareMeters) -> billOfMaterials
 				.add(line(materials.get(materialId), squareMeters)));
+		trim.mouldingMeters().forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId),
+				meters)));
 		hardware.forEach((materialId, quantity) -> billOfMaterials.add(line(materials.get(materialId),
 				BigDecimal.valueOf(quantity))));
 

@@ -121,7 +121,7 @@ final class CatalogCsv {
 		try {
 			return MaterialKind.valueOf(Optional.ofNullable(value).orElse("").toUpperCase(Locale.ROOT));
 		} catch (IllegalArgumentException exception) {
-			throw new IllegalArgumentException("kind must be SHEET, EDGE_BANDING, HARDWARE or FRONT");
+			throw new IllegalArgumentException("kind must be SHEET, EDGE_BANDING, HARDWARE, FRONT or MOULDING");
 		}
 	}
 

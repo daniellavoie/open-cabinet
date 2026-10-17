@@ -1,6 +1,6 @@
 import { MaterialKind } from "../../catalog/model/material";
 
-export type PartRole = "SIDE" | "BOTTOM" | "TOP" | "STRETCHER" | "BACK" | "SHELF" | "DOOR" | "DRAWER_FRONT" | "FALSE_FRONT" | "BLIND_PANEL" | "DIVIDER";
+export type PartRole = "SIDE" | "BOTTOM" | "TOP" | "STRETCHER" | "BACK" | "SHELF" | "DOOR" | "DRAWER_FRONT" | "FALSE_FRONT" | "BLIND_PANEL" | "DIVIDER" | "FINISHED_END" | "FILLER" | "TOE_KICK";
 
 export class CutListRow {
   role!: PartRole;

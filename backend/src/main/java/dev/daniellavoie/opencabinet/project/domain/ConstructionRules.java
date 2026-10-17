@@ -12,6 +12,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.Filler;
 import dev.daniellavoie.opencabinet.project.domain.model.Opening;
 import dev.daniellavoie.opencabinet.project.domain.model.Side;
 import dev.daniellavoie.opencabinet.project.domain.model.Violation;
@@ -71,6 +72,7 @@ public final class ConstructionRules {
 		var cabinets = Optional.ofNullable(design.getCabinets()).orElse(List.of());
 		var openings = Optional.ofNullable(design.getOpenings()).orElse(List.of());
 		var appliances = Optional.ofNullable(design.getAppliances()).orElse(List.of());
+		var fillers = Optional.ofNullable(design.getFillers()).orElse(List.of());
 		Map<String, Wall> wallsById = walls.stream()
 				.collect(Collectors.toMap(Wall::getId, Function.identity(), (first, second) -> first));
 		Map<String, CabinetTemplate> templatesByCode = templates.stream()
@@ -99,6 +101,16 @@ public final class ConstructionRules {
 			} else if (outsideWall(appliance.getOffsetMm(), appliance.getWidthMm(), appliance.getElevationMm(),
 					appliance.getHeightMm(), wall)) {
 				violations.add(itemViolation(ITEM_OUTSIDE_WALL, appliance.getWallId(), appliance.getId()));
+			}
+		}
+
+		for (var filler : fillers) {
+			var wall = wallsById.get(filler.getWallId());
+			if (wall == null) {
+				violations.add(itemViolation(UNKNOWN_WALL, filler.getWallId(), filler.getId()));
+			} else if (outsideWall(filler.getOffsetMm(), filler.getWidthMm(), filler.getElevationMm(),
+					filler.getHeightMm(), wall)) {
+				violations.add(itemViolation(ITEM_OUTSIDE_WALL, filler.getWallId(), filler.getId()));
 			}
 		}
 
@@ -180,6 +192,21 @@ public final class ConstructionRules {
 					violations.add(itemViolation(OVERLAP, later.getWallId(), later.getId()));
 					break;
 				}
+			}
+		}
+
+		for (int index = 0; index < fillers.size(); index++) {
+			var filler = fillers.get(index);
+			var earlier = fillers.subList(0, index);
+			if (wallsById.containsKey(filler.getWallId()) && (cabinets.stream()
+					.anyMatch(cabinet -> onSameWallCovering(cabinet.getWallId(), cabinet.getOffsetMm(),
+							cabinet.getWidthMm(), cabinet.getElevationMm(), cabinet.getHeightMm(), filler))
+					|| appliances.stream().anyMatch(appliance -> onSameWallCovering(appliance.getWallId(),
+							appliance.getOffsetMm(), appliance.getWidthMm(), appliance.getElevationMm(),
+							appliance.getHeightMm(), filler))
+					|| earlier.stream().anyMatch(other -> onSameWallCovering(other.getWallId(), other.getOffsetMm(),
+							other.getWidthMm(), other.getElevationMm(), other.getHeightMm(), filler)))) {
+				violations.add(itemViolation(OVERLAP, filler.getWallId(), filler.getId()));
 			}
 		}
 
@@ -275,6 +302,13 @@ public final class ConstructionRules {
 			previous = position;
 		}
 		return !cabinet.dividers().isEmpty() && cabinet.getWidthMm() - previous < MIN_SECTION_MM - TOLERANCE_MM;
+	}
+
+	private static boolean onSameWallCovering(String wallId, double offsetMm, double widthMm, double elevationMm,
+			double heightMm, Filler filler) {
+		return wallId.equals(filler.getWallId())
+				&& intersect(offsetMm, widthMm, filler.getOffsetMm(), filler.getWidthMm())
+				&& intersect(elevationMm, heightMm, filler.getElevationMm(), filler.getHeightMm());
 	}
 
 	private static boolean outsideWall(double offsetMm, double widthMm, double elevationMm, double heightMm,

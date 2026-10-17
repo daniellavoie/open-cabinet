@@ -1,5 +1,5 @@
 import { checkConstructionRules } from "./construction-rules";
-import { Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Opening, OpeningKind, Wall } from "./model/design";
+import { Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Filler, Opening, OpeningKind, Wall } from "./model/design";
 
 /**
  * Immutable edits to a Design. Each returns a new Design; the editor checks
@@ -37,6 +37,7 @@ export function removeWall(design: Design, wallId: string): Design {
     cabinets: design.cabinets.filter(cabinet => cabinet.wallId !== wallId),
     openings: (design.openings ?? []).filter(opening => opening.wallId !== wallId),
     appliances: (design.appliances ?? []).filter(appliance => appliance.wallId !== wallId),
+    fillers: (design.fillers ?? []).filter(filler => filler.wallId !== wallId),
   };
 }
 
@@ -55,6 +56,18 @@ export const APPLIANCE_DEFAULTS: Record<ApplianceKind, Omit<Appliance, "id" | "k
   HOOD: { widthMm: 30 * INCH, heightMm: 18 * INCH, depthMm: 20 * INCH, elevationMm: 66 * INCH },
 };
 
+/**
+ * A base-height Filler: as tall as a base Cabinet's box, above its toe kick.
+ */
+export const FILLER_DEFAULTS: Omit<Filler, "id" | "wallId" | "offsetMm"> = {
+  widthMm: 3 * INCH, heightMm: 30.5 * INCH, depthMm: 24 * INCH, elevationMm: 4 * INCH,
+};
+
+export function addFiller(design: Design, wallId: string): { design: Design; itemId: string } {
+  const filler: Filler = { id: newId("filler"), wallId, offsetMm: 0, ...FILLER_DEFAULTS };
+  return { design: { ...design, fillers: [...(design.fillers ?? []), filler] }, itemId: filler.id };
+}
+
 export function addOpening(design: Design, kind: OpeningKind, wallId: string): { design: Design; itemId: string } {
   const opening: Opening = { id: newId("opening"), kind, wallId, offsetMm: 0, ...OPENING_DEFAULTS[kind] };
   return { design: { ...design, openings: [...(design.openings ?? []), opening] }, itemId: opening.id };
@@ -66,15 +79,16 @@ export function addAppliance(design: Design, kind: ApplianceKind, wallId: string
 }
 
 /**
- * Changes an Opening or Appliance, whichever has this id.
+ * Changes an Opening, Appliance or Filler, whichever has this id.
  */
-export type ItemChanges = Partial<Omit<Opening, "id" | "kind"> & Omit<Appliance, "id" | "kind">>;
+export type ItemChanges = Partial<Omit<Opening, "id" | "kind"> & Omit<Appliance, "id" | "kind"> & Omit<Filler, "id">>;
 
 export function updateItem(design: Design, itemId: string, changes: ItemChanges): Design {
   return {
     ...design,
     openings: (design.openings ?? []).map(item => item.id === itemId ? { ...item, ...changes, id: item.id, kind: item.kind } as Opening : item),
     appliances: (design.appliances ?? []).map(item => item.id === itemId ? { ...item, ...changes, id: item.id, kind: item.kind } as Appliance : item),
+    fillers: (design.fillers ?? []).map(item => item.id === itemId ? { ...item, ...changes, id: item.id } as Filler : item),
   };
 }
 
@@ -83,13 +97,14 @@ export function removeItem(design: Design, itemId: string): Design {
     ...design,
     openings: (design.openings ?? []).filter(item => item.id !== itemId),
     appliances: (design.appliances ?? []).filter(item => item.id !== itemId),
+    fillers: (design.fillers ?? []).filter(item => item.id !== itemId),
   };
 }
 
 /**
  * Adds a Cabinet from a template to a Wall, at the first spot along the Wall
  * where it breaks no Construction Rule (or at the Wall's start if none):
- * the start, just past another Cabinet, Appliance or Opening, or past what
+ * the start, just past another Cabinet, Appliance, Opening or Filler, or past what
  * stands on a neighbouring Wall's corner, leaving room for a filler.
  */
 export function addCabinet(design: Design, template: CabinetTemplate, wallId: string, templates: CabinetTemplate[]): { design: Design; cabinetId: string } {
@@ -105,7 +120,7 @@ export function addCabinet(design: Design, template: CabinetTemplate, wallId: st
     shelfCount: template.defaultShelfCount,
   };
 
-  const onWall = [...design.cabinets, ...design.appliances ?? [], ...design.openings ?? []]
+  const onWall = [...design.cabinets, ...design.appliances ?? [], ...design.openings ?? [], ...design.fillers ?? []]
     .filter(other => other.wallId === wallId)
     .map(other => other.offsetMm + other.widthMm);
   const pastCorner = [...design.cabinets, ...design.appliances ?? []]

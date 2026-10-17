@@ -46,6 +46,11 @@ export class Cabinet {
   frontSource?: FrontSource | null;
   /** The ordered Front style (a FRONT catalog entry), when not the Construction Standard's. */
   orderedFrontId?: string | null;
+  /** Finished end panels applied over an exposed side. */
+  finishedLeft?: boolean;
+  finishedRight?: boolean;
+  /** Crown moulding along the top front, for wall and tall Cabinets. */
+  crown?: boolean;
 }
 
 export type OpeningKind = "WINDOW" | "DOORWAY";
@@ -79,11 +84,27 @@ export class Appliance {
   elevationMm!: number;
 }
 
+/**
+ * A strip of Front material closing a gap between Cabinets, or between a
+ * Cabinet and a Wall or Appliance. Its face stands `depthMm` out from the
+ * Wall, flush with the Fronts beside it.
+ */
+export class Filler {
+  id!: string;
+  wallId!: string;
+  offsetMm!: number;
+  widthMm!: number;
+  heightMm!: number;
+  depthMm!: number;
+  elevationMm!: number;
+}
+
 export class Design {
   walls!: Wall[];
   cabinets!: Cabinet[];
   openings?: Opening[];
   appliances?: Appliance[];
+  fillers?: Filler[];
 }
 
 export class CabinetTemplate {
