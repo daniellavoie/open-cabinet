@@ -13,11 +13,13 @@ import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
 import { ProjectOutput } from "../../cutlist/model/project-output";
+import { ExportFormat, OutputExportService, OutputKind } from "../../cutlist/output-export-service";
 import { ShopDrawingsComponent } from "../../drawing/shop-drawings/shop-drawings.component";
 import { NestingComponent } from "../../cutlist/nesting/nesting.component";
 import { MemberService } from "../../member/member-service";
 import { QuotesComponent } from "../../quote/quotes/quotes.component";
 import { ErrorResponse } from "../../util/model/error-response";
+import { saveBlob } from "../../util/download";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
 import { moveDivider, updateCabinet, updateItem } from "../design-edits";
@@ -101,6 +103,7 @@ export class ProjectEditorComponent implements OnDestroy {
     clientService: ClientService,
     catalogService: CatalogService,
     private shopTemplateService: ShopTemplateService,
+    private outputExportService: OutputExportService,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -226,6 +229,25 @@ export class ProjectEditorComponent implements OnDestroy {
       }))
       .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
         ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
+  }
+
+  /**
+   * Downloads the output shown in the current tab, as saved.
+   */
+  exportOutput(format: ExportFormat) {
+    const kinds: Partial<Record<Tab, { kind: OutputKind; name: string }>> = {
+      cutList: { kind: "cut-list", name: $localize`:@@export.cutListFile:liste de coupe` },
+      nesting: { kind: "nesting", name: $localize`:@@export.nestingFile:optimisation` },
+      materials: { kind: "bill-of-materials", name: $localize`:@@export.materialsFile:matériaux` },
+    };
+    const output = kinds[this.tab];
+    if (!output) {
+      return;
+    }
+    this.error = "";
+    this.outputExportService.download(this.saved!.id, output.kind, format)
+      .pipe(tap(blob => saveBlob(blob, `${this.saved!.name} — ${output.name}.${format}`)))
+      .subscribe({ error: () => this.error = $localize`:@@export.error:Impossible de télécharger le fichier.` });
   }
 
   selectTab(tab: Tab) {

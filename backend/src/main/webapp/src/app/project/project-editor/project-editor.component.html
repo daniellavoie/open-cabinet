@@ -38,7 +38,12 @@
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">
-    <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
+    <div class="output-actions">
+      <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
+      <span class="label" i18n="@@export.download">Télécharger :</span>
+      <button class="btn btn-sm btn-outline-secondary" (click)="exportOutput('pdf')" [disabled]="!output" i18n="@@export.pdf">PDF</button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="exportOutput('csv')" [disabled]="!output" i18n="@@export.csv">CSV</button>
+    </div>
     <div *ngIf="loadingOutput" i18n="@@editor.computing">Calcul en cours…</div>
     <ng-container *ngIf="output && !loadingOutput">
       <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [orderedFronts]="output.orderedFronts ?? []" [units]="units" />

@@ -19,11 +19,14 @@ import org.springframework.stereotype.Service;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
+import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
+import dev.daniellavoie.opencabinet.common.domain.Language;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.BomLine;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.CutListRow;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.MaterialNesting;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.OperationCounts;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.OrderedFrontRow;
+import dev.daniellavoie.opencabinet.cutlist.domain.model.OutputDocument;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.ProjectOutput;
 import dev.daniellavoie.opencabinet.cutlist.domain.port.api.CutListDomain;
@@ -53,6 +56,7 @@ public class DefaultCutListDomain implements CutListDomain {
 	MemberDomain memberDomain;
 	ProjectDomain projectDomain;
 	CatalogDomain catalogDomain;
+	ClientDomain clientDomain;
 	ShopRepository shopRepository;
 
 	@Override
@@ -62,6 +66,17 @@ public class DefaultCutListDomain implements CutListDomain {
 		return output(projectDomain.findById(projectId, shopId),
 				shopRepository.findById(shopId).getSettings().getConstructionStandard(),
 				catalogDomain.findByShop(shopId));
+	}
+
+	@Override
+	public OutputDocument document(UUID projectId, Language language, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		var shop = shopRepository.findById(shopId);
+		var project = projectDomain.findById(projectId, shopId);
+
+		return new OutputDocument(shop.getName(), project.getName(),
+				clientDomain.findById(project.getClientId(), shopId).getName(), shop.getUnits(), shop.getCurrency(),
+				language, output(project, shop.getSettings().getConstructionStandard(), catalogDomain.findByShop(shopId)));
 	}
 
 	@Override

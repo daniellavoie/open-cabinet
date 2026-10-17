@@ -6,13 +6,20 @@ import java.util.Map;
 import java.util.UUID;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
+import dev.daniellavoie.opencabinet.common.domain.Language;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.CutListRow;
+import dev.daniellavoie.opencabinet.cutlist.domain.model.OutputDocument;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.ProjectOutput;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
 
 public interface CutListDomain {
 	ProjectOutput output(UUID projectId, Principal principal);
+
+	/**
+	 * The output of a saved Project, ready to print or export.
+	 */
+	OutputDocument document(UUID projectId, Language language, Principal principal);
 
 	ProjectOutput output(Project project, ConstructionStandard standard, List<Material> catalog);
 
