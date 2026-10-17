@@ -1,4 +1,14 @@
-import { Cabinet, Wall } from "./model/design";
+import { Wall } from "./model/design";
+
+/**
+ * Anything placed along a Wall: a Cabinet, Opening or Appliance.
+ */
+export interface OnWall {
+  id: string;
+  wallId: string;
+  offsetMm: number;
+  widthMm: number;
+}
 
 /**
  * Where each Wall sits in plan view, in millimetres. The first Wall starts at
@@ -38,11 +48,11 @@ export function layoutWalls(walls: Wall[]): WallPlacement[] {
 }
 
 /**
- * Plan-view centre of a Cabinet's footprint.
+ * Plan-view centre of a footprint `depthMm` deep, standing against the Wall.
  */
-export function cabinetCentre(cabinet: Cabinet, placement: WallPlacement): { x: number; z: number } {
-  const along = cabinet.offsetMm + cabinet.widthMm / 2;
-  const out = cabinet.depthMm / 2;
+export function footprintCentre(item: OnWall, depthMm: number, placement: WallPlacement): { x: number; z: number } {
+  const along = item.offsetMm + item.widthMm / 2;
+  const out = depthMm / 2;
   return {
     x: placement.start.x + placement.direction.x * along + placement.normal.x * out,
     z: placement.start.z + placement.direction.z * along + placement.normal.z * out,
@@ -51,13 +61,13 @@ export function cabinetCentre(cabinet: Cabinet, placement: WallPlacement): { x: 
 
 /**
  * Snaps an offset along a Wall to its ends and to the sides of the other
- * Cabinets on it, when within `snapMm`, otherwise to the `stepMm` grid.
+ * things on it, when within `snapMm`, otherwise to the `stepMm` grid.
  */
-export function snapOffset(cabinet: Cabinet, offsetMm: number, wall: Wall, others: Cabinet[], stepMm: number, snapMm: number): number {
-  const candidates = [0, wall.lengthMm - cabinet.widthMm];
+export function snapOffset(item: OnWall, offsetMm: number, wall: Wall, others: OnWall[], stepMm: number, snapMm: number): number {
+  const candidates = [0, wall.lengthMm - item.widthMm];
   for (const other of others) {
-    if (other.id !== cabinet.id && other.wallId === cabinet.wallId) {
-      candidates.push(other.offsetMm + other.widthMm, other.offsetMm - cabinet.widthMm);
+    if (other.id !== item.id && other.wallId === item.wallId) {
+      candidates.push(other.offsetMm + other.widthMm, other.offsetMm - item.widthMm);
     }
   }
 

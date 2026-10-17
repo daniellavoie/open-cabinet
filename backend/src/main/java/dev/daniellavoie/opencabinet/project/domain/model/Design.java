@@ -7,7 +7,8 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * The Room of a Project and the Cabinets placed in it.
+ * The Room of a Project (Walls, their Openings and the Appliances against them) and the Cabinets
+ * placed in it.
  */
 @Value
 @Jacksonized
@@ -15,4 +16,6 @@ import lombok.extern.jackson.Jacksonized;
 public class Design {
 	List<Wall> walls;
 	List<Cabinet> cabinets;
+	List<Opening> openings;
+	List<Appliance> appliances;
 }

@@ -1,6 +1,7 @@
 import { MaterialKind } from "../catalog/model/material";
 import { Role } from "../member/model/member";
 import { PartRole } from "../cutlist/model/project-output";
+import { ApplianceKind, OpeningKind } from "../project/model/design";
 import { QuoteStatus } from "../quote/model/quote";
 import { LabourMethod } from "../shop/model/shop";
 
@@ -40,7 +41,22 @@ export const VIOLATION_LABELS: Record<string, string> = {
   BELOW_FLOOR: $localize`:@@violation.belowFloor:Le caisson descend sous le plancher.`,
   OUTSIDE_WALL: $localize`:@@violation.outsideWall:Le caisson dépasse du mur.`,
   ABOVE_WALL: $localize`:@@violation.aboveWall:Le caisson dépasse le plafond.`,
-  OVERLAP: $localize`:@@violation.overlap:Le caisson chevauche un autre caisson.`,
+  OVERLAP: $localize`:@@violation.overlap:Chevauche un autre élément du même genre.`,
+  ITEM_OUTSIDE_WALL: $localize`:@@violation.itemOutsideWall:Dépasse du mur.`,
+  BLOCKS_OPENING: $localize`:@@violation.blocksOpening:Le caisson bloque une fenêtre ou une porte.`,
+  OVERLAPS_APPLIANCE: $localize`:@@violation.overlapsAppliance:Le caisson chevauche un électroménager.`,
+};
+
+export const OPENING_KIND_LABELS: Record<OpeningKind, string> = {
+  WINDOW: $localize`:@@openingKind.window:Fenêtre`,
+  DOORWAY: $localize`:@@openingKind.doorway:Porte`,
+};
+
+export const APPLIANCE_KIND_LABELS: Record<ApplianceKind, string> = {
+  FRIDGE: $localize`:@@applianceKind.fridge:Réfrigérateur`,
+  RANGE: $localize`:@@applianceKind.range:Cuisinière`,
+  DISHWASHER: $localize`:@@applianceKind.dishwasher:Lave-vaisselle`,
+  HOOD: $localize`:@@applianceKind.hood:Hotte`,
 };
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {

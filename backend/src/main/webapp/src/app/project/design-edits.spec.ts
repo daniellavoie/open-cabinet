@@ -1,7 +1,7 @@
 import templates from "../../../../resources/cabinet-templates.json";
 
 import { checkConstructionRules } from "./construction-rules";
-import { addCabinet, addWall, removeWall } from "./design-edits";
+import { addAppliance, addCabinet, addOpening, addWall, removeItem, removeWall, updateItem } from "./design-edits";
 import { CabinetTemplate, Design } from "./model/design";
 
 const TEMPLATES = templates as CabinetTemplate[];
@@ -35,5 +35,29 @@ describe("walls", () => {
     expect(design.walls).toHaveLength(1);
     expect(design.cabinets).toHaveLength(0);
     expect(removeWall(design, "w1").walls).toHaveLength(1);
+  });
+});
+
+describe("openings and appliances", () => {
+  it("fits new cabinets around them", () => {
+    let design = addAppliance(room(), "DISHWASHER", "w1").design;
+    design = addCabinet(design, BASE_DOOR, "w1", TEMPLATES).design;
+
+    expect(design.cabinets[0].offsetMm).toBeCloseTo(609.6);
+    expect(checkConstructionRules(design, TEMPLATES)).toEqual([]);
+  });
+
+  it("are edited and removed by id, and go with their wall", () => {
+    let design = addWall(room());
+    const secondWall = design.walls[1].id;
+    const window = addOpening(design, "WINDOW", secondWall);
+    design = updateItem(window.design, window.itemId, { offsetMm: 500 });
+    expect(design.openings![0].offsetMm).toBe(500);
+    expect(removeItem(design, window.itemId).openings).toEqual([]);
+
+    design = addAppliance(design, "FRIDGE", secondWall).design;
+    design = removeWall(design, secondWall);
+    expect(design.openings).toEqual([]);
+    expect(design.appliances).toEqual([]);
   });
 });

@@ -3,8 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { doorLeaves, frontRows, frontWidth } from "../front-layout";
-import { Cabinet, CabinetTemplate, Design, standsOnFloor } from "../model/design";
-import { cabinetCentre, layoutWalls, WallPlacement } from "../room-layout";
+import { Appliance, Cabinet, CabinetTemplate, Design, Opening, standsOnFloor } from "../model/design";
+import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
 
 const MM = 1 / 1000;
 const WALL_THICKNESS_MM = 100;
@@ -13,23 +13,27 @@ const FRONT_GAP_MM = 3;
 const TOE_KICK_SETBACK_MM = 75;
 const OPENING_DEPTH_MM = 40;
 const CLICK_TOLERANCE_PX = 4;
+const OPENING_THICKNESS_MM = 20;
 
-export interface CabinetMove {
-  cabinetId: string;
+/**
+ * A Cabinet, Opening or Appliance dragged along its Wall.
+ */
+export interface ItemMove {
+  id: string;
   offsetMm: number;
   done: boolean;
 }
 
 interface Drag {
-  cabinetId: string;
+  id: string;
   placement: WallPlacement;
   grabAlongMm: number;
 }
 
 /**
- * The Room and its Cabinets in 3D. Cabinets are picked by clicking and
- * dragged along their Wall; the editor applies the move and the Construction
- * Rules, then hands back the updated design.
+ * The Room, its Openings, Appliances and Cabinets in 3D. Each is picked by
+ * clicking and dragged along its Wall; the editor applies the move and the
+ * Construction Rules, then hands back the updated design.
  */
 @Component({
   selector: "room-view",
@@ -44,16 +48,19 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() design!: Design;
   @Input() templates: CabinetTemplate[] = [];
-  @Input() selectedCabinetId: string | null = null;
-  @Input() invalidCabinetIds = new Set<string>();
+  @Input() selectedId: string | null = null;
+  /**
+   * Cabinets, Openings and Appliances breaking a Construction Rule.
+   */
+  @Input() invalidIds = new Set<string>();
   @Input() toeKickHeightMm = 101.6;
   /**
-   * Cabinets can still be picked, but not dragged.
+   * Things can still be picked, but not dragged.
    */
   @Input() readOnly = false;
 
-  @Output() selectCabinet = new EventEmitter<string | null>();
-  @Output() moveCabinet = new EventEmitter<CabinetMove>();
+  @Output() selectItem = new EventEmitter<string | null>();
+  @Output() move = new EventEmitter<ItemMove>();
 
   private renderer?: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -163,16 +170,29 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     floor.position.set(floorCentre.x, 0, floorCentre.z);
     this.content.add(floor);
 
+    const highlightOf = (id: string) => this.invalidIds.has(id) ? colors.invalid : id === this.selectedId ? colors.selected : null;
+
+    for (const opening of this.design.openings ?? []) {
+      const placement = placementsById.get(opening.wallId);
+      if (placement) {
+        this.content.add(this.openingMesh(opening, placement, colors, highlightOf(opening.id)));
+      }
+    }
+
+    for (const appliance of this.design.appliances ?? []) {
+      const placement = placementsById.get(appliance.wallId);
+      if (placement) {
+        this.content.add(this.applianceMesh(appliance, placement, colors, highlightOf(appliance.id)));
+      }
+    }
+
     for (const cabinet of this.design.cabinets) {
       const placement = placementsById.get(cabinet.wallId);
       const template = templates.get(cabinet.templateCode);
       if (!placement || !template) {
         continue;
       }
-      const highlight = this.invalidCabinetIds.has(cabinet.id)
-        ? colors.invalid
-        : cabinet.id === this.selectedCabinetId ? colors.selected : null;
-      this.content.add(this.cabinetMesh(cabinet, template, placement, colors, highlight));
+      this.content.add(this.cabinetMesh(cabinet, template, placement, colors, highlightOf(cabinet.id)));
     }
 
     if (placements.length !== this.framedWallCount && !bounds.isEmpty()) {
@@ -205,14 +225,56 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
+   * A group in a Wall item's own frame: x along the Wall, y up from the
+   * item's elevation, z out of the Wall, centred on a footprint `depthMm` deep.
+   */
+  private onWallGroup(item: OnWall & { elevationMm: number }, depthMm: number, placement: WallPlacement): THREE.Group {
+    const group = new THREE.Group();
+    const centre = footprintCentre(item, depthMm, placement);
+    group.position.set(centre.x * MM, item.elevationMm * MM, centre.z * MM);
+    group.rotation.y = -placement.angleRadians;
+    return group;
+  }
+
+  /**
+   * A window as a pale pane on the Wall, a doorway as a dark one.
+   */
+  private openingMesh(opening: Opening, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
+    const group = this.onWallGroup(opening, OPENING_THICKNESS_MM, placement);
+    const pane = box(opening.widthMm, opening.heightMm, OPENING_THICKNESS_MM, opening.kind === "WINDOW" ? colors.window : colors.doorway);
+    pane.position.set(0, opening.heightMm / 2 * MM, 0);
+    group.add(pane);
+    this.outline(group, opening.widthMm, opening.heightMm, OPENING_THICKNESS_MM, highlight);
+    return tagged(group, opening.id);
+  }
+
+  private applianceMesh(appliance: Appliance, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
+    const group = this.onWallGroup(appliance, appliance.depthMm, placement);
+    const body = box(appliance.widthMm, appliance.heightMm, appliance.depthMm, colors.appliance);
+    body.position.set(0, appliance.heightMm / 2 * MM, 0);
+    group.add(body);
+    this.outline(group, appliance.widthMm, appliance.heightMm, appliance.depthMm, highlight ?? colors.toeKick);
+    return tagged(group, appliance.id);
+  }
+
+  private outline(group: THREE.Group, widthMm: number, heightMm: number, depthMm: number, color: string | null) {
+    if (!color) {
+      return;
+    }
+    const outline = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(widthMm * MM, heightMm * MM, depthMm * MM)),
+      new THREE.LineBasicMaterial({ color }),
+    );
+    outline.position.set(0, heightMm / 2 * MM, 0);
+    group.add(outline);
+  }
+
+  /**
    * A Cabinet as a group in its own frame: x along the Wall, y up, z out of
    * the Wall towards its front.
    */
   private cabinetMesh(cabinet: Cabinet, template: CabinetTemplate, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
-    const group = new THREE.Group();
-    const centre = cabinetCentre(cabinet, placement);
-    group.position.set(centre.x * MM, cabinet.elevationMm * MM, centre.z * MM);
-    group.rotation.y = -placement.angleRadians;
+    const group = this.onWallGroup(cabinet, cabinet.depthMm, placement);
 
     const base = standsOnFloor(template.type);
     const boxBottom = base ? this.toeKickHeightMm : 0;
@@ -236,17 +298,8 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       group.add(mesh);
     }
 
-    if (highlight) {
-      const outline = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(cabinet.widthMm * MM, cabinet.heightMm * MM, cabinet.depthMm * MM)),
-        new THREE.LineBasicMaterial({ color: highlight }),
-      );
-      outline.position.set(0, cabinet.heightMm / 2 * MM, 0);
-      group.add(outline);
-    }
-
-    group.traverse(object => object.userData["cabinetId"] = cabinet.id);
-    return group;
+    this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);
+    return tagged(group, cabinet.id);
   }
 
   private clearContent() {
@@ -261,18 +314,19 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private onPointerDown(event: PointerEvent) {
     this.pointerDown = { x: event.clientX, y: event.clientY };
-    const cabinetId = this.pick(event);
-    if (!cabinetId) {
+    const id = this.pick(event);
+    const item: OnWall | undefined = [...this.design.cabinets, ...this.design.openings ?? [], ...this.design.appliances ?? []]
+      .find(candidate => candidate.id === id);
+    if (!item) {
       return;
     }
 
-    const cabinet = this.design.cabinets.find(item => item.id === cabinetId)!;
-    const placement = layoutWalls(this.design.walls).find(item => item.wall.id === cabinet.wallId);
+    const placement = layoutWalls(this.design.walls).find(candidate => candidate.wall.id === item.wallId);
     const along = placement ? this.alongWall(event, placement) : null;
-    this.ngZone.run(() => this.selectCabinet.emit(cabinetId));
+    this.ngZone.run(() => this.selectItem.emit(item.id));
 
     if (placement && along !== null && !this.readOnly) {
-      this.drag = { cabinetId, placement, grabAlongMm: along - cabinet.offsetMm };
+      this.drag = { id: item.id, placement, grabAlongMm: along - item.offsetMm };
       this.controls!.enabled = false;
       this.canvasRef.nativeElement.setPointerCapture(event.pointerId);
     }
@@ -284,8 +338,8 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
     const along = this.alongWall(event, this.drag.placement);
     if (along !== null) {
-      const move = { cabinetId: this.drag.cabinetId, offsetMm: along - this.drag.grabAlongMm, done: false };
-      this.ngZone.run(() => this.moveCabinet.emit(move));
+      const move = { id: this.drag.id, offsetMm: along - this.drag.grabAlongMm, done: false };
+      this.ngZone.run(() => this.move.emit(move));
     }
   }
 
@@ -297,13 +351,13 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.canvasRef.nativeElement.releasePointerCapture(event.pointerId);
       const along = this.alongWall(event, drag.placement);
       if (along !== null) {
-        const move = { cabinetId: drag.cabinetId, offsetMm: along - drag.grabAlongMm, done: true };
-        this.ngZone.run(() => this.moveCabinet.emit(move));
+        const move = { id: drag.id, offsetMm: along - drag.grabAlongMm, done: true };
+        this.ngZone.run(() => this.move.emit(move));
       }
     } else if (this.pointerDown
       && Math.hypot(event.clientX - this.pointerDown.x, event.clientY - this.pointerDown.y) < CLICK_TOLERANCE_PX
       && !this.pick(event)) {
-      this.ngZone.run(() => this.selectCabinet.emit(null));
+      this.ngZone.run(() => this.selectItem.emit(null));
     }
     this.pointerDown = null;
   }
@@ -311,8 +365,8 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   private pick(event: PointerEvent): string | null {
     this.aim(event);
     const hit = this.raycaster.intersectObjects(this.content.children, true)
-      .find(intersection => intersection.object.userData["cabinetId"]);
-    return hit ? hit.object.userData["cabinetId"] as string : null;
+      .find(intersection => intersection.object.userData["pickId"]);
+    return hit ? hit.object.userData["pickId"] as string : null;
   }
 
   /**
@@ -351,6 +405,9 @@ interface Colors {
   toeKick: string;
   selected: string;
   invalid: string;
+  window: string;
+  doorway: string;
+  appliance: string;
 }
 
 /**
@@ -368,7 +425,18 @@ function readColors(element: HTMLElement): Colors {
     toeKick: token("--oc-3d-toe-kick"),
     selected: token("--oc-3d-selected"),
     invalid: token("--oc-3d-invalid"),
+    window: token("--oc-3d-window"),
+    doorway: token("--oc-3d-doorway"),
+    appliance: token("--oc-3d-appliance"),
   };
+}
+
+/**
+ * Marks every mesh of a group as picking the item `id`.
+ */
+function tagged(group: THREE.Group, id: string): THREE.Group {
+  group.traverse(object => object.userData["pickId"] = id);
+  return group;
 }
 
 function box(widthMm: number, heightMm: number, depthMm: number, color: string): THREE.Mesh {

@@ -28,11 +28,11 @@
   </nav>
 
   <div class="design" *ngIf="tab === 'design'">
-    <room-view class="view" [design]="draft.design" [templates]="templates" [selectedCabinetId]="selectedCabinetId"
-      [invalidCabinetIds]="invalidCabinetIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
-      (selectCabinet)="selectedCabinetId = $event" (moveCabinet)="onMove($event)" />
-    <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedCabinetId]="selectedCabinetId"
-      [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectCabinet)="selectedCabinetId = $event" />
+    <room-view class="view" [design]="draft.design" [templates]="templates" [selectedId]="selectedId"
+      [invalidIds]="invalidIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      (selectItem)="selectedId = $event" (move)="onMove($event)" />
+    <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
+      [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">

@@ -1,5 +1,5 @@
 import { checkConstructionRules } from "./construction-rules";
-import { Cabinet, CabinetTemplate, Design, Wall } from "./model/design";
+import { Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Opening, OpeningKind, Wall } from "./model/design";
 
 /**
  * Immutable edits to a Design. Each returns a new Design; the editor checks
@@ -25,21 +25,70 @@ export function updateWall(design: Design, wallId: string, changes: Partial<Wall
 }
 
 /**
- * Removes a Wall and the Cabinets on it. A Room keeps at least one Wall.
+ * Removes a Wall and everything on it. A Room keeps at least one Wall.
  */
 export function removeWall(design: Design, wallId: string): Design {
   if (design.walls.length <= 1) {
     return design;
   }
   return {
+    ...design,
     walls: design.walls.filter(wall => wall.id !== wallId),
     cabinets: design.cabinets.filter(cabinet => cabinet.wallId !== wallId),
+    openings: (design.openings ?? []).filter(opening => opening.wallId !== wallId),
+    appliances: (design.appliances ?? []).filter(appliance => appliance.wallId !== wallId),
+  };
+}
+
+const INCH = 25.4;
+
+export const OPENING_DEFAULTS: Record<OpeningKind, Omit<Opening, "id" | "kind" | "wallId" | "offsetMm">> = {
+  WINDOW: { widthMm: 36 * INCH, heightMm: 42 * INCH, elevationMm: 42 * INCH },
+  DOORWAY: { widthMm: 36 * INCH, heightMm: 80 * INCH, elevationMm: 0 },
+};
+
+export const APPLIANCE_DEFAULTS: Record<ApplianceKind, Omit<Appliance, "id" | "kind" | "wallId" | "offsetMm">> = {
+  FRIDGE: { widthMm: 36 * INCH, heightMm: 70 * INCH, depthMm: 30 * INCH, elevationMm: 0 },
+  RANGE: { widthMm: 30 * INCH, heightMm: 36 * INCH, depthMm: 26 * INCH, elevationMm: 0 },
+  DISHWASHER: { widthMm: 24 * INCH, heightMm: 34.5 * INCH, depthMm: 24 * INCH, elevationMm: 0 },
+  HOOD: { widthMm: 30 * INCH, heightMm: 18 * INCH, depthMm: 20 * INCH, elevationMm: 66 * INCH },
+};
+
+export function addOpening(design: Design, kind: OpeningKind, wallId: string): { design: Design; itemId: string } {
+  const opening: Opening = { id: newId("opening"), kind, wallId, offsetMm: 0, ...OPENING_DEFAULTS[kind] };
+  return { design: { ...design, openings: [...(design.openings ?? []), opening] }, itemId: opening.id };
+}
+
+export function addAppliance(design: Design, kind: ApplianceKind, wallId: string): { design: Design; itemId: string } {
+  const appliance: Appliance = { id: newId("appliance"), kind, wallId, offsetMm: 0, ...APPLIANCE_DEFAULTS[kind] };
+  return { design: { ...design, appliances: [...(design.appliances ?? []), appliance] }, itemId: appliance.id };
+}
+
+/**
+ * Changes an Opening or Appliance, whichever has this id.
+ */
+export type ItemChanges = Partial<Omit<Opening, "id" | "kind"> & Omit<Appliance, "id" | "kind">>;
+
+export function updateItem(design: Design, itemId: string, changes: ItemChanges): Design {
+  return {
+    ...design,
+    openings: (design.openings ?? []).map(item => item.id === itemId ? { ...item, ...changes, id: item.id, kind: item.kind } as Opening : item),
+    appliances: (design.appliances ?? []).map(item => item.id === itemId ? { ...item, ...changes, id: item.id, kind: item.kind } as Appliance : item),
+  };
+}
+
+export function removeItem(design: Design, itemId: string): Design {
+  return {
+    ...design,
+    openings: (design.openings ?? []).filter(item => item.id !== itemId),
+    appliances: (design.appliances ?? []).filter(item => item.id !== itemId),
   };
 }
 
 /**
  * Adds a Cabinet from a template to a Wall, at the first spot along the Wall
- * where it breaks no Construction Rule (or at the Wall's start if none).
+ * where it breaks no Construction Rule (or at the Wall's start if none):
+ * the start, or just past another Cabinet, Appliance or Opening.
  */
 export function addCabinet(design: Design, template: CabinetTemplate, wallId: string, templates: CabinetTemplate[]): { design: Design; cabinetId: string } {
   const cabinet: Cabinet = {
@@ -54,7 +103,7 @@ export function addCabinet(design: Design, template: CabinetTemplate, wallId: st
     shelfCount: template.defaultShelfCount,
   };
 
-  const candidates = [0, ...design.cabinets
+  const candidates = [0, ...[...design.cabinets, ...design.appliances ?? [], ...design.openings ?? []]
     .filter(other => other.wallId === wallId)
     .map(other => other.offsetMm + other.widthMm)]
     .sort((first, second) => first - second);

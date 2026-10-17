@@ -37,9 +37,42 @@ export class Cabinet {
   blindSide?: Side | null;
 }
 
+export type OpeningKind = "WINDOW" | "DOORWAY";
+
+export type ApplianceKind = "FRIDGE" | "RANGE" | "DISHWASHER" | "HOOD";
+
+/**
+ * A window or doorway in a Wall that Cabinets must not cover.
+ */
+export class Opening {
+  id!: string;
+  kind!: OpeningKind;
+  wallId!: string;
+  offsetMm!: number;
+  widthMm!: number;
+  elevationMm!: number;
+  heightMm!: number;
+}
+
+/**
+ * A placeholder for an appliance that Cabinets are fitted around.
+ */
+export class Appliance {
+  id!: string;
+  kind!: ApplianceKind;
+  wallId!: string;
+  offsetMm!: number;
+  widthMm!: number;
+  heightMm!: number;
+  depthMm!: number;
+  elevationMm!: number;
+}
+
 export class Design {
   walls!: Wall[];
   cabinets!: Cabinet[];
+  openings?: Opening[];
+  appliances?: Appliance[];
 }
 
 export class CabinetTemplate {
@@ -72,4 +105,6 @@ export class Violation {
   code!: string;
   wallId!: string | null;
   cabinetId!: string | null;
+  /** The Opening or Appliance, for violations about one. */
+  itemId?: string | null;
 }

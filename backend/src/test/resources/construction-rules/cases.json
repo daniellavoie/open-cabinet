@@ -491,5 +491,246 @@
         "cabinetId": "c2"
       }
     ]
+  },
+  {
+    "name": "cabinets fit around openings and appliances",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 1500,
+          "widthMm": 762,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w1",
+          "offsetMm": 500,
+          "widthMm": 900,
+          "elevationMm": 1066.8,
+          "heightMm": 1066.8
+        }
+      ],
+      "appliances": [
+        {
+          "id": "a1",
+          "kind": "RANGE",
+          "wallId": "w1",
+          "offsetMm": 1500,
+          "widthMm": 762,
+          "heightMm": 914.4,
+          "depthMm": 660.4,
+          "elevationMm": 0
+        },
+        {
+          "id": "a2",
+          "kind": "FRIDGE",
+          "wallId": "w1",
+          "offsetMm": 2700,
+          "widthMm": 914.4,
+          "heightMm": 1778,
+          "depthMm": 762,
+          "elevationMm": 0
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "cabinets must not block openings or overlap appliances",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 600,
+          "widthMm": 609.6,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 1600,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c3",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w1",
+          "offsetMm": 2700,
+          "widthMm": 914.4,
+          "heightMm": 381,
+          "depthMm": 304.8,
+          "elevationMm": 1981.2,
+          "shelfCount": 0
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w1",
+          "offsetMm": 500,
+          "widthMm": 900,
+          "elevationMm": 1066.8,
+          "heightMm": 1066.8
+        },
+        {
+          "id": "o2",
+          "kind": "DOORWAY",
+          "wallId": "w1",
+          "offsetMm": 3000,
+          "widthMm": 900,
+          "elevationMm": 0,
+          "heightMm": 2032
+        }
+      ],
+      "appliances": [
+        {
+          "id": "a1",
+          "kind": "RANGE",
+          "wallId": "w1",
+          "offsetMm": 1500,
+          "widthMm": 762,
+          "heightMm": 914.4,
+          "depthMm": 660.4,
+          "elevationMm": 0
+        },
+        {
+          "id": "a2",
+          "kind": "DISHWASHER",
+          "wallId": "w1",
+          "offsetMm": 2000,
+          "widthMm": 609.6,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "ITEM_OUTSIDE_WALL",
+        "wallId": "w1",
+        "cabinetId": null,
+        "itemId": "o2"
+      },
+      {
+        "code": "BLOCKS_OPENING",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "BLOCKS_OPENING",
+        "wallId": "w1",
+        "cabinetId": "c3"
+      },
+      {
+        "code": "OVERLAPS_APPLIANCE",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      },
+      {
+        "code": "OVERLAP",
+        "wallId": "w1",
+        "cabinetId": null,
+        "itemId": "a2"
+      }
+    ]
+  },
+  {
+    "name": "openings and appliances need a known wall",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "gone",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "elevationMm": 1000,
+          "heightMm": 1000
+        }
+      ],
+      "appliances": [
+        {
+          "id": "a1",
+          "kind": "HOOD",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 762,
+          "heightMm": 600,
+          "depthMm": 500,
+          "elevationMm": 2000
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "UNKNOWN_WALL",
+        "wallId": "gone",
+        "cabinetId": null,
+        "itemId": "o1"
+      },
+      {
+        "code": "ITEM_OUTSIDE_WALL",
+        "wallId": "w1",
+        "cabinetId": null,
+        "itemId": "a1"
+      }
+    ]
   }
 ]

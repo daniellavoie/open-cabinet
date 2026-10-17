@@ -16,6 +16,56 @@
 </section>
 
 <section class="block">
+  <h2 i18n="@@design.items">Ouvertures et électroménagers</h2>
+  <div class="add-row">
+    <select class="form-select form-select-sm" [(ngModel)]="newItemKind" i18n-aria-label="@@design.itemKind" aria-label="Genre">
+      <optgroup i18n-label="@@design.openings" label="Ouvertures">
+        <option *ngFor="let kind of openingKinds" [value]="kind">{{ itemLabels[kind] }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.appliances" label="Électroménagers">
+        <option *ngFor="let kind of applianceKinds" [value]="kind">{{ itemLabels[kind] }}</option>
+      </optgroup>
+    </select>
+    <select class="form-select form-select-sm" [(ngModel)]="newItemWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" (click)="addItem()" i18n="@@design.add">Ajouter</button>
+  </div>
+  <ul class="cabinets" *ngIf="items.length > 0">
+    <li *ngFor="let item of items" [class.selected]="item.id === selectedId"
+      [class.invalid]="violationsOf(item.id).length > 0" (click)="selectItem.emit(item.id)">
+      <span>{{ itemLabels[item.kind] }}</span>
+      <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(item.wallId) }}</span>
+    </li>
+  </ul>
+</section>
+
+<section class="block selected-cabinet" *ngIf="selectedItem as item">
+  <h2>
+    <span>{{ itemLabels[item.kind] }}</span>
+    <button class="btn btn-sm btn-link text-danger" (click)="removeSelectedItem()" i18n="@@common.remove">Retirer</button>
+  </h2>
+  <div class="fields">
+    <label for="itemWall" i18n="@@design.wall">Mur</label>
+    <select class="form-select form-select-sm" id="itemWall" [ngModel]="item.wallId" (ngModelChange)="updateSelectedItem({ wallId: $event })">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <label for="itemOffset" i18n="@@design.offset">Position</label>
+    <length-input inputId="itemOffset" [units]="units" [valueMm]="item.offsetMm" (valueMmChange)="updateSelectedItem({ offsetMm: $event })" />
+    <label for="itemWidth" i18n="@@design.width">Largeur</label>
+    <length-input inputId="itemWidth" [units]="units" [valueMm]="item.widthMm" (valueMmChange)="updateSelectedItem({ widthMm: $event })" />
+    <label for="itemHeight" i18n="@@design.height">Hauteur</label>
+    <length-input inputId="itemHeight" [units]="units" [valueMm]="item.heightMm" (valueMmChange)="updateSelectedItem({ heightMm: $event })" />
+    <label for="itemElevation" i18n="@@design.elevation">Hauteur du bas</label>
+    <length-input inputId="itemElevation" [units]="units" [valueMm]="item.elevationMm" (valueMmChange)="updateSelectedItem({ elevationMm: $event })" />
+    <ng-container *ngIf="selectedAppliance as appliance">
+      <label for="itemDepth" i18n="@@design.depth">Profondeur</label>
+      <length-input inputId="itemDepth" [units]="units" [valueMm]="appliance.depthMm" (valueMmChange)="updateSelectedItem({ depthMm: $event })" />
+    </ng-container>
+  </div>
+</section>
+
+<section class="block">
   <h2 i18n="@@design.addCabinet">Ajouter un caisson</h2>
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
@@ -32,8 +82,8 @@
   <h2 i18n="@@design.cabinets">Caissons</h2>
   <p class="hint" *ngIf="design.cabinets.length === 0" i18n="@@design.noCabinets">Aucun caisson. Ajoutez-en un ci-dessus.</p>
   <ul class="cabinets">
-    <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedCabinetId"
-      [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectCabinet.emit(cabinet.id)">
+    <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedId"
+      [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectItem.emit(cabinet.id)">
       <span>{{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}</span>
       <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(cabinet.wallId) }}</span>
     </li>
@@ -82,9 +132,10 @@
 <section class="block" *ngIf="violations.length > 0">
   <h2 class="text-danger" i18n="@@design.violations">Règles de construction</h2>
   <ul class="violations">
-    <li *ngFor="let violation of violations" (click)="violation.cabinetId && selectCabinet.emit(violation.cabinetId)">
+    <li *ngFor="let violation of violations" (click)="(violation.cabinetId || violation.itemId) && selectItem.emit(violation.cabinetId ?? violation.itemId ?? null)">
       <strong *ngIf="violation.cabinetId">{{ cabinetLabels.get(violation.cabinetId) ?? "" }}</strong>
-      <strong *ngIf="!violation.cabinetId && violation.wallId" i18n="@@design.wallNumber">Mur {{ wallNumber(violation.wallId) }}</strong>
+      <strong *ngIf="!violation.cabinetId && violation.itemId">{{ itemLabel(violation.itemId) }}</strong>
+      <strong *ngIf="!violation.cabinetId && !violation.itemId && violation.wallId" i18n="@@design.wallNumber">Mur {{ wallNumber(violation.wallId) }}</strong>
       {{ violationLabels[violation.code] ?? violation.code }}
     </li>
   </ul>

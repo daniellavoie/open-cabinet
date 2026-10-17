@@ -36,6 +36,9 @@
   --oc-3d-toe-kick: var(--oc-palette-gray-700);
   --oc-3d-selected: var(--oc-palette-blue-600);
   --oc-3d-invalid: var(--oc-palette-red-600);
+  --oc-3d-window: var(--oc-palette-blue-100);
+  --oc-3d-doorway: var(--oc-palette-gray-700);
+  --oc-3d-appliance: var(--oc-palette-gray-300);
 
   /* Spacing (4px grid) */
   --oc-space-1: 4px;
