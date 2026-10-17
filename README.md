@@ -36,7 +36,9 @@ The full-application test uses Testcontainers and is skipped when Docker is unav
    npm install
    npm start
    ```
-5. Open http://localhost:4200.
+5. Open http://localhost:4200. The dev server serves French only; the packaged app serves `/fr/` and `/en/`.
+
+Adding or changing user-facing text: see *Languages* in `.claude/skills/angular-frontend/SKILL.md`.
 
 ## Deployment
 
