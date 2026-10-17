@@ -38,6 +38,19 @@ describe("walls", () => {
   });
 });
 
+describe("corners", () => {
+  it("places a cabinet past the neighbouring wall's corner cabinet", () => {
+    let design = addWall(room());
+    const secondWall = design.walls[1].id;
+    design = addCabinet(design, BASE_DOOR, "w1", TEMPLATES).design;
+    design = { ...design, cabinets: design.cabinets.map(cabinet => ({ ...cabinet, offsetMm: 3657.6 - 457.2 })) };
+    design = addCabinet(design, BASE_DOOR, secondWall, TEMPLATES).design;
+
+    expect(design.cabinets[1].offsetMm).toBeCloseTo(609.6 + 25.4);
+    expect(checkConstructionRules(design, TEMPLATES)).toEqual([]);
+  });
+});
+
 describe("openings and appliances", () => {
   it("fits new cabinets around them", () => {
     let design = addAppliance(room(), "DISHWASHER", "w1").design;

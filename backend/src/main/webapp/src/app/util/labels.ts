@@ -45,6 +45,8 @@ export const VIOLATION_LABELS: Record<string, string> = {
   ITEM_OUTSIDE_WALL: $localize`:@@violation.itemOutsideWall:Dépasse du mur.`,
   BLOCKS_OPENING: $localize`:@@violation.blocksOpening:Le caisson bloque une fenêtre ou une porte.`,
   OVERLAPS_APPLIANCE: $localize`:@@violation.overlapsAppliance:Le caisson chevauche un électroménager.`,
+  CORNER_OVERLAP: $localize`:@@violation.cornerOverlap:Le caisson heurte un caisson ou un électroménager du mur voisin.`,
+  FRONT_BLOCKED: $localize`:@@violation.frontBlocked:Un élément du mur voisin bloque les portes ou tiroirs du caisson.`,
 };
 
 export const OPENING_KIND_LABELS: Record<OpeningKind, string> = {

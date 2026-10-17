@@ -47,6 +47,54 @@ export function layoutWalls(walls: Wall[]): WallPlacement[] {
   return placements;
 }
 
+export interface PlanPoint {
+  x: number;
+  z: number;
+}
+
+/**
+ * The plan-view rectangle spanning `alongStart..alongEnd` along a Wall and
+ * `outStart..outEnd` out from it.
+ */
+export function wallRectangle(placement: WallPlacement, alongStart: number, alongEnd: number, outStart: number, outEnd: number): PlanPoint[] {
+  const at = (along: number, out: number) => ({
+    x: placement.start.x + placement.direction.x * along + placement.normal.x * out,
+    z: placement.start.z + placement.direction.z * along + placement.normal.z * out,
+  });
+  return [at(alongStart, outStart), at(alongEnd, outStart), at(alongEnd, outEnd), at(alongStart, outEnd)];
+}
+
+/**
+ * Whether two convex polygons overlap by more than `toleranceMm` (separating
+ * axis test), so polygons that only touch do not.
+ */
+export function polygonsOverlap(first: PlanPoint[], second: PlanPoint[], toleranceMm: number): boolean {
+  return separatedOnNoAxisOf(first, first, second, toleranceMm) && separatedOnNoAxisOf(second, first, second, toleranceMm);
+}
+
+function separatedOnNoAxisOf(edges: PlanPoint[], first: PlanPoint[], second: PlanPoint[], toleranceMm: number): boolean {
+  for (let index = 0; index < edges.length; index++) {
+    const from = edges[index];
+    const to = edges[(index + 1) % edges.length];
+    const length = Math.hypot(to.x - from.x, to.z - from.z);
+    if (length === 0) {
+      continue;
+    }
+    const axis = { x: -(to.z - from.z) / length, z: (to.x - from.x) / length };
+    const [firstMin, firstMax] = project(first, axis);
+    const [secondMin, secondMax] = project(second, axis);
+    if (Math.min(firstMax, secondMax) - Math.max(firstMin, secondMin) <= toleranceMm) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function project(polygon: PlanPoint[], axis: PlanPoint): [number, number] {
+  const values = polygon.map(point => point.x * axis.x + point.z * axis.z);
+  return [Math.min(...values), Math.max(...values)];
+}
+
 /**
  * Plan-view centre of a footprint `depthMm` deep, standing against the Wall.
  */

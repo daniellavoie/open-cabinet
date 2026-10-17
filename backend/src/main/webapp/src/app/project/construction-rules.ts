@@ -1,4 +1,5 @@
-import { Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
+import { Appliance, Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
+import { layoutWalls, PlanPoint, polygonsOverlap, wallRectangle, WallPlacement } from "./room-layout";
 
 interface Placed {
   offsetMm: number;
@@ -15,6 +16,11 @@ interface Placed {
  * backend/src/test/resources/construction-rules/cases.json.
  */
 export const TOLERANCE_MM = 0.5;
+
+/**
+ * Depth of the strip in front of a Cabinet's fronts that nothing may stand in.
+ */
+const FRONT_STRIP_MM = 2;
 
 export function checkConstructionRules(design: Design, templates: CabinetTemplate[]): Violation[] {
   const violations: Violation[] = [];
@@ -123,7 +129,75 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
     }
   }
 
+  checkCorners(walls, cabinets, appliances, templatesByCode, violations);
+
   return violations;
+}
+
+interface Footprint {
+  id: string;
+  wallId: string;
+  polygon: PlanPoint[];
+  elevationMm: number;
+  heightMm: number;
+}
+
+/**
+ * Rules across Walls, in plan view. A Cabinet must not overlap a Cabinet or
+ * Appliance on another Wall at the same height, nor have one standing right
+ * in front of its fronts; the blind part of a blind corner Cabinet is meant to
+ * be covered by the neighbouring run. On a single Wall, the overlap rules
+ * above already cover both.
+ */
+function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[], templatesByCode: Map<string, CabinetTemplate>, violations: Violation[]) {
+  const placements = new Map<string, WallPlacement>();
+  layoutWalls(walls).forEach(placement => {
+    if (!placements.has(placement.wall.id)) {
+      placements.set(placement.wall.id, placement);
+    }
+  });
+  const footprints: Footprint[] = [];
+  for (const item of [...cabinets, ...appliances]) {
+    const placement = placements.get(item.wallId);
+    if (placement) {
+      footprints.push({
+        id: item.id,
+        wallId: item.wallId,
+        polygon: wallRectangle(placement, item.offsetMm, item.offsetMm + item.widthMm, 0, item.depthMm),
+        elevationMm: item.elevationMm,
+        heightMm: item.heightMm,
+      });
+    }
+  }
+  const atSameHeight = (first: Footprint, second: Footprint) =>
+    intersect(first.elevationMm, first.heightMm, second.elevationMm, second.heightMm);
+
+  for (const cabinet of cabinets) {
+    const placement = placements.get(cabinet.wallId);
+    if (!placement) {
+      continue;
+    }
+    const own = footprints.find(footprint => footprint.id === cabinet.id)!;
+    if (footprints.some(other => other !== own && other.wallId !== cabinet.wallId
+      && atSameHeight(own, other) && polygonsOverlap(own.polygon, other.polygon, TOLERANCE_MM))) {
+      violations.push(cabinetViolation("CORNER_OVERLAP", cabinet));
+      continue;
+    }
+
+    const template = templatesByCode.get(cabinet.templateCode);
+    if (!template) {
+      continue;
+    }
+    const blind = Math.max(0, template.blindWidthMm ?? 0);
+    const blindSide = cabinet.blindSide ?? "RIGHT";
+    const frontStart = cabinet.offsetMm + (blindSide === "LEFT" ? blind : 0);
+    const frontEnd = cabinet.offsetMm + cabinet.widthMm - (blindSide === "RIGHT" ? blind : 0);
+    const strip = wallRectangle(placement, frontStart, frontEnd, cabinet.depthMm, cabinet.depthMm + FRONT_STRIP_MM);
+    if (footprints.some(other => other.wallId !== cabinet.wallId
+      && atSameHeight(own, other) && polygonsOverlap(strip, other.polygon, TOLERANCE_MM))) {
+      violations.push(cabinetViolation("FRONT_BLOCKED", cabinet));
+    }
+  }
 }
 
 /**

@@ -13,6 +13,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.Opening;
+import dev.daniellavoie.opencabinet.project.domain.model.Side;
 import dev.daniellavoie.opencabinet.project.domain.model.Violation;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 
@@ -41,11 +42,18 @@ public final class ConstructionRules {
 	public static final String ITEM_OUTSIDE_WALL = "ITEM_OUTSIDE_WALL";
 	public static final String BLOCKS_OPENING = "BLOCKS_OPENING";
 	public static final String OVERLAPS_APPLIANCE = "OVERLAPS_APPLIANCE";
+	public static final String CORNER_OVERLAP = "CORNER_OVERLAP";
+	public static final String FRONT_BLOCKED = "FRONT_BLOCKED";
 
 	/**
 	 * Slack allowed on every comparison, in millimetres, so values rounded for display still pass.
 	 */
 	static final double TOLERANCE_MM = 0.5;
+
+	/**
+	 * Depth of the strip in front of a Cabinet's fronts that nothing may stand in.
+	 */
+	static final double FRONT_STRIP_MM = 2;
 
 	private ConstructionRules() {
 	}
@@ -163,7 +171,78 @@ public final class ConstructionRules {
 			}
 		}
 
+		checkCorners(design, cabinets, appliances, templatesByCode, violations);
+
 		return violations;
+	}
+
+	/**
+	 * Rules across Walls, in plan view. A Cabinet must not overlap a Cabinet or Appliance on another
+	 * Wall at the same height, nor have one standing right in front of its fronts; the blind part of
+	 * a blind corner Cabinet is meant to be covered by the neighbouring run. On a single Wall, the
+	 * overlap rules above already cover both.
+	 */
+	private static void checkCorners(Design design, List<Cabinet> cabinets, List<Appliance> appliances,
+			Map<String, CabinetTemplate> templatesByCode, List<Violation> violations) {
+		var placements = RoomLayout.layout(Optional.ofNullable(design.getWalls()).orElse(List.of()));
+		var footprints = new ArrayList<Footprint>();
+		for (var cabinet : cabinets) {
+			var placement = placements.get(cabinet.getWallId());
+			if (placement != null) {
+				footprints.add(new Footprint(cabinet.getId(), cabinet.getWallId(),
+						placement.rectangle(cabinet.getOffsetMm(), cabinet.getOffsetMm() + cabinet.getWidthMm(), 0,
+								cabinet.getDepthMm()),
+						cabinet.getElevationMm(), cabinet.getHeightMm()));
+			}
+		}
+		for (var appliance : appliances) {
+			var placement = placements.get(appliance.getWallId());
+			if (placement != null) {
+				footprints.add(new Footprint(appliance.getId(), appliance.getWallId(),
+						placement.rectangle(appliance.getOffsetMm(), appliance.getOffsetMm() + appliance.getWidthMm(),
+								0, appliance.getDepthMm()),
+						appliance.getElevationMm(), appliance.getHeightMm()));
+			}
+		}
+
+		for (var cabinet : cabinets) {
+			var placement = placements.get(cabinet.getWallId());
+			if (placement == null) {
+				continue;
+			}
+			var own = footprints.stream().filter(footprint -> footprint.id().equals(cabinet.getId())).findFirst()
+					.orElseThrow();
+			if (footprints.stream().anyMatch(other -> other != own && !other.wallId().equals(cabinet.getWallId())
+					&& own.atSameHeightAs(other) && RoomLayout.overlap(own.polygon(), other.polygon(), TOLERANCE_MM))) {
+				violations.add(cabinetViolation(CORNER_OVERLAP, cabinet));
+				continue;
+			}
+
+			var template = templatesByCode.get(cabinet.getTemplateCode());
+			if (template == null) {
+				continue;
+			}
+			var blind = Math.max(0, template.getBlindWidthMm());
+			var frontStart = cabinet.getOffsetMm() + (cabinet.effectiveBlindSide() == Side.LEFT ? blind : 0);
+			var frontEnd = cabinet.getOffsetMm() + cabinet.getWidthMm()
+					- (cabinet.effectiveBlindSide() == Side.RIGHT ? blind : 0);
+			var strip = placement.rectangle(frontStart, frontEnd, cabinet.getDepthMm(),
+					cabinet.getDepthMm() + FRONT_STRIP_MM);
+			if (footprints.stream().anyMatch(other -> !other.wallId().equals(cabinet.getWallId())
+					&& own.atSameHeightAs(other) && RoomLayout.overlap(strip, other.polygon(), TOLERANCE_MM))) {
+				violations.add(cabinetViolation(FRONT_BLOCKED, cabinet));
+			}
+		}
+	}
+
+	/**
+	 * A Cabinet's or Appliance's plan-view footprint and the heights it spans.
+	 */
+	private record Footprint(String id, String wallId, List<RoomLayout.Point> polygon, double elevationMm,
+			double heightMm) {
+		boolean atSameHeightAs(Footprint other) {
+			return intersect(elevationMm, heightMm, other.elevationMm(), other.heightMm());
+		}
 	}
 
 	/**

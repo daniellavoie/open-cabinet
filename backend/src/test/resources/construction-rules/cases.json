@@ -732,5 +732,217 @@
         "itemId": "a1"
       }
     ]
+  },
+  {
+    "name": "cabinets meeting in a corner collide",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 2542.8,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "CORNER_OVERLAP",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      },
+      {
+        "code": "CORNER_OVERLAP",
+        "wallId": "w2",
+        "cabinetId": "c2"
+      }
+    ]
+  },
+  {
+    "name": "a cabinet against another's doors blocks them",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 2542.8,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w2",
+          "offsetMm": 609.6,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "FRONT_BLOCKED",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      }
+    ]
+  },
+  {
+    "name": "a blind corner cabinet's blind side may be covered, and a wall cabinet above a corner base is clear",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_BLIND_CORNER",
+          "wallId": "w1",
+          "offsetMm": 1933.2,
+          "widthMm": 1066.8,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "blindSide": "RIGHT"
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w2",
+          "offsetMm": 609.6,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c3",
+          "templateCode": "WALL_DOOR",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 762,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
+      ]
+    },
+    "violations": []
+  },
+  {
+    "name": "a fridge on the next wall can collide with a cabinet",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 3000,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "wallId": "w1",
+          "offsetMm": 2542.8,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "appliances": [
+        {
+          "id": "a1",
+          "kind": "FRIDGE",
+          "wallId": "w2",
+          "offsetMm": 300,
+          "widthMm": 914.4,
+          "heightMm": 1778,
+          "depthMm": 762,
+          "elevationMm": 0
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "CORNER_OVERLAP",
+        "wallId": "w1",
+        "cabinetId": "c1"
+      }
+    ]
   }
 ]

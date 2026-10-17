@@ -41,6 +41,7 @@ export function removeWall(design: Design, wallId: string): Design {
 }
 
 const INCH = 25.4;
+const CORNER_FILLER_MM = 1 * INCH;
 
 export const OPENING_DEFAULTS: Record<OpeningKind, Omit<Opening, "id" | "kind" | "wallId" | "offsetMm">> = {
   WINDOW: { widthMm: 36 * INCH, heightMm: 42 * INCH, elevationMm: 42 * INCH },
@@ -88,7 +89,8 @@ export function removeItem(design: Design, itemId: string): Design {
 /**
  * Adds a Cabinet from a template to a Wall, at the first spot along the Wall
  * where it breaks no Construction Rule (or at the Wall's start if none):
- * the start, or just past another Cabinet, Appliance or Opening.
+ * the start, just past another Cabinet, Appliance or Opening, or past what
+ * stands on a neighbouring Wall's corner, leaving room for a filler.
  */
 export function addCabinet(design: Design, template: CabinetTemplate, wallId: string, templates: CabinetTemplate[]): { design: Design; cabinetId: string } {
   const cabinet: Cabinet = {
@@ -103,9 +105,13 @@ export function addCabinet(design: Design, template: CabinetTemplate, wallId: st
     shelfCount: template.defaultShelfCount,
   };
 
-  const candidates = [0, ...[...design.cabinets, ...design.appliances ?? [], ...design.openings ?? []]
+  const onWall = [...design.cabinets, ...design.appliances ?? [], ...design.openings ?? []]
     .filter(other => other.wallId === wallId)
-    .map(other => other.offsetMm + other.widthMm)]
+    .map(other => other.offsetMm + other.widthMm);
+  const pastCorner = [...design.cabinets, ...design.appliances ?? []]
+    .filter(other => other.wallId !== wallId)
+    .map(other => other.depthMm + CORNER_FILLER_MM);
+  const candidates = [0, ...onWall, ...pastCorner]
     .sort((first, second) => first - second);
 
   for (const offsetMm of candidates) {
