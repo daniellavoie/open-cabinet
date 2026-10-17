@@ -5,15 +5,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
 
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
+import dev.daniellavoie.opencabinet.common.domain.Language;
 import dev.daniellavoie.opencabinet.cutlist.domain.port.api.CutListDomain;
+import dev.daniellavoie.opencabinet.drawing.domain.DrawingContext;
+import dev.daniellavoie.opencabinet.drawing.domain.IsometricView;
+import dev.daniellavoie.opencabinet.drawing.domain.ShopDrawings;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
+import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
+import dev.daniellavoie.opencabinet.quote.domain.model.DesignSnapshot;
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuotePictures;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import dev.daniellavoie.opencabinet.quote.domain.port.api.QuoteDomain;
 import dev.daniellavoie.opencabinet.quote.domain.port.backend.QuoteRenderer;
@@ -150,6 +160,23 @@ public class DefaultQuoteDomain implements QuoteDomain {
 
 	@Override
 	public byte[] pdf(UUID quoteId, Principal principal) {
-		return renderer.pdf(findById(quoteId, principal));
+		var quote = findById(quoteId, principal);
+		return renderer.pdf(quote, pictures(quote.getContent().getDesignSnapshot()));
+	}
+
+	/**
+	 * Drawn from the design frozen in the Quote, in the Quote's language.
+	 */
+	private QuotePictures pictures(DesignSnapshot snapshot) {
+		if (snapshot == null || snapshot.getDesign() == null) {
+			return QuotePictures.NONE;
+		}
+		var templates = projectDomain.templates().stream()
+				.collect(Collectors.toMap(CabinetTemplate::getCode, Function.identity()));
+		var context = DrawingContext.of(snapshot.getDesign(), templates, snapshot.getToeKickHeightMm(),
+				snapshot.getFrontGapMm(), snapshot.getUnits(), Language.FR);
+		var walls = Optional.ofNullable(snapshot.getDesign().getWalls()).orElse(List.of());
+		return new QuotePictures(IsometricView.draw(context), ShopDrawings.plan(context),
+				IntStream.range(0, walls.size()).mapToObj(index -> ShopDrawings.elevation(context, index)).toList());
 	}
 }

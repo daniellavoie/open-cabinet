@@ -7,8 +7,20 @@
   <div class="alert alert-warning" *ngIf="material.oversizedParts.length > 0" i18n="@@nesting.oversized">
     {{ material.oversizedParts.length }} pièce(s) plus grande(s) que le panneau ne peuvent pas être découpées.
   </div>
+  <div class="layouts" *ngIf="layouts(material).length > 1" role="radiogroup" i18n-aria-label="@@nesting.layouts" aria-label="Dispositions">
+    <label class="layout" *ngFor="let option of layouts(material); let index = index" [class.selected]="(shown.get(material.materialId) ?? 0) === index">
+      <input type="radio" [name]="'layout-' + material.materialId" [checked]="(shown.get(material.materialId) ?? 0) === index"
+        (change)="shown.set(material.materialId, index)" />
+      <span class="layout-title">
+        <ng-container *ngIf="index === 0" i18n="@@nesting.chosen">Retenue : {{ option.sheets.length }} panneau(x)</ng-container>
+        <ng-container *ngIf="index > 0" i18n="@@nesting.alternative">Autre : {{ option.sheets.length }} panneau(x)</ng-container>
+      </span>
+      <span class="meta">{{ describe(option.strategy) }}</span>
+    </label>
+  </div>
+  <p class="hint" *ngIf="(shown.get(material.materialId) ?? 0) > 0" i18n="@@nesting.notBought">Pour comparer seulement : les matériaux suivent la disposition retenue.</p>
   <div class="sheets">
-    <figure class="sheet" *ngFor="let sheet of material.sheets; let index = index">
+    <figure class="sheet" *ngFor="let sheet of layout(material).sheets; let index = index">
       <svg [attr.viewBox]="'0 0 ' + material.sheetLengthMm + ' ' + material.sheetWidthMm" preserveAspectRatio="xMidYMid meet" role="img"
         [attr.aria-label]="material.materialName + ' ' + (index + 1)">
         <rect class="board" x="0" y="0" [attr.width]="material.sheetLengthMm" [attr.height]="material.sheetWidthMm" />

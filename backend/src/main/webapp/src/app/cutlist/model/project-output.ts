@@ -40,6 +40,16 @@ export class OversizedPart {
   widthMm!: number;
 }
 
+/**
+ * How a layout was found: which way the first rip cuts run, which Parts go
+ * first, and which way Parts without grain lie.
+ */
+export class NestingStrategy {
+  stripDirection!: "ALONG" | "ACROSS";
+  order!: "WIDTH" | "LENGTH" | "AREA";
+  orientation!: "LONG_ALONG" | "LONG_ACROSS";
+}
+
 export class MaterialNesting {
   materialId!: string;
   materialName!: string;
@@ -48,6 +58,9 @@ export class MaterialNesting {
   grain!: boolean;
   sheets!: NestedSheet[];
   oversizedParts!: OversizedPart[];
+  strategy?: NestingStrategy;
+  /** The next best layouts, best first, to compare; materials follow this one. */
+  alternatives?: MaterialNesting[];
 }
 
 export class BomLine {

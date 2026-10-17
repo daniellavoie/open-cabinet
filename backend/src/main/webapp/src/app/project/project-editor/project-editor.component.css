@@ -98,3 +98,20 @@
   gap: var(--oc-space-3);
   margin: 0;
 }
+
+.output-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--oc-space-2);
+  margin-bottom: var(--oc-space-3);
+}
+
+.output-actions .hint {
+  margin: 0 auto 0 0;
+}
+
+.output-actions .label {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}

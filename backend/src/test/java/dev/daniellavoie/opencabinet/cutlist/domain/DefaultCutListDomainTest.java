@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
+import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.BomLine;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
@@ -27,7 +28,7 @@ import dev.daniellavoie.opencabinet.shop.domain.port.backend.ShopRepository;
 class DefaultCutListDomainTest {
 	private final ProjectDomain projectDomain = mock(ProjectDomain.class);
 	private final DefaultCutListDomain domain = new DefaultCutListDomain(mock(MemberDomain.class), projectDomain,
-			mock(CatalogDomain.class), mock(ShopRepository.class));
+			mock(CatalogDomain.class), mock(ClientDomain.class), mock(ShopRepository.class));
 
 	@Test
 	void outputLabelsCabinetsInReadingOrderAndPricesMaterials() {

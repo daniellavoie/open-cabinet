@@ -13,10 +13,13 @@ import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
 import { ProjectOutput } from "../../cutlist/model/project-output";
+import { ExportFormat, OutputExportService, OutputKind } from "../../cutlist/output-export-service";
+import { ShopDrawingsComponent } from "../../drawing/shop-drawings/shop-drawings.component";
 import { NestingComponent } from "../../cutlist/nesting/nesting.component";
 import { MemberService } from "../../member/member-service";
 import { QuotesComponent } from "../../quote/quotes/quotes.component";
 import { ErrorResponse } from "../../util/model/error-response";
+import { saveBlob } from "../../util/download";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
 import { moveDivider, updateCabinet, updateItem } from "../design-edits";
@@ -28,7 +31,7 @@ import { ProjectService } from "../project-service";
 import { OnWall, snapOffset } from "../room-layout";
 import { ItemMove, RoomViewComponent } from "../room-view/room-view.component";
 
-type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
+type Tab = "design" | "cutList" | "nesting" | "materials" | "drawings" | "quotes";
 
 const SNAP_DISTANCE_MM = 30;
 const LOCK_RENEWAL_MS = 45_000;
@@ -55,6 +58,7 @@ const LOCK_RENEWAL_MS = 45_000;
     QuotesComponent,
     RoomViewComponent,
     RouterLink,
+    ShopDrawingsComponent,
   ],
   styleUrls: ["./project-editor.component.css"],
   templateUrl: "./project-editor.component.html",
@@ -65,6 +69,7 @@ export class ProjectEditorComponent implements OnDestroy {
     { id: "cutList", label: $localize`:@@editor.cutList:Liste de coupe` },
     { id: "nesting", label: $localize`:@@editor.nesting:Optimisation` },
     { id: "materials", label: $localize`:@@editor.materials:Matériaux` },
+    { id: "drawings", label: $localize`:@@editor.drawings:Dessins` },
     { id: "quotes", label: $localize`:@@editor.quotes:Soumissions` },
   ];
 
@@ -98,6 +103,7 @@ export class ProjectEditorComponent implements OnDestroy {
     clientService: ClientService,
     catalogService: CatalogService,
     private shopTemplateService: ShopTemplateService,
+    private outputExportService: OutputExportService,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -225,9 +231,28 @@ export class ProjectEditorComponent implements OnDestroy {
         ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
   }
 
+  /**
+   * Downloads the output shown in the current tab, as saved.
+   */
+  exportOutput(format: ExportFormat) {
+    const kinds: Partial<Record<Tab, { kind: OutputKind; name: string }>> = {
+      cutList: { kind: "cut-list", name: $localize`:@@export.cutListFile:liste de coupe` },
+      nesting: { kind: "nesting", name: $localize`:@@export.nestingFile:optimisation` },
+      materials: { kind: "bill-of-materials", name: $localize`:@@export.materialsFile:matériaux` },
+    };
+    const output = kinds[this.tab];
+    if (!output) {
+      return;
+    }
+    this.error = "";
+    this.outputExportService.download(this.saved!.id, output.kind, format)
+      .pipe(tap(blob => saveBlob(blob, `${this.saved!.name} — ${output.name}.${format}`)))
+      .subscribe({ error: () => this.error = $localize`:@@export.error:Impossible de télécharger le fichier.` });
+  }
+
   selectTab(tab: Tab) {
     this.tab = tab;
-    if (tab !== "design" && tab !== "quotes" && !this.dirty) {
+    if (showsOutput(tab) && !this.dirty) {
       this.loadOutput();
     }
   }
@@ -253,7 +278,7 @@ export class ProjectEditorComponent implements OnDestroy {
         this.saved = project;
         this.setDraft(structuredClone(project));
         this.output = undefined;
-        if (this.tab !== "design" && this.tab !== "quotes") {
+        if (showsOutput(this.tab)) {
           this.loadOutput();
         }
       }))
@@ -286,6 +311,13 @@ export class ProjectEditorComponent implements OnDestroy {
       .pipe(finalize(() => this.loadingOutput = false))
       .subscribe({ error: () => this.error = $localize`:@@editor.outputError:Impossible de calculer la liste de coupe.` });
   }
+}
+
+/**
+ * Tabs showing the Cut List, Nesting or Bill of Materials, computed by the server.
+ */
+function showsOutput(tab: Tab): boolean {
+  return tab === "cutList" || tab === "nesting" || tab === "materials";
 }
 
 function onWall(design: Design): OnWall[] {

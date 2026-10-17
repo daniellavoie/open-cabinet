@@ -19,16 +19,22 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import dev.daniellavoie.opencabinet.drawing.domain.model.Drawing;
+import dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfDrawingCanvas;
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuotePictures;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import dev.daniellavoie.opencabinet.quote.domain.port.backend.QuoteRenderer;
 
 /**
- * Renders the Client-facing Quote in French (Canada). The internal breakdown is never printed.
+ * Renders the Client-facing Quote in French (Canada): the price on the first page, then pictures of
+ * the design (a 3D view and the plan, then the Elevations two to a page). The internal breakdown is
+ * never printed.
  */
 @Component
 public class OpenPdfQuoteRenderer implements QuoteRenderer {
@@ -42,15 +48,17 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 	private static final Font SMALL = new Font(Font.HELVETICA, 9, Font.NORMAL, MUTED);
 	private static final Font TOTAL = new Font(Font.HELVETICA, 12, Font.BOLD);
 
+	static final float PICTURE_GAP = 18;
+
 	@Override
-	public byte[] pdf(Quote quote) {
+	public byte[] pdf(Quote quote, QuotePictures pictures) {
 		var content = quote.getContent();
 		var money = NumberFormat.getCurrencyInstance(LOCALE);
 		money.setCurrency(Currency.getInstance(content.getCurrency()));
 
 		var output = new ByteArrayOutputStream();
 		var document = new Document(PageSize.LETTER, 54, 54, 54, 54);
-		PdfWriter.getInstance(document, output);
+		var writer = PdfWriter.getInstance(document, output);
 		document.open();
 
 		document.add(new Paragraph(content.getShopName(), TITLE));
@@ -94,8 +102,42 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 		document.add(new Paragraph("Les prix sont en " + content.getCurrency()
 				+ ". Cette soumission correspond à la conception du projet à la date ci-dessus.", SMALL));
 
+		if (!pictures.isEmpty()) {
+			pictures(document, writer, quote, pictures);
+		}
+
 		document.close();
 		return output.toByteArray();
+	}
+
+	/**
+	 * The 3D view above the plan, then two Elevations per page, each under its caption.
+	 */
+	private static void pictures(Document document, PdfWriter writer, Quote quote, QuotePictures pictures) {
+		var page = document.getPageSize();
+		var left = document.leftMargin();
+		var width = page.getWidth() - left - document.rightMargin();
+		var top = document.topMargin() + 24;
+		var half = (page.getHeight() - top - document.bottomMargin() - PICTURE_GAP) / 2;
+		var heading = "Soumission " + quote.getDisplayNumber() + " — " + quote.getContent().getProjectName();
+
+		var drawings = new java.util.ArrayList<Drawing>();
+		drawings.add(pictures.view());
+		drawings.add(pictures.plan());
+		drawings.addAll(pictures.elevations());
+		for (int index = 0; index < drawings.size(); index++) {
+			if (index % 2 == 0) {
+				document.newPage();
+				ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT, new Phrase(heading, SMALL),
+						left, page.getHeight() - document.topMargin(), 0);
+			}
+			var drawing = drawings.get(index);
+			var boxTop = top + (index % 2) * (half + PICTURE_GAP);
+			ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
+					new Phrase(drawing.title(), HEADING), left, page.getHeight() - boxTop - 4, 0);
+			PdfDrawingCanvas.paint(drawing, writer.getDirectContent(), page.getHeight(), left, boxTop + 10, width,
+					half - 10);
+		}
 	}
 
 	private static String percent(BigDecimal rate) {

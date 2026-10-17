@@ -1,5 +1,6 @@
 package dev.daniellavoie.opencabinet;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -8,9 +9,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -164,6 +168,27 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.cabinetLabels.c1").value("C1"))
 				.andExpect(jsonPath("$.operations.cabinets").value(3))
 				.andExpect(jsonPath("$.nesting[0].sheets[0].placements").isNotEmpty());
+
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/drawing").param("lang", "en")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1 + 1 + 3)))
+				.andExpect(jsonPath("$[0].kind").value("PLAN"))
+				.andExpect(jsonPath("$[1].title").value("Elevation — Wall 1"))
+				.andExpect(jsonPath("$[2].svg").value(startsWith("<svg")));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/drawing/pdf")))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_PDF));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/cut-list/csv").param("lang", "en")))
+				.andExpect(status().isOk())
+				.andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("cut-list.csv")))
+				.andExpect(content().string(containsString("Material,Part,Qty")));
+		for (var kind : List.of("cut-list", "nesting", "bill-of-materials")) {
+			mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/" + kind + "/pdf")))
+					.andExpect(status().isOk())
+					.andExpect(content().contentType(MediaType.APPLICATION_PDF));
+		}
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/elsewhere/pdf")))
+				.andExpect(status().isNotFound());
 
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())

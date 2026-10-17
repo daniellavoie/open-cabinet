@@ -24,4 +24,13 @@ public class MaterialNesting {
 	 * Parts larger than the sheet, which cannot be cut from it.
 	 */
 	List<Part> oversizedParts;
+	/**
+	 * How this layout was found.
+	 */
+	NestingStrategy strategy;
+	/**
+	 * The next best layouts found with other strategies, best first, to compare. They are not bought:
+	 * the Bill of Materials follows this layout.
+	 */
+	List<MaterialNesting> alternatives;
 }
