@@ -68,7 +68,7 @@ public class DefaultCutListDomain implements CutListDomain {
 		Map<UUID, Material> materials = catalog.stream()
 				.collect(Collectors.toMap(Material::getId, Function.identity()));
 		Map<String, CabinetTemplate> templates = projectDomain.templates().stream()
-				.collect(Collectors.toMap(CabinetTemplate::getCode, Function.identity()));
+				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 
 		var cabinets = readingOrder(project);
 		var labels = new LinkedHashMap<String, String>();
@@ -78,7 +78,7 @@ public class DefaultCutListDomain implements CutListDomain {
 		var orderedParts = new ArrayList<Part>();
 		var hardware = new LinkedHashMap<UUID, Integer>();
 		for (var cabinet : cabinets) {
-			var set = PartGenerator.generate(cabinet, templates.get(cabinet.getTemplateCode()),
+			var set = PartGenerator.generate(cabinet, templates.get(cabinet.templateKey()),
 					labels.get(cabinet.getId()), standard, materials);
 			set.parts().forEach(part -> (part.isOrdered() ? orderedParts : parts).add(part));
 			set.hardware().forEach((materialId, quantity) -> hardware.merge(materialId, quantity, Integer::sum));

@@ -28,12 +28,34 @@
       (click)="selectTab(item.id)">{{ item.label }}</button>
   </nav>
 
+  <div class="alert alert-warning updates" *ngIf="tab === 'design' && (outdatedIds.size > 0 || refusedUpdates.length > 0)">
+    <div class="updates-summary" *ngIf="outdatedIds.size > 0">
+      <span i18n="@@editor.outdated">{{ outdatedIds.size }} caisson(s) peuvent passer à une version plus récente de leur modèle.</span>
+      <button class="btn btn-sm btn-link" (click)="showPendingVersions = !showPendingVersions" i18n="@@editor.whatChanged">Voir les changements</button>
+      <button class="btn btn-sm btn-outline-secondary" *ngIf="!readOnly" (click)="updateAll()" i18n="@@editor.updateAll">Tout mettre à jour</button>
+    </div>
+    <ul class="pending" *ngIf="showPendingVersions">
+      <li *ngFor="let pending of pendingVersions">
+        <strong>{{ templateLabels[pending.code] ?? pending.code }}</strong>
+        <ul>
+          <li *ngFor="let version of pending.versions"><span i18n="@@design.versionShort">v{{ version.version }}</span> {{ version.changeNote }}</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="refused" *ngFor="let refusal of refusedUpdates">
+      <span i18n="@@editor.updateRefused">{{ cabinetLabels.get(refusal.cabinetId) ?? "" }} garde sa version : la version {{ refusal.version }} ne respecterait pas ces règles.</span>
+      <ul>
+        <li *ngFor="let violation of refusal.violations">{{ violationLabels[violation.code] ?? violation.code }}</li>
+      </ul>
+    </div>
+  </div>
+
   <div class="design" *ngIf="tab === 'design'">
     <room-view class="view" [design]="draft.design" [templates]="templates" [selectedId]="selectedId"
-      [invalidIds]="invalidIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      [invalidIds]="invalidIds" [outdatedIds]="outdatedIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
-      [violations]="violations" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
+      [violations]="violations" [outdatedIds]="outdatedIds" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
       (saveTemplate)="saveTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 

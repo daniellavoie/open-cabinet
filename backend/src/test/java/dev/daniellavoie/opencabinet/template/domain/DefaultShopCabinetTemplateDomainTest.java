@@ -32,7 +32,7 @@ import dev.daniellavoie.opencabinet.template.domain.port.backend.ShopCabinetTemp
 class DefaultShopCabinetTemplateDomainTest {
 	private static final UUID SHOP_ID = UUID.randomUUID();
 	private static final CabinetTemplate BASE_DOOR = CabinetTemplate.builder()
-			.code("BASE_DOOR").type(CabinetType.BASE)
+			.code("BASE_DOOR").version(1).type(CabinetType.BASE)
 			.minWidthMm(228.6).maxWidthMm(914.4).minHeightMm(800).maxHeightMm(950)
 			.minDepthMm(300).maxDepthMm(700).maxShelfCount(4)
 			.frontRows(List.of(FrontRow.builder().kind(FrontKind.DOOR).build()))
@@ -81,7 +81,7 @@ class DefaultShopCabinetTemplateDomainTest {
 	}
 
 	private static Cabinet cabinet(double widthMm) {
-		return Cabinet.builder().id("c1").templateCode("BASE_DOOR").wallId("w1").offsetMm(500).widthMm(widthMm)
+		return Cabinet.builder().id("c1").templateCode("BASE_DOOR").templateVersion(1).wallId("w1").offsetMm(500).widthMm(widthMm)
 				.heightMm(876.3).depthMm(609.6).shelfCount(1).build();
 	}
 }

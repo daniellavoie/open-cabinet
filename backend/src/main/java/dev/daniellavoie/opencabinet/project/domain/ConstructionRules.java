@@ -75,8 +75,8 @@ public final class ConstructionRules {
 		var fillers = Optional.ofNullable(design.getFillers()).orElse(List.of());
 		Map<String, Wall> wallsById = walls.stream()
 				.collect(Collectors.toMap(Wall::getId, Function.identity(), (first, second) -> first));
-		Map<String, CabinetTemplate> templatesByCode = templates.stream()
-				.collect(Collectors.toMap(CabinetTemplate::getCode, Function.identity()));
+		Map<String, CabinetTemplate> templatesByKey = templates.stream()
+				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 
 		for (var wall : walls) {
 			if (wall.getLengthMm() <= 0 || wall.getHeightMm() <= 0) {
@@ -121,7 +121,7 @@ public final class ConstructionRules {
 				continue;
 			}
 
-			var template = templatesByCode.get(cabinet.getTemplateCode());
+			var template = templatesByKey.get(cabinet.templateKey());
 			if (template == null) {
 				violations.add(cabinetViolation(UNKNOWN_TEMPLATE, cabinet));
 				continue;
@@ -210,7 +210,7 @@ public final class ConstructionRules {
 			}
 		}
 
-		checkCorners(design, cabinets, appliances, templatesByCode, violations);
+		checkCorners(design, cabinets, appliances, templatesByKey, violations);
 
 		return violations;
 	}
@@ -222,7 +222,7 @@ public final class ConstructionRules {
 	 * overlap rules above already cover both.
 	 */
 	private static void checkCorners(Design design, List<Cabinet> cabinets, List<Appliance> appliances,
-			Map<String, CabinetTemplate> templatesByCode, List<Violation> violations) {
+			Map<String, CabinetTemplate> templatesByKey, List<Violation> violations) {
 		var placements = RoomLayout.layout(Optional.ofNullable(design.getWalls()).orElse(List.of()));
 		var footprints = new ArrayList<Footprint>();
 		for (var cabinet : cabinets) {
@@ -257,7 +257,7 @@ public final class ConstructionRules {
 				continue;
 			}
 
-			var template = templatesByCode.get(cabinet.getTemplateCode());
+			var template = templatesByKey.get(cabinet.templateKey());
 			if (template == null) {
 				continue;
 			}

@@ -112,6 +112,7 @@ export function addCabinet(design: Design, template: CabinetTemplate, wallId: st
   preset?: Omit<Cabinet, "id" | "wallId">): { design: Design; cabinetId: string } {
   const cabinet: Cabinet = {
     templateCode: template.code,
+    templateVersion: template.version,
     offsetMm: 0,
     widthMm: template.defaultWidthMm,
     heightMm: template.defaultHeightMm,

@@ -2436,6 +2436,106 @@
           <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="design.updateAvailable" datatype="html">
+        <source>Une version plus récente de son modèle existe</source>
+        <target>A newer version of its template exists</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.updateBadge" datatype="html">
+        <source>mise à jour</source>
+        <target>update</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">98,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.templateVersion" datatype="html">
+        <source>Version du modèle</source>
+        <target>Template version</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">112,113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.versionOption" datatype="html">
+        <source>Version <x id="INTERPOLATION" equiv-text="{{ version.version }}"/></source>
+        <target>Version <x id="INTERPOLATION" equiv-text="{{ version.version }}"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">114,115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.newerVersions" datatype="html">
+        <source>Une version plus récente de ce modèle existe :</source>
+        <target>A newer version of this template exists:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">118,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.versionShort" datatype="html">
+        <source>v<x id="INTERPOLATION" equiv-text="{{ version.version }}"/></source>
+        <target>v<x id="INTERPOLATION" equiv-text="{{ version.version }}"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.updateToLatest" datatype="html">
+        <source>Mettre à jour vers la version <x id="INTERPOLATION" equiv-text="{{ selectedNewer[selectedNewer.length - 1].version }}"/></source>
+        <target>Update to version <x id="INTERPOLATION" equiv-text="{{ selectedNewer[selectedNewer.length - 1].version }}"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">123,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="design.versionRefused" datatype="html">
+        <source>Impossible de passer à la version <x id="INTERPOLATION" equiv-text="{{ refusal.version }}"/> : ce caisson ne respecterait plus ces règles.</source>
+        <target>Cannot move to version <x id="INTERPOLATION" equiv-text="{{ refusal.version }}"/>: this cabinet would break these rules.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/design-panel/design-panel.component.html</context>
+          <context context-type="linenumber">126,127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.outdated" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ outdatedIds.size }}"/> caisson(s) peuvent passer à une version plus récente de leur modèle.</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ outdatedIds.size }}"/> cabinet(s) can move to a newer version of their template.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.whatChanged" datatype="html">
+        <source>Voir les changements</source>
+        <target>See what changed</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.updateAll" datatype="html">
+        <source>Tout mettre à jour</source>
+        <target>Update all</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">35,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.updateRefused" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ cabinetLabels.get(refusal.cabinetId) ?? &quot;&quot; }}"/> garde sa version : la version <x id="INTERPOLATION_1" equiv-text="{{ refusal.version }}"/> ne respecterait pas ces règles.</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ cabinetLabels.get(refusal.cabinetId) ?? &quot;&quot; }}"/> keeps its version: version <x id="INTERPOLATION_1" equiv-text="{{ refusal.version }}"/> would break these rules.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">46,48</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>

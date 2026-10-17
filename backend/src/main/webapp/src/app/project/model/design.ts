@@ -26,6 +26,8 @@ export class Wall {
 export class Cabinet {
   id!: string;
   templateCode!: string;
+  /** The Template Version the Cabinet keeps until a Member updates or reverts it. */
+  templateVersion!: number;
   wallId!: string;
   offsetMm!: number;
   widthMm!: number;
@@ -107,8 +109,14 @@ export class Design {
   fillers?: Filler[];
 }
 
+/**
+ * One Template Version of a kind of Cabinet. A published version never
+ * changes; `changeNote` says what changed from the previous one.
+ */
 export class CabinetTemplate {
   code!: string;
+  version!: number;
+  changeNote?: string | null;
   type!: CabinetType;
   defaultWidthMm!: number;
   minWidthMm!: number;
@@ -124,6 +132,13 @@ export class CabinetTemplate {
   maxShelfCount!: number;
   frontRows!: FrontRow[];
   blindWidthMm?: number;
+}
+
+/**
+ * Identifies a Template Version: its template's code and its number.
+ */
+export function templateKey(code: string, version: number): string {
+  return `${code}@${version}`;
 }
 
 /**

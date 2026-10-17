@@ -116,7 +116,7 @@ class DefaultCutListDomainTest {
 		return Cabinet.builder()
 				.id(id)
 				.wallId(wallId)
-				.templateCode(template)
+				.templateCode(template).templateVersion(1)
 				.offsetMm(offset)
 				.widthMm(457.2)
 				.heightMm(wall ? 762 : 876.3)

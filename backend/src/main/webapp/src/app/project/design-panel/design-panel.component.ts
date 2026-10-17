@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from "@angular/common";
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { Material } from "../../catalog/model/material";
@@ -9,6 +9,7 @@ import { LengthInputComponent } from "../../util/length-input/length-input.compo
 import { Units } from "../../util/units/units";
 import { addAppliance, addCabinet, addDivider, addFiller, addOpening, addWall, ItemChanges, moveDivider, removeCabinet, removeDivider, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
 import { allowsDividers, Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Filler, Opening, OpeningKind, Violation, Wall } from "../model/design";
+import { changeVersions, latestVersions, newerVersions, RefusedChange, templateOf, versionsOf } from "../template-versions";
 
 const OPENING_KINDS: OpeningKind[] = ["WINDOW", "DOORWAY"];
 const APPLIANCE_KINDS: ApplianceKind[] = ["FRIDGE", "RANGE", "DISHWASHER", "HOOD"];
@@ -44,6 +45,8 @@ export class DesignPanelComponent implements OnChanges {
    */
   @Input() selectedId: string | null = null;
   @Input() violations: Violation[] = [];
+  /** Cabinets on an older Template Version than their template's newest. */
+  @Input() outdatedIds = new Set<string>();
   @Input() cabinetLabels = new Map<string, string>();
   @Input() readOnly = false;
   /** The Shop's ordered Front styles. */
@@ -62,8 +65,13 @@ export class DesignPanelComponent implements OnChanges {
   newWallId = "";
   newItemKind: ItemKind = "WINDOW";
   newItemWallId = "";
+  /** The selected Cabinet's last version change, refused for breaking Construction Rules. */
+  refused: RefusedChange[] = [];
 
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["selectedId"]) {
+      this.refused = [];
+    }
     const firstWallId = this.design.walls[0]?.id ?? "";
     if (!this.design.walls.some(wall => wall.id === this.newWallId)) {
       this.newWallId = firstWallId;
@@ -114,7 +122,24 @@ export class DesignPanelComponent implements OnChanges {
   }
 
   get selectedTemplate(): CabinetTemplate | undefined {
-    return this.templates.find(template => template.code === this.selected?.templateCode);
+    return this.selected ? templateOf(this.templates, this.selected) : undefined;
+  }
+
+  /**
+   * What new Cabinets are added from: each template's newest version.
+   */
+  get starterTemplates(): CabinetTemplate[] {
+    return latestVersions(this.templates);
+  }
+
+  /** Every version of the selected Cabinet's template, oldest first. */
+  get selectedVersions(): CabinetTemplate[] {
+    return this.selected ? versionsOf(this.templates, this.selected.templateCode) : [];
+  }
+
+  /** Versions newer than the selected Cabinet's, with their change notes. */
+  get selectedNewer(): CabinetTemplate[] {
+    return this.selected ? newerVersions(this.templates, this.selected) : [];
   }
 
   wallNumber(wallId: string): number {
@@ -145,7 +170,7 @@ export class DesignPanelComponent implements OnChanges {
   addCabinet() {
     const shopTemplate = this.shopTemplates.find(item => `shop:${item.id}` === this.newTemplateCode);
     const code = shopTemplate?.baseCode ?? this.newTemplateCode;
-    const template = this.templates.find(item => item.code === code);
+    const template = this.starterTemplates.find(item => item.code === code);
     if (!template || !this.newWallId) {
       return;
     }
@@ -156,6 +181,18 @@ export class DesignPanelComponent implements OnChanges {
 
   updateSelected(changes: Partial<Cabinet>) {
     this.designChange.emit(updateCabinet(this.design, this.selectedId!, changes));
+  }
+
+  /**
+   * Updates or reverts the selected Cabinet to another Template Version,
+   * unless it would break a Construction Rule.
+   */
+  changeSelectedVersion(version: number) {
+    const result = changeVersions(this.design, this.templates, [{ cabinetId: this.selectedId!, version }]);
+    this.refused = result.refused;
+    if (result.refused.length === 0) {
+      this.designChange.emit(result.design);
+    }
   }
 
   addDivider() {

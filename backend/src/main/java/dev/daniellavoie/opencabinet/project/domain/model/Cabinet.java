@@ -17,6 +17,10 @@ import lombok.extern.jackson.Jacksonized;
 public class Cabinet {
 	String id;
 	String templateCode;
+	/**
+	 * The Template Version the Cabinet keeps until a Member updates or reverts it.
+	 */
+	int templateVersion;
 	String wallId;
 	double offsetMm;
 	double widthMm;
@@ -51,6 +55,10 @@ public class Cabinet {
 	 * Crown moulding along the top front, for wall and tall Cabinets.
 	 */
 	boolean crown;
+
+	public String templateKey() {
+		return CabinetTemplate.key(templateCode, templateVersion);
+	}
 
 	public List<Double> dividers() {
 		return dividerPositionsMm == null ? List.of() : dividerPositionsMm;

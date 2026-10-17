@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { doorLeaves, frontRows, frontWidth } from "../front-layout";
-import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor } from "../model/design";
+import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor, templateKey } from "../model/design";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
 
 const MM = 1 / 1000;
@@ -18,6 +18,7 @@ const PANEL_THICKNESS_MM = 19;
 const SHELF_SETBACK_MM = 25;
 const CROWN_HEIGHT_MM = 76.2;
 const CROWN_PROJECTION_MM = 50;
+const UPDATE_MARKER_RADIUS_MM = 40;
 
 /**
  * A Cabinet, Opening or Appliance dragged along its Wall, or with
@@ -67,6 +68,10 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Cabinets, Openings and Appliances breaking a Construction Rule.
    */
   @Input() invalidIds = new Set<string>();
+  /**
+   * Cabinets on an older Template Version than their template's newest.
+   */
+  @Input() outdatedIds = new Set<string>();
   @Input() toeKickHeightMm = 101.6;
   /**
    * Things can still be picked, but not dragged.
@@ -165,7 +170,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     const placements = layoutWalls(this.design.walls);
     const placementsById = new Map(placements.map(placement => [placement.wall.id, placement]));
-    const templates = new Map(this.templates.map(template => [template.code, template]));
+    const templates = new Map(this.templates.map(template => [templateKey(template.code, template.version), template]));
 
     const bounds = new THREE.Box3();
     for (const placement of placements) {
@@ -209,11 +214,15 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     for (const cabinet of this.design.cabinets) {
       const placement = placementsById.get(cabinet.wallId);
-      const template = templates.get(cabinet.templateCode);
+      const template = templates.get(templateKey(cabinet.templateCode, cabinet.templateVersion));
       if (!placement || !template) {
         continue;
       }
-      this.content.add(this.cabinetMesh(cabinet, template, placement, colors, highlightOf(cabinet.id)));
+      const mesh = this.cabinetMesh(cabinet, template, placement, colors, highlightOf(cabinet.id));
+      if (this.outdatedIds.has(cabinet.id)) {
+        mesh.add(updateMarker(cabinet, colors.outdated));
+      }
+      this.content.add(tagged(mesh, cabinet.id));
     }
 
     if (placements.length !== this.framedWallCount && !bounds.isEmpty()) {
@@ -505,6 +514,7 @@ interface Colors {
   toeKick: string;
   selected: string;
   invalid: string;
+  outdated: string;
   window: string;
   doorway: string;
   appliance: string;
@@ -525,6 +535,7 @@ function readColors(element: HTMLElement): Colors {
     toeKick: token("--oc-3d-toe-kick"),
     selected: token("--oc-3d-selected"),
     invalid: token("--oc-3d-invalid"),
+    outdated: token("--oc-3d-outdated"),
     window: token("--oc-3d-window"),
     doorway: token("--oc-3d-doorway"),
     appliance: token("--oc-3d-appliance"),
@@ -537,6 +548,19 @@ function readColors(element: HTMLElement): Colors {
 function tagged(group: THREE.Group, id: string): THREE.Group {
   group.traverse(object => object.userData["pickId"] = id);
   return group;
+}
+
+/**
+ * A marker floating over the front of a Cabinet whose template has a newer
+ * version, in the Cabinet's frame.
+ */
+function updateMarker(cabinet: Cabinet, color: string): THREE.Mesh {
+  const marker = new THREE.Mesh(
+    new THREE.SphereGeometry(UPDATE_MARKER_RADIUS_MM * MM, 16, 12),
+    new THREE.MeshStandardMaterial({ color }),
+  );
+  marker.position.set(0, (cabinet.heightMm + UPDATE_MARKER_RADIUS_MM * 3) * MM, cabinet.depthMm / 2 * MM);
+  return marker;
 }
 
 function box(widthMm: number, heightMm: number, depthMm: number, color: string, opacity = 1): THREE.Mesh {

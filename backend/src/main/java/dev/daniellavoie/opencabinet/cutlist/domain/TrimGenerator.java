@@ -139,7 +139,7 @@ final class TrimGenerator {
 	}
 
 	private static CabinetType type(Cabinet cabinet, Map<String, CabinetTemplate> templates) {
-		return Optional.ofNullable(templates.get(cabinet.getTemplateCode()))
+		return Optional.ofNullable(templates.get(cabinet.templateKey()))
 				.map(CabinetTemplate::getType)
 				.orElse(CabinetType.WALL);
 	}

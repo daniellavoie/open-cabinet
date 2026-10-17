@@ -29,6 +29,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -40,6 +41,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DRAWERS",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 457.2,
           "widthMm": 457.2,
@@ -51,6 +53,7 @@
         {
           "id": "c3",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 914.4,
@@ -78,6 +81,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": -0.4,
           "widthMm": 457.6,
@@ -89,6 +93,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 456.9,
           "widthMm": 457.8,
@@ -148,6 +153,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "missing",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -159,6 +165,7 @@
         {
           "id": "c2",
           "templateCode": "UNKNOWN",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -183,6 +190,40 @@
     ]
   },
   {
+    "name": "a cabinet on a template version that does not exist is flagged",
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3657.6,
+          "heightMm": 2438.4,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 99,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ]
+    },
+    "violations": [
+      {
+        "code": "UNKNOWN_TEMPLATE",
+        "wallId": "w1",
+        "cabinetId": "c2"
+      }
+    ]
+  },
+  {
     "name": "dimensions and shelves must stay within the template's ranges",
     "design": {
       "walls": [
@@ -197,6 +238,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 200,
@@ -208,6 +250,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_SINK",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1000,
           "widthMm": 914.4,
@@ -261,6 +304,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -272,6 +316,7 @@
         {
           "id": "c2",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1000,
           "widthMm": 609.6,
@@ -310,6 +355,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": -10,
           "widthMm": 457.2,
@@ -321,6 +367,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 600,
           "widthMm": 457.2,
@@ -332,6 +379,7 @@
         {
           "id": "c3",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -381,6 +429,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -392,6 +441,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 300,
           "widthMm": 609.6,
@@ -403,6 +453,7 @@
         {
           "id": "c3",
           "templateCode": "BASE_DRAWERS",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 500,
           "widthMm": 457.2,
@@ -414,6 +465,7 @@
         {
           "id": "c4",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w2",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -425,6 +477,7 @@
         {
           "id": "c5",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -463,6 +516,7 @@
         {
           "id": "c1",
           "templateCode": "TALL_PANTRY",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -474,6 +528,7 @@
         {
           "id": "c2",
           "templateCode": "TALL_OVEN",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 700,
           "widthMm": 762,
@@ -507,6 +562,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -518,6 +574,7 @@
         {
           "id": "c2",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1500,
           "widthMm": 762,
@@ -578,6 +635,7 @@
         {
           "id": "c1",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 600,
           "widthMm": 609.6,
@@ -589,6 +647,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1600,
           "widthMm": 457.2,
@@ -600,6 +659,7 @@
         {
           "id": "c3",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 2700,
           "widthMm": 914.4,
@@ -754,6 +814,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 2542.8,
           "widthMm": 457.2,
@@ -765,6 +826,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w2",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -809,6 +871,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 2542.8,
           "widthMm": 457.2,
@@ -820,6 +883,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w2",
           "offsetMm": 609.6,
           "widthMm": 457.2,
@@ -859,6 +923,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_BLIND_CORNER",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1933.2,
           "widthMm": 1066.8,
@@ -871,6 +936,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w2",
           "offsetMm": 609.6,
           "widthMm": 457.2,
@@ -882,6 +948,7 @@
         {
           "id": "c3",
           "templateCode": "WALL_DOOR",
+          "templateVersion": 1,
           "wallId": "w2",
           "offsetMm": 0,
           "widthMm": 609.6,
@@ -915,6 +982,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 2542.8,
           "widthMm": 457.2,
@@ -960,6 +1028,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 914.4,
@@ -975,6 +1044,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR_DRAWER",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 914.4,
           "widthMm": 914.4,
@@ -989,6 +1059,7 @@
         {
           "id": "c3",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 1828.8,
           "widthMm": 609.6,
@@ -1003,6 +1074,7 @@
         {
           "id": "c4",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 2438.4,
           "widthMm": 609.6,
@@ -1018,6 +1090,7 @@
         {
           "id": "c5",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 3048,
           "widthMm": 609.6,
@@ -1065,6 +1138,7 @@
         {
           "id": "c1",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 0,
           "widthMm": 457.2,
@@ -1076,6 +1150,7 @@
         {
           "id": "c2",
           "templateCode": "BASE_DOOR",
+          "templateVersion": 1,
           "wallId": "w1",
           "offsetMm": 533.4,
           "widthMm": 457.2,

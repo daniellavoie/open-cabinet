@@ -16,6 +16,7 @@ import { ProjectOutput } from "../../cutlist/model/project-output";
 import { NestingComponent } from "../../cutlist/nesting/nesting.component";
 import { MemberService } from "../../member/member-service";
 import { QuotesComponent } from "../../quote/quotes/quotes.component";
+import { TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { ErrorResponse } from "../../util/model/error-response";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
@@ -27,6 +28,7 @@ import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
 import { OnWall, snapOffset } from "../room-layout";
 import { ItemMove, RoomViewComponent } from "../room-view/room-view.component";
+import { newerVersions, outdatedCabinets, RefusedChange, updateToLatest } from "../template-versions";
 
 type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
 
@@ -60,6 +62,9 @@ const LOCK_RENEWAL_MS = 45_000;
   templateUrl: "./project-editor.component.html",
 })
 export class ProjectEditorComponent implements OnDestroy {
+  readonly templateLabels = TEMPLATE_LABELS;
+  readonly violationLabels = VIOLATION_LABELS;
+
   readonly tabs: { id: Tab; label: string }[] = [
     { id: "design", label: $localize`:@@editor.design:Conception` },
     { id: "cutList", label: $localize`:@@editor.cutList:Liste de coupe` },
@@ -78,6 +83,13 @@ export class ProjectEditorComponent implements OnDestroy {
   message = "";
   violations: Violation[] = [];
   invalidIds = new Set<string>();
+  /** Cabinets on an older Template Version than their template's newest. */
+  outdatedIds = new Set<string>();
+  /** What updating the outdated Cabinets brings, per template. */
+  pendingVersions: { code: string; versions: CabinetTemplate[] }[] = [];
+  showPendingVersions = false;
+  /** Cabinets left out of the last "Update all" for breaking Construction Rules. */
+  refusedUpdates: RefusedChange[] = [];
   cabinetLabels = new Map<string, string>();
   /**
    * The selected Cabinet, Opening or Appliance.
@@ -169,6 +181,7 @@ export class ProjectEditorComponent implements OnDestroy {
     this.draft = project;
     this.setViolations(checkConstructionRules(project.design, this.templates));
     this.cabinetLabels = readingOrderLabels(project.design);
+    this.setOutdated(project.design);
     if (this.selectedId && !onWall(project.design).some(item => item.id === this.selectedId)) {
       this.selectedId = null;
     }
@@ -214,6 +227,31 @@ export class ProjectEditorComponent implements OnDestroy {
     }
   }
 
+  /**
+   * Moves every outdated Cabinet to its template's newest version; those that
+   * would break a Construction Rule keep their version and are listed.
+   */
+  updateAll() {
+    const result = updateToLatest(this.draft!.design, this.templates, [...this.outdatedIds]);
+    this.refusedUpdates = result.refused;
+    this.setDesign(result.design);
+  }
+
+  private setOutdated(design: Design) {
+    const outdated = outdatedCabinets(design, this.templates);
+    this.outdatedIds = new Set(outdated.map(cabinet => cabinet.id));
+    const pending = new Map<string, CabinetTemplate[]>();
+    for (const cabinet of outdated) {
+      const known = pending.get(cabinet.templateCode) ?? [];
+      const newer = newerVersions(this.templates, cabinet).filter(version => !known.includes(version));
+      pending.set(cabinet.templateCode, [...known, ...newer].sort((first, second) => first.version - second.version));
+    }
+    this.pendingVersions = [...pending].map(([code, versions]) => ({ code, versions }));
+    if (outdated.length === 0) {
+      this.showPendingVersions = false;
+    }
+  }
+
   saveTemplate(request: { name: string; cabinet: Cabinet }) {
     this.error = "";
     this.shopTemplateService.create(request.name, request.cabinet)
@@ -233,6 +271,7 @@ export class ProjectEditorComponent implements OnDestroy {
   }
 
   revert() {
+    this.refusedUpdates = [];
     this.setDraft(structuredClone(this.saved!));
     this.error = "";
   }
@@ -251,6 +290,7 @@ export class ProjectEditorComponent implements OnDestroy {
     })
       .pipe(tap(project => {
         this.saved = project;
+        this.refusedUpdates = [];
         this.setDraft(structuredClone(project));
         this.output = undefined;
         if (this.tab !== "design" && this.tab !== "quotes") {

@@ -7,15 +7,19 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * A starting point for a type of Cabinet, with the dimension ranges the Construction Rules
+ * One Template Version of a kind of Cabinet, with the dimension ranges the Construction Rules
  * enforce. Lengths are in millimetres. {@code frontRows} lay out the front from the top;
- * {@code blindWidthMm} is the width at one side left without fronts, for blind corners.
+ * {@code blindWidthMm} is the width at one side left without fronts, for blind corners. A
+ * published version never changes (docs/adr/0005-cabinet-keeps-its-template-version.md):
+ * {@code changeNote} says what changed from the previous version.
  */
 @Value
 @Jacksonized
 @Builder(toBuilder = true)
 public class CabinetTemplate {
 	String code;
+	int version;
+	String changeNote;
 	CabinetType type;
 	double defaultWidthMm;
 	double minWidthMm;
@@ -31,6 +35,17 @@ public class CabinetTemplate {
 	int maxShelfCount;
 	List<FrontRow> frontRows;
 	double blindWidthMm;
+
+	/**
+	 * Identifies a Template Version: its template's code and its number.
+	 */
+	public static String key(String code, int version) {
+		return code + "@" + version;
+	}
+
+	public String key() {
+		return key(code, version);
+	}
 
 	/**
 	 * Dividers fit behind doors only: drawers, false fronts and appliance openings span the width.

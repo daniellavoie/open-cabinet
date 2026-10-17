@@ -1,4 +1,4 @@
-import { allowsDividers, Appliance, Cabinet, CabinetTemplate, Design, standsOnFloor, Violation, Wall } from "./model/design";
+import { allowsDividers, Appliance, Cabinet, CabinetTemplate, Design, standsOnFloor, templateKey, Violation, Wall } from "./model/design";
 import { layoutWalls, PlanPoint, polygonsOverlap, wallRectangle, WallPlacement } from "./room-layout";
 
 interface Placed {
@@ -40,7 +40,7 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
       wallsById.set(wall.id, wall);
     }
   });
-  const templatesByCode = new Map(templates.map(template => [template.code, template]));
+  const templatesByKey = new Map(templates.map(template => [templateKey(template.code, template.version), template]));
 
   for (const wall of walls) {
     if (wall.lengthMm <= 0 || wall.heightMm <= 0) {
@@ -82,7 +82,7 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
       continue;
     }
 
-    const template = templatesByCode.get(cabinet.templateCode);
+    const template = templatesByKey.get(templateKey(cabinet.templateCode, cabinet.templateVersion));
     if (!template) {
       violations.push(cabinetViolation("UNKNOWN_TEMPLATE", cabinet));
       continue;
@@ -156,7 +156,7 @@ export function checkConstructionRules(design: Design, templates: CabinetTemplat
     }
   });
 
-  checkCorners(walls, cabinets, appliances, templatesByCode, violations);
+  checkCorners(walls, cabinets, appliances, templatesByKey, violations);
 
   return violations;
 }
@@ -176,7 +176,7 @@ interface Footprint {
  * be covered by the neighbouring run. On a single Wall, the overlap rules
  * above already cover both.
  */
-function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[], templatesByCode: Map<string, CabinetTemplate>, violations: Violation[]) {
+function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[], templatesByKey: Map<string, CabinetTemplate>, violations: Violation[]) {
   const placements = new Map<string, WallPlacement>();
   layoutWalls(walls).forEach(placement => {
     if (!placements.has(placement.wall.id)) {
@@ -211,7 +211,7 @@ function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[
       continue;
     }
 
-    const template = templatesByCode.get(cabinet.templateCode);
+    const template = templatesByKey.get(templateKey(cabinet.templateCode, cabinet.templateVersion));
     if (!template) {
       continue;
     }

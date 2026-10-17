@@ -23,7 +23,7 @@ class PartGeneratorTest {
 	@Test
 	void narrowBaseCabinetWithOneDoorAndShelf() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("BASE_DOOR").wallId("w1")
+				.id("c1").templateCode("BASE_DOOR").templateVersion(1).wallId("w1")
 				.widthMm(457.2).heightMm(876.3).depthMm(609.6).shelfCount(1)
 				.build();
 
@@ -65,7 +65,7 @@ class PartGeneratorTest {
 	@Test
 	void dividersSplitTheShelves() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("WALL_DOOR").wallId("w1")
+				.id("c1").templateCode("WALL_DOOR").templateVersion(1).wallId("w1")
 				.widthMm(914.4).heightMm(762).depthMm(304.8).elevationMm(1371.6).shelfCount(2)
 				.dividerPositionsMm(List.of(300d))
 				.build();
@@ -88,7 +88,7 @@ class PartGeneratorTest {
 	@Test
 	void wideCabinetsGetTwoDoors() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("WALL_DOOR").wallId("w1")
+				.id("c1").templateCode("WALL_DOOR").templateVersion(1).wallId("w1")
 				.widthMm(914.4).heightMm(762).depthMm(304.8).elevationMm(1371.6).shelfCount(2)
 				.build();
 
@@ -109,7 +109,7 @@ class PartGeneratorTest {
 	@Test
 	void drawerBaseGetsFrontsSlidesAndBoxes() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("BASE_DRAWERS").wallId("w1")
+				.id("c1").templateCode("BASE_DRAWERS").templateVersion(1).wallId("w1")
 				.widthMm(457.2).heightMm(876.3).depthMm(609.6)
 				.build();
 
@@ -128,7 +128,7 @@ class PartGeneratorTest {
 	@Test
 	void sinkHasAFalseFrontAboveItsDoorsAndNoPullOnIt() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("BASE_SINK").wallId("w1")
+				.id("c1").templateCode("BASE_SINK").templateVersion(1).wallId("w1")
 				.widthMm(914.4).heightMm(876.3).depthMm(609.6)
 				.build();
 
@@ -145,7 +145,7 @@ class PartGeneratorTest {
 	@Test
 	void blindCornerFrontsCoverOnlyTheOpenSide() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("BASE_BLIND_CORNER").wallId("w1")
+				.id("c1").templateCode("BASE_BLIND_CORNER").templateVersion(1).wallId("w1")
 				.widthMm(1066.8).heightMm(876.3).depthMm(609.6).shelfCount(1)
 				.build();
 
@@ -160,7 +160,7 @@ class PartGeneratorTest {
 	@Test
 	void ovenTowerLeavesTheOpeningEmpty() {
 		var cabinet = Cabinet.builder()
-				.id("c1").templateCode("TALL_OVEN").wallId("w1")
+				.id("c1").templateCode("TALL_OVEN").templateVersion(1).wallId("w1")
 				.widthMm(762).heightMm(2286).depthMm(609.6).shelfCount(1)
 				.build();
 

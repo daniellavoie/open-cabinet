@@ -1,0 +1,11 @@
+# Every published starter Template Version and a hash of its content.
+# CabinetTemplateVersionsTest fails when a listed version changes; add a line per new version.
+# docs/adr/0005-cabinet-keeps-its-template-version.md
+BASE_DOOR@1 2a736b3d69721f313a945586d3e4f407a9cfd72d8be14d5a5db8463f72714369
+BASE_DOOR_DRAWER@1 8045ccfcbef6eb1fc0ab9c6ab21d0c8d1f42dd9d16131d45e28e4c43f070e457
+BASE_SINK@1 402d63dbe80be2d3e7ca00ad4069e4c9ecac7053047042c29704a27fb879bd3e
+BASE_DRAWERS@1 75b5d0ca975754d0c33ccf46f7a3a51499e40e859ffd72a5ae6afe8cf0c75d8b
+BASE_BLIND_CORNER@1 a7d905be1cc83d91470e1997d3e69e39f68db90f0257208fcf85d3a8198309fd
+WALL_DOOR@1 592e09ef56d0eed412929316133dde6c68468ebe3e625ea9542560a2c7ee253c
+TALL_PANTRY@1 d31fae6d705b80ac70636604f236cfc78a7997251551a0290a3d17233fe6bf0b
+TALL_OVEN@1 dc7af60ff8640c1a470e23291bdee7426d4f6f6672ff9c36a58c4abb0614e498

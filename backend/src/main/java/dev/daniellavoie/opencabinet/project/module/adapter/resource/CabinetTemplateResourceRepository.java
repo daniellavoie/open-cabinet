@@ -14,8 +14,10 @@ import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.port.backend.CabinetTemplateRepository;
 
 /**
- * Reads the starter library from {@code cabinet-templates.json}. The Angular app gets the same
- * templates from the API, so the two sides never hold separate copies.
+ * Reads the starter library from {@code cabinet-templates.json}, one entry per Template Version.
+ * Versions are only ever added to that file, never edited: {@code CabinetTemplateVersionsTest}
+ * fails when a published one changes. The Angular app gets the same templates from the API, so the
+ * two sides never hold separate copies.
  */
 @Repository
 public class CabinetTemplateResourceRepository implements CabinetTemplateRepository {

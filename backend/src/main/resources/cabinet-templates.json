@@ -1,6 +1,7 @@
 [
   {
     "code": "BASE_DOOR",
+    "version": 1,
     "type": "BASE",
     "defaultWidthMm": 457.2,
     "minWidthMm": 228.6,
@@ -22,6 +23,7 @@
   },
   {
     "code": "BASE_DOOR_DRAWER",
+    "version": 1,
     "type": "BASE",
     "defaultWidthMm": 457.2,
     "minWidthMm": 304.8,
@@ -47,6 +49,7 @@
   },
   {
     "code": "BASE_SINK",
+    "version": 1,
     "type": "BASE",
     "defaultWidthMm": 914.4,
     "minWidthMm": 609.6,
@@ -72,6 +75,7 @@
   },
   {
     "code": "BASE_DRAWERS",
+    "version": 1,
     "type": "BASE",
     "defaultWidthMm": 457.2,
     "minWidthMm": 304.8,
@@ -100,6 +104,7 @@
   },
   {
     "code": "BASE_BLIND_CORNER",
+    "version": 1,
     "type": "BASE",
     "defaultWidthMm": 1066.8,
     "minWidthMm": 914.4,
@@ -122,6 +127,7 @@
   },
   {
     "code": "WALL_DOOR",
+    "version": 1,
     "type": "WALL",
     "defaultWidthMm": 609.6,
     "minWidthMm": 228.6,
@@ -143,6 +149,7 @@
   },
   {
     "code": "TALL_PANTRY",
+    "version": 1,
     "type": "TALL",
     "defaultWidthMm": 609.6,
     "minWidthMm": 304.8,
@@ -169,6 +176,7 @@
   },
   {
     "code": "TALL_OVEN",
+    "version": 1,
     "type": "TALL",
     "defaultWidthMm": 762.0,
     "minWidthMm": 762.0,

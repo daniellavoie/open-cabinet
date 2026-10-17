@@ -102,7 +102,7 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, post("/api/shop-template"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
-						{"name": "Vanité 30", "cabinet": {"id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1",
+						{"name": "Vanité 30", "cabinet": {"id": "c1", "templateCode": "BASE_DOOR", "templateVersion": 1, "wallId": "w1",
 						"offsetMm": 300, "widthMm": 762, "heightMm": 876.3, "depthMm": 533.4, "elevationMm": 0,
 						"shelfCount": 1, "dividerPositionsMm": [381], "finishedLeft": true}}
 						"""))
@@ -309,6 +309,7 @@ class OpenCabinetApplicationTests {
 		return objectMapper.createObjectNode()
 				.put("id", id)
 				.put("templateCode", template)
+				.put("templateVersion", 1)
 				.put("wallId", wallId)
 				.put("offsetMm", offset)
 				.put("widthMm", width)

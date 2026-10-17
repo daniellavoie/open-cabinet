@@ -92,7 +92,7 @@ describe("dividers", () => {
 
 describe("shop templates", () => {
   it("add a cabinet with the preset over its base template", () => {
-    const preset = { templateCode: "BASE_DOOR", offsetMm: 0, widthMm: 762, heightMm: 876.3, depthMm: 533.4, elevationMm: 0,
+    const preset = { templateCode: "BASE_DOOR", templateVersion: 1, offsetMm: 0, widthMm: 762, heightMm: 876.3, depthMm: 533.4, elevationMm: 0,
       shelfCount: 2, dividerPositionsMm: [381], finishedLeft: true };
     const design = addCabinet(room(), BASE_DOOR, "w1", TEMPLATES, preset).design;
 

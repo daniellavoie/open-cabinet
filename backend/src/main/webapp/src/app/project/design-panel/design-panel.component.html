@@ -73,7 +73,7 @@
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
       <optgroup i18n-label="@@design.starterTemplates" label="Modèles de départ">
-        <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+        <option *ngFor="let template of starterTemplates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
       </optgroup>
       <optgroup i18n-label="@@design.shopTemplates" label="Modèles de l'atelier" *ngIf="shopTemplates.length > 0">
         <option *ngFor="let template of shopTemplates" [value]="'shop:' + template.id">{{ template.name }}</option>
@@ -92,7 +92,11 @@
   <ul class="cabinets">
     <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedId"
       [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectItem.emit(cabinet.id)">
-      <span>{{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}</span>
+      <span>
+        {{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}
+        <span class="badge text-bg-warning" *ngIf="outdatedIds.has(cabinet.id)" i18n-title="@@design.updateAvailable"
+          title="Une version plus récente de son modèle existe" i18n="@@design.updateBadge">mise à jour</span>
+      </span>
       <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(cabinet.wallId) }}</span>
     </li>
   </ul>
@@ -103,6 +107,28 @@
     <span>{{ templateLabels[selected.templateCode] ?? selected.templateCode }}</span>
     <button class="btn btn-sm btn-link text-danger" (click)="removeSelected()" i18n="@@common.remove">Retirer</button>
   </h2>
+  <div class="template-version">
+    <div class="fields">
+      <label for="cabinetVersion" i18n="@@design.templateVersion">Version du modèle</label>
+      <select class="form-select form-select-sm" id="cabinetVersion" [ngModel]="selected.templateVersion" (ngModelChange)="changeSelectedVersion($event)">
+        <option *ngFor="let version of selectedVersions" [ngValue]="version.version" i18n="@@design.versionOption">Version {{ version.version }}</option>
+      </select>
+    </div>
+    <div class="newer" *ngIf="selectedNewer.length > 0">
+      <p i18n="@@design.newerVersions">Une version plus récente de ce modèle existe :</p>
+      <ul class="change-notes">
+        <li *ngFor="let version of selectedNewer"><strong i18n="@@design.versionShort">v{{ version.version }}</strong> {{ version.changeNote }}</li>
+      </ul>
+      <button class="btn btn-sm btn-outline-secondary" (click)="changeSelectedVersion(selectedNewer[selectedNewer.length - 1].version)"
+        i18n="@@design.updateToLatest">Mettre à jour vers la version {{ selectedNewer[selectedNewer.length - 1].version }}</button>
+    </div>
+    <div class="refused text-danger" *ngFor="let refusal of refused">
+      <span i18n="@@design.versionRefused">Impossible de passer à la version {{ refusal.version }} : ce caisson ne respecterait plus ces règles.</span>
+      <ul>
+        <li *ngFor="let violation of refusal.violations">{{ violationLabels[violation.code] ?? violation.code }}</li>
+      </ul>
+    </div>
+  </div>
   <div class="fields">
     <label for="cabinetWall" i18n="@@design.wall">Mur</label>
     <select class="form-select form-select-sm" id="cabinetWall" [ngModel]="selected.wallId" (ngModelChange)="updateSelected({ wallId: $event })">

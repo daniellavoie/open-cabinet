@@ -52,7 +52,7 @@ final class CutListFixtures {
 			.build();
 
 	static final CabinetTemplate BASE_DOOR = CabinetTemplate.builder()
-			.code("BASE_DOOR").type(CabinetType.BASE)
+			.code("BASE_DOOR").version(1).type(CabinetType.BASE)
 			.minWidthMm(228.6).maxWidthMm(914.4).minHeightMm(762).maxHeightMm(965.2)
 			.minDepthMm(304.8).maxDepthMm(762).maxShelfCount(4).frontRows(List.of(row(FrontKind.DOOR, null)))
 			.build();
@@ -72,7 +72,7 @@ final class CutListFixtures {
 			.build();
 
 	static final CabinetTemplate TALL_OVEN = CabinetTemplate.builder()
-			.code("TALL_OVEN").type(CabinetType.TALL)
+			.code("TALL_OVEN").version(1).type(CabinetType.TALL)
 			.minWidthMm(762).maxWidthMm(838.2).minHeightMm(2133.6).maxHeightMm(2438.4)
 			.minDepthMm(609.6).maxDepthMm(762).maxShelfCount(2)
 			.frontRows(List.of(row(FrontKind.DOOR, 381.0), row(FrontKind.OPENING, 762.0), row(FrontKind.DRAWER, null),
@@ -80,7 +80,7 @@ final class CutListFixtures {
 			.build();
 
 	static final CabinetTemplate WALL_DOOR = CabinetTemplate.builder()
-			.code("WALL_DOOR").type(CabinetType.WALL)
+			.code("WALL_DOOR").version(1).type(CabinetType.WALL)
 			.minWidthMm(228.6).maxWidthMm(1219.2).minHeightMm(304.8).maxHeightMm(1066.8)
 			.minDepthMm(228.6).maxDepthMm(609.6).maxShelfCount(4).frontRows(List.of(row(FrontKind.DOOR, null)))
 			.build();

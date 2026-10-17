@@ -7,7 +7,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 **Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
 1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
-2. Start Milestone 4.
+2. Milestone 4 is under way: step 0 (Template Versions) is done; Shop Drawings are next.
 
 ## Status
 
@@ -17,7 +17,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 1. First end-to-end slice | Done (PR #2), in production |
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
-| 4. Outputs for the shop floor and the Client | Next |
+| 4. Outputs for the shop floor and the Client | In progress |
 | 5. Custom Cabinet Templates | Planned |
 | 6. Design Assistant | Planned |
 | 7. After v1 | Not scheduled |
@@ -71,9 +71,9 @@ Follow-ups found while building it:
 - Fillers are always made in the Shop and are not checked across Walls; ordered Fronts have one price per m² per style, no size tiers.
 - Toe kicks are cut from the carcass material; a Shop may want its own toe kick material in the Construction Standard.
 
-## 4. Outputs for the shop floor and the Client: planned
+## 4. Outputs for the shop floor and the Client: in progress
 
-0. **Template Versions** (first, ahead of the outputs; ADR 0005). Today a Cabinet keeps only its template's code, so editing `cabinet-templates.json` silently changes every old Project. Starter templates are split into numbered Template Version files that are only ever added, never edited, with a test that fails if a published version changes. Every Cabinet records its template and version; existing Cabinets are migrated to version 1. Outdated Cabinets get a badge in 3D and in the side panel, and the Project a notice ("3 Cabinets can be updated") with Update all and each version's change note. Updating keeps the Cabinet's own values (size, shelves, dividers, Fronts, finished ends, crown, blind side) and is refused, showing the broken rules, when they don't fit the new version; Revert goes back to any published version. Sent Quotes are untouched; draft Quotes get the existing "priced before a change" notice.
+0. **Template Versions** (first, ahead of the outputs; ADR 0005). Done. A Cabinet used to keep only its template's code, so editing `cabinet-templates.json` silently changed every old Project. Each entry of `cabinet-templates.json` is now one Template Version, only ever added, never edited: `cabinet-templates.published` lists each with a hash of its content, and `CabinetTemplateVersionsTest` fails when a published one changes (one file rather than a file per version, because both test suites read it directly). Every Cabinet records its template and version; existing Cabinets are migrated to version 1. Outdated Cabinets get a badge in 3D and in the side panel, and the Project a notice ("3 Cabinets can be updated") with Update all and each version's change note. Updating keeps the Cabinet's own values (size, shelves, dividers, Fronts, finished ends, crown, blind side) and is refused, showing the broken rules, when they don't fit the new version; Revert goes back to any published version. Sent Quotes are untouched; draft Quotes get the existing "priced before a change" notice.
 1. **Shop Drawings**: plan view, an Elevation per Wall and per-Cabinet details, printable.
 2. **Quote PDF with pictures**: a 3D render and Elevations alongside the price.
 3. **Printable and exportable outputs**: Cut List, Nesting layouts and Bill of Materials as PDF and CSV.

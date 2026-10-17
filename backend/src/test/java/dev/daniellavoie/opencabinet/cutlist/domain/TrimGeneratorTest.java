@@ -25,7 +25,7 @@ class TrimGeneratorTest {
 	private static final Map<UUID, Material> MATERIALS = CATALOG.stream()
 			.collect(Collectors.toMap(Material::getId, Function.identity()));
 	private static final Map<String, CabinetTemplate> TEMPLATES = List.of(BASE_DOOR, WALL_DOOR).stream()
-			.collect(Collectors.toMap(CabinetTemplate::getCode, Function.identity()));
+			.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 
 	@Test
 	void toeKicksFollowRunsOfFloorCabinets() {
@@ -94,12 +94,12 @@ class TrimGeneratorTest {
 	}
 
 	private static Cabinet base(String id, double offset) {
-		return Cabinet.builder().id(id).templateCode("BASE_DOOR").wallId("w1").offsetMm(offset).widthMm(457.2)
+		return Cabinet.builder().id(id).templateCode("BASE_DOOR").templateVersion(1).wallId("w1").offsetMm(offset).widthMm(457.2)
 				.heightMm(876.3).depthMm(609.6).build();
 	}
 
 	private static Cabinet wall(String id, double offset, boolean crown) {
-		return Cabinet.builder().id(id).templateCode("WALL_DOOR").wallId("w1").offsetMm(offset).widthMm(914.4)
+		return Cabinet.builder().id(id).templateCode("WALL_DOOR").templateVersion(1).wallId("w1").offsetMm(offset).widthMm(914.4)
 				.heightMm(762).depthMm(304.8).elevationMm(1371.6).crown(crown).build();
 	}
 }

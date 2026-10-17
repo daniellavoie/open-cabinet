@@ -13,7 +13,7 @@ A 3D cabinet designer for cabinet Shops: design a Project in 3D, then get its Cu
 |---|---|
 | `backend/` | Spring Boot (Java 21) API, PostgreSQL via Flyway |
 | `backend/src/main/webapp/` | Angular 22 app, packaged into the backend jar by the `frontend` Maven profile |
-| `backend/src/main/resources/cabinet-templates.json` | Starter Cabinet Templates, served to the Angular app |
+| `backend/src/main/resources/cabinet-templates.json` | Starter Cabinet Templates, one entry per Template Version, served to the Angular app. Versions are only ever added: list each new one in `backend/src/test/resources/cabinet-templates.published` (ADR 0005) |
 | `backend/src/test/resources/construction-rules/cases.json` | Construction Rules cases shared by the Java and TypeScript test suites |
 | `helm/open-cabinet/` | Helm chart; production values in `.github/infra/open-cabinet-production/` |
 

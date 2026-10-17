@@ -28,6 +28,9 @@ public interface ProjectDomain {
 	 */
 	Project update(UUID projectId, UpdateProjectRequest request, Principal principal);
 
+	/**
+	 * Every published Template Version of the starter library.
+	 */
 	List<CabinetTemplate> templates();
 
 	/**

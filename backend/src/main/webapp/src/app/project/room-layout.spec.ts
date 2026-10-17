@@ -3,7 +3,7 @@ import { layoutWalls, snapOffset } from "./room-layout";
 
 const wall = (id: string, lengthMm: number): Wall => ({ id, lengthMm, heightMm: 2400, angleToNextDegrees: 90 });
 const cabinet = (id: string, offsetMm: number, widthMm: number): Cabinet => ({
-  id, templateCode: "BASE_DOOR", wallId: "w1", offsetMm, widthMm, heightMm: 876.3, depthMm: 609.6, elevationMm: 0, shelfCount: 1,
+  id, templateCode: "BASE_DOOR", templateVersion: 1, wallId: "w1", offsetMm, widthMm, heightMm: 876.3, depthMm: 609.6, elevationMm: 0, shelfCount: 1,
 });
 
 describe("layoutWalls", () => {

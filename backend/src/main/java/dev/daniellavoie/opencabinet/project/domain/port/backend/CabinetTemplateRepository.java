@@ -6,7 +6,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 
 public interface CabinetTemplateRepository {
 	/**
-	 * The starter library of Cabinet Templates that ships with Open Cabinet.
+	 * Every published Template Version of the starter library that ships with Open Cabinet.
 	 */
 	List<CabinetTemplate> findAll();
 }
