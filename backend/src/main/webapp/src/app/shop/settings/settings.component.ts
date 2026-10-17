@@ -11,10 +11,12 @@ import { LABOUR_METHOD_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
 import { ConstructionStandard, LabourMethod, ShopSettings } from "../model/shop";
+import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
+import { TEMPLATE_LABELS } from "../../util/labels";
 import { ShopService } from "../shop-service";
 
 type StandardMaterialField = keyof Pick<ConstructionStandard,
-  "carcassMaterialId" | "backMaterialId" | "frontMaterialId" | "carcassEdgeBandingId" | "frontEdgeBandingId"
+  "carcassMaterialId" | "backMaterialId" | "frontMaterialId" | "carcassEdgeBandingId" | "frontEdgeBandingId" | "orderedFrontId" | "crownMouldingId"
   | "hingeId" | "shelfPinId" | "legId" | "pullId" | "drawerSlideId" | "drawerBoxId">;
 
 type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKickHeightMm" | "kerfMm" | "sheetTrimMm">;
@@ -28,6 +30,7 @@ type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKi
   templateUrl: "./settings.component.html",
 })
 export class SettingsComponent {
+  readonly templateLabels = TEMPLATE_LABELS;
   readonly labourMethods = Object.entries(LABOUR_METHOD_LABELS) as [LabourMethod, string][];
 
   readonly materialFields: { field: StandardMaterialField; kind: MaterialKind; label: string }[] = [
@@ -36,6 +39,8 @@ export class SettingsComponent {
     { field: "frontMaterialId", kind: "SHEET", label: $localize`:@@settings.front:Façades` },
     { field: "carcassEdgeBandingId", kind: "EDGE_BANDING", label: $localize`:@@settings.carcassBanding:Bande de chant du caisson` },
     { field: "frontEdgeBandingId", kind: "EDGE_BANDING", label: $localize`:@@settings.frontBanding:Bande de chant des façades` },
+    { field: "orderedFrontId", kind: "FRONT", label: $localize`:@@settings.orderedFront:Façades commandées` },
+    { field: "crownMouldingId", kind: "MOULDING", label: $localize`:@@settings.crownMoulding:Moulure couronne` },
     { field: "hingeId", kind: "HARDWARE", label: $localize`:@@settings.hinge:Charnière` },
     { field: "shelfPinId", kind: "HARDWARE", label: $localize`:@@settings.shelfPin:Taquet de tablette` },
     { field: "legId", kind: "HARDWARE", label: $localize`:@@settings.leg:Patte` },
@@ -58,6 +63,7 @@ export class SettingsComponent {
   units: Units = "IMPERIAL";
   settings?: ShopSettings;
   materials: Material[] = [];
+  shopTemplates: ShopCabinetTemplate[] = [];
   saving = false;
   message = "";
   error = "";
@@ -66,6 +72,7 @@ export class SettingsComponent {
     private memberService: MemberService,
     private shopService: ShopService,
     catalogService: CatalogService,
+    private shopTemplateService: ShopTemplateService,
   ) {
     const shop = this.memberService.shop()!;
     this.name = shop.name;
@@ -75,6 +82,9 @@ export class SettingsComponent {
 
     catalogService.findAll()
       .pipe(tap(materials => this.materials = materials))
+      .subscribe();
+    shopTemplateService.findAll()
+      .pipe(tap(templates => this.shopTemplates = templates))
       .subscribe();
   }
 
@@ -102,5 +112,14 @@ export class SettingsComponent {
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: response => this.error = response.error?.message ?? $localize`:@@settings.saveError:Impossible d'enregistrer les paramètres.` });
+  }
+
+  /**
+   * Cabinets already added from the template keep their values.
+   */
+  deleteTemplate(template: ShopCabinetTemplate) {
+    this.shopTemplateService.delete(template.id)
+      .pipe(tap(() => this.shopTemplates = this.shopTemplates.filter(item => item.id !== template.id)))
+      .subscribe();
   }
 }

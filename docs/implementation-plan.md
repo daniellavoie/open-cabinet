@@ -4,13 +4,13 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 
 ## Current step
 
-**Milestones 0–2 → production.** Milestones 0, 1 and 2 are merged into `main` (PRs #1, #2 and #3), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
+**Milestone 3 review, then production.** Milestone 3 (Design depth) is done on `claude/milestone-3`, waiting for review and merge. Milestones 0–2 are merged into `main` (PRs #1, #2 and #3), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
 
 1. Add `KUBECONFIG_BASE64` and `GHCR_PAT` to the `open-cabinet-production` GitHub environment.
 2. Create the `open-cabinet` realm and `open-cabinet-web` client: [`docs/operations/keycloak-realm.md`](operations/keycloak-realm.md).
 3. Re-run the latest `Build and Deploy` run, then smoke-test `https://cabinet.arendal.ca`: sign in, create a Shop, design a Project, download a Quote PDF.
 
-Milestones 0–2 are all merged into `main`; the next successful deploy ships all three. After that, start Milestone 3.
+The next successful deploy ships everything merged into `main`. After Milestone 3 is merged, start Milestone 4.
 
 ## Status
 
@@ -19,8 +19,8 @@ Milestones 0–2 are all merged into `main`; the next successful deploy ships al
 | 0. Foundation and delivery | Done (PR #1); deploy pending, see Current step |
 | 1. First end-to-end slice | Done (PR #2); deploy pending, see Current step |
 | 2. Shop-ready | Done (PR #3); deploy pending, see Current step |
-| 3. Design depth | Next |
-| 4. Outputs for the shop floor and the Client | Planned |
+| 3. Design depth | Done (`claude/milestone-3`), in review |
+| 4. Outputs for the shop floor and the Client | Next |
 | 5. After v1 | Not scheduled |
 
 ## 0. Foundation and delivery: done
@@ -55,17 +55,22 @@ Follow-ups found while building it:
 - Email delivery for Invitations.
 - The Keycloak login page follows the realm's default language, not the app's.
 
-## 3. Design depth: next
+## 3. Design depth: done, in review
 
 The design freedom ADR 0001 allows: free 3D editing, constrained to buildable Parts.
 
-1. **Openings and Appliances** in the Room: windows and doorways, plus fridge, range, dishwasher and sink placeholders that Cabinets fit around.
-2. **Construction Rules at corners**: Cabinets on neighbouring Walls must not collide; blind corners.
-3. **Trim**: fillers, finished end panels, toe kicks, crown moulding.
-4. **Fronts: made or ordered.** Each Front chooses in-house (Cut List) or ordered from a supplier (Bill of Materials, priced by size and style).
-5. **Part-level editing in 3D**: add dividers, move shelves, resize Parts, all checked by Construction Rules.
-6. **Shop Cabinet Templates**: Owners save their own templates from a designed Cabinet.
-7. **More starter templates**: tall pantry, oven tower, corner, sink with false front.
+1. **More starter templates.** Done. Fronts are described as rows (door, drawer, false front, appliance opening); new tall pantry, oven tower, blind corner, sink with false front and drawer bank templates.
+2. **Openings and Appliances.** Done. Windows and doorways, fridge, range, dishwasher and hood placeholders, placed and dragged like Cabinets. Cabinets must not block Openings or overlap Appliances; new Cabinets are placed around them. The sink stays a Cabinet Template (sink base).
+3. **Construction Rules at corners.** Done. Plan-view checks across Walls: Cabinets must not run into what stands on the neighbouring Wall, nor have it against their Fronts, except over a blind corner's blind part.
+4. **Part-level editing in 3D.** Done for dividers: Cabinets with door-only Fronts take dividers, set in the panel or dragged in a see-through 3D view; each section gets its own shelves; sections are at least 6" wide.
+5. **Fronts: made or ordered.** Done. Per Cabinet; ordered Fronts come in a Front style (new catalog kind, priced per m²), leave the Cut List and are listed for ordering and bought on the Bill of Materials by area.
+6. **Trim.** Done. Fillers on Walls (Front material), finished end panels per Cabinet side, toe kicks per run of floor Cabinets, crown moulding per run of wall and tall Cabinets (new catalog kind, priced per metre).
+7. **Shop Cabinet Templates.** Done. Owners save a designed Cabinet as a named preset of its starter template; Cabinets keep the starter code, so rules and Parts are unchanged.
+
+Follow-ups found while building it:
+- Shelves are spaced evenly; moving single shelves and resizing other Parts in 3D is not built.
+- Fillers are always made in the Shop and are not checked across Walls; ordered Fronts have one price per m² per style, no size tiers.
+- Toe kicks are cut from the carcass material; a Shop may want its own toe kick material in the Construction Standard.
 
 ## 4. Outputs for the shop floor and the Client: planned
 

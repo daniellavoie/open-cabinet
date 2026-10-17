@@ -26,4 +26,8 @@ public class Part {
 	int bandedLengthEdges;
 	int bandedWidthEdges;
 	UUID edgeBandingId;
+	/**
+	 * A Front ordered from a supplier rather than cut: {@code lengthMm} is its height.
+	 */
+	boolean ordered;
 }

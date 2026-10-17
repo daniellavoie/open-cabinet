@@ -21,6 +21,7 @@
   </div>
 
   <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
 
   <nav class="tabs" role="tablist">
     <button *ngFor="let item of tabs" role="tab" [class.active]="tab === item.id" [attr.aria-selected]="tab === item.id"
@@ -28,18 +29,19 @@
   </nav>
 
   <div class="design" *ngIf="tab === 'design'">
-    <room-view class="view" [design]="draft.design" [templates]="templates" [selectedCabinetId]="selectedCabinetId"
-      [invalidCabinetIds]="invalidCabinetIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
-      (selectCabinet)="selectedCabinetId = $event" (moveCabinet)="onMove($event)" />
-    <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedCabinetId]="selectedCabinetId"
-      [violations]="violations" [cabinetLabels]="cabinetLabels" (designChange)="setDesign($event)" (selectCabinet)="selectedCabinetId = $event" />
+    <room-view class="view" [design]="draft.design" [templates]="templates" [selectedId]="selectedId"
+      [invalidIds]="invalidIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      (selectItem)="selectedId = $event" (move)="onMove($event)" />
+    <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
+      [violations]="violations" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
+      (saveTemplate)="saveTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">
     <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
     <div *ngIf="loadingOutput" i18n="@@editor.computing">Calcul en cours…</div>
     <ng-container *ngIf="output && !loadingOutput">
-      <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [units]="units" />
+      <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [orderedFronts]="output.orderedFronts ?? []" [units]="units" />
       <nesting *ngIf="tab === 'nesting'" [nesting]="output.nesting" [units]="units" />
       <bill-of-materials *ngIf="tab === 'materials'" [lines]="output.billOfMaterials" [total]="output.materialsTotal"
         [operations]="output.operations" [currency]="memberService.shop()!.currency" />

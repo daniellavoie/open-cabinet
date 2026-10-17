@@ -14,9 +14,11 @@ import org.junit.jupiter.api.Test;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.BomLine;
+import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.FrontSource;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
@@ -65,6 +67,47 @@ class DefaultCutListDomainTest {
 				BigDecimal::add);
 		assertThat(output.getMaterialsTotal()).isEqualByComparingTo(total);
 		assertThat(output.getCutList()).allSatisfy(row -> assertThat(row.getQuantity()).isPositive());
+	}
+
+	@Test
+	void orderedFrontsLeaveTheCutListForTheBillOfMaterials() {
+		when(projectDomain.templates()).thenReturn(List.of(BASE_DOOR, BASE_DRAWERS));
+
+		var project = Project.builder()
+				.id(UUID.randomUUID())
+				.design(Design.builder()
+						.walls(List.of(Wall.builder().id("w1").lengthMm(3000).heightMm(2400).build()))
+						.cabinets(List.of(
+								cabinet("doors", "w1", "BASE_DOOR", 0, 0, 1).toBuilder()
+										.frontSource(FrontSource.ORDERED).build(),
+								cabinet("drawers", "w1", "BASE_DRAWERS", 457.2, 0, 0).toBuilder()
+										.frontSource(FrontSource.ORDERED).orderedFrontId(SLAB.getId()).build()))
+						.build())
+				.build();
+
+		var output = domain.output(project, STANDARD, CATALOG);
+
+		assertThat(output.getCutList()).noneMatch(row -> row.getRole() == PartRole.DOOR
+				|| row.getRole() == PartRole.DRAWER_FRONT);
+		assertThat(output.getNesting()).noneMatch(nesting -> nesting.getMaterialId().equals(FRONT.getId()));
+		var door = output.getOrderedFronts().stream().filter(row -> row.getRole() == PartRole.DOOR).findFirst()
+				.orElseThrow();
+		assertThat(door.getMaterialName()).isEqualTo("Shaker");
+		assertThat(door.getHeightMm()).isEqualTo(PartGenerator.round(876.3 - 101.6 - 3));
+		assertThat(door.getWidthMm()).isEqualTo(PartGenerator.round(457.2 - 3));
+		assertThat(output.getOrderedFronts()).filteredOn(row -> row.getRole() == PartRole.DRAWER_FRONT)
+				.allSatisfy(row -> assertThat(row.getMaterialName()).isEqualTo("Slab"))
+				.extracting(row -> row.getQuantity()).containsOnly(1, 2);
+
+		var shaker = output.getBillOfMaterials().stream()
+				.filter(line -> line.getMaterialId().equals(SHAKER.getId())).findFirst().orElseThrow();
+		var area = Math.ceil(PartGenerator.round(876.3 - 101.6 - 3) * PartGenerator.round(457.2 - 3) / 1_000_000 * 100) / 100;
+		assertThat(shaker.getQuantity()).isEqualByComparingTo(BigDecimal.valueOf(area));
+		assertThat(shaker.getTotal()).isEqualByComparingTo(BigDecimal.valueOf(area).multiply(new BigDecimal("300")));
+		assertThat(output.getBillOfMaterials()).anyMatch(line -> line.getMaterialId().equals(SLAB.getId()));
+		assertThat(output.getBillOfMaterials()).as("hinges and slides are still bought")
+				.anyMatch(line -> line.getMaterialId().equals(HINGE.getId()))
+				.anyMatch(line -> line.getMaterialId().equals(SLIDE.getId()));
 	}
 
 	private static Cabinet cabinet(String id, String wallId, String template, double offset, double elevation,

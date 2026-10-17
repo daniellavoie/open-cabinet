@@ -1,12 +1,15 @@
 package dev.daniellavoie.opencabinet.project.domain.model;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
  * A starting point for a type of Cabinet, with the dimension ranges the Construction Rules
- * enforce. Lengths are in millimetres.
+ * enforce. Lengths are in millimetres. {@code frontRows} lay out the front from the top;
+ * {@code blindWidthMm} is the width at one side left without fronts, for blind corners.
  */
 @Value
 @Jacksonized
@@ -26,6 +29,14 @@ public class CabinetTemplate {
 	double defaultElevationMm;
 	int defaultShelfCount;
 	int maxShelfCount;
-	int drawerCount;
-	boolean doors;
+	List<FrontRow> frontRows;
+	double blindWidthMm;
+
+	/**
+	 * Dividers fit behind doors only: drawers, false fronts and appliance openings span the width.
+	 */
+	public boolean allowsDividers() {
+		return frontRows != null && !frontRows.isEmpty()
+				&& frontRows.stream().allMatch(row -> row.getKind() == FrontKind.DOOR);
+	}
 }

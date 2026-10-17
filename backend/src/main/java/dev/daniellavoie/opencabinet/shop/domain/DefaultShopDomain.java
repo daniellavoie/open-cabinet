@@ -146,6 +146,8 @@ public class DefaultShopDomain implements ShopDomain {
 		requireKind(byId, standard.getFrontMaterialId(), MaterialKind.SHEET, "front material");
 		requireKind(byId, standard.getCarcassEdgeBandingId(), MaterialKind.EDGE_BANDING, "carcass edge banding");
 		requireKind(byId, standard.getFrontEdgeBandingId(), MaterialKind.EDGE_BANDING, "front edge banding");
+		requireKind(byId, standard.getOrderedFrontId(), MaterialKind.FRONT, "ordered front style");
+		requireKind(byId, standard.getCrownMouldingId(), MaterialKind.MOULDING, "crown moulding");
 		Stream.of(standard.getHingeId(), standard.getShelfPinId(), standard.getLegId(), standard.getPullId(),
 				standard.getDrawerSlideId(), standard.getDrawerBoxId())
 				.forEach(id -> requireKind(byId, id, MaterialKind.HARDWARE, "hardware"));

@@ -104,3 +104,40 @@ h2 {
   font-size: var(--oc-font-size-sm);
   margin-bottom: var(--oc-space-2);
 }
+
+.dividers {
+  margin-top: var(--oc-space-4);
+}
+
+.dividers h3 {
+  font-size: var(--oc-font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--oc-space-2);
+}
+
+.divider {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-bottom: var(--oc-space-2);
+  font-size: var(--oc-font-size-sm);
+}
+
+.trim-label {
+  align-self: start;
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.trim .form-check {
+  font-size: var(--oc-font-size-sm);
+  margin-bottom: var(--oc-space-1);
+}
+
+.save-template {
+  display: flex;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-top: var(--oc-space-4);
+}

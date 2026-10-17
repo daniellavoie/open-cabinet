@@ -16,10 +16,68 @@
 </section>
 
 <section class="block">
+  <h2 i18n="@@design.itemsAndTrim">Ouvertures, électroménagers et remplissages</h2>
+  <div class="add-row">
+    <select class="form-select form-select-sm" [(ngModel)]="newItemKind" i18n-aria-label="@@design.itemKind" aria-label="Genre">
+      <optgroup i18n-label="@@design.openings" label="Ouvertures">
+        <option *ngFor="let kind of openingKinds" [value]="kind">{{ itemLabels[kind] }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.appliances" label="Électroménagers">
+        <option *ngFor="let kind of applianceKinds" [value]="kind">{{ itemLabels[kind] }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.trim" label="Garnitures">
+        <option value="FILLER">{{ itemLabels.FILLER }}</option>
+      </optgroup>
+    </select>
+    <select class="form-select form-select-sm" [(ngModel)]="newItemWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" (click)="addItem()" i18n="@@design.add">Ajouter</button>
+  </div>
+  <ul class="cabinets" *ngIf="items.length > 0">
+    <li *ngFor="let item of items" [class.selected]="item.id === selectedId"
+      [class.invalid]="violationsOf(item.id).length > 0" (click)="selectItem.emit(item.id)">
+      <span>{{ itemLabels[kindOf(item)] }}</span>
+      <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(item.wallId) }}</span>
+    </li>
+  </ul>
+</section>
+
+<section class="block selected-cabinet" *ngIf="selectedItem as item">
+  <h2>
+    <span>{{ itemLabels[kindOf(item)] }}</span>
+    <button class="btn btn-sm btn-link text-danger" (click)="removeSelectedItem()" i18n="@@common.remove">Retirer</button>
+  </h2>
+  <div class="fields">
+    <label for="itemWall" i18n="@@design.wall">Mur</label>
+    <select class="form-select form-select-sm" id="itemWall" [ngModel]="item.wallId" (ngModelChange)="updateSelectedItem({ wallId: $event })">
+      <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
+    </select>
+    <label for="itemOffset" i18n="@@design.offset">Position</label>
+    <length-input inputId="itemOffset" [units]="units" [valueMm]="item.offsetMm" (valueMmChange)="updateSelectedItem({ offsetMm: $event })" />
+    <label for="itemWidth" i18n="@@design.width">Largeur</label>
+    <length-input inputId="itemWidth" [units]="units" [valueMm]="item.widthMm" (valueMmChange)="updateSelectedItem({ widthMm: $event })" />
+    <label for="itemHeight" i18n="@@design.height">Hauteur</label>
+    <length-input inputId="itemHeight" [units]="units" [valueMm]="item.heightMm" (valueMmChange)="updateSelectedItem({ heightMm: $event })" />
+    <label for="itemElevation" i18n="@@design.elevation">Hauteur du bas</label>
+    <length-input inputId="itemElevation" [units]="units" [valueMm]="item.elevationMm" (valueMmChange)="updateSelectedItem({ elevationMm: $event })" />
+    <ng-container *ngIf="selectedDeep as deep">
+      <label for="itemDepth" i18n="@@design.depth">Profondeur</label>
+      <length-input inputId="itemDepth" [units]="units" [valueMm]="deep.depthMm" (valueMmChange)="updateSelectedItem({ depthMm: $event })" />
+    </ng-container>
+  </div>
+</section>
+
+<section class="block">
   <h2 i18n="@@design.addCabinet">Ajouter un caisson</h2>
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
-      <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+      <optgroup i18n-label="@@design.starterTemplates" label="Modèles de départ">
+        <option *ngFor="let template of templates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.shopTemplates" label="Modèles de l'atelier" *ngIf="shopTemplates.length > 0">
+        <option *ngFor="let template of shopTemplates" [value]="'shop:' + template.id">{{ template.name }}</option>
+      </optgroup>
     </select>
     <select class="form-select form-select-sm" [(ngModel)]="newWallId" i18n-aria-label="@@design.wall" aria-label="Mur">
       <option *ngFor="let wall of design.walls; let index = index" [value]="wall.id" i18n="@@design.wallNumber">Mur {{ index + 1 }}</option>
@@ -32,8 +90,8 @@
   <h2 i18n="@@design.cabinets">Caissons</h2>
   <p class="hint" *ngIf="design.cabinets.length === 0" i18n="@@design.noCabinets">Aucun caisson. Ajoutez-en un ci-dessus.</p>
   <ul class="cabinets">
-    <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedCabinetId"
-      [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectCabinet.emit(cabinet.id)">
+    <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedId"
+      [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectItem.emit(cabinet.id)">
       <span>{{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}</span>
       <span class="meta" i18n="@@design.cabinetMeta">Mur {{ wallNumber(cabinet.wallId) }}</span>
     </li>
@@ -62,11 +120,65 @@
       <label for="cabinetElevation" i18n="@@design.elevation">Hauteur du bas</label>
       <length-input inputId="cabinetElevation" [units]="units" [valueMm]="selected.elevationMm" (valueMmChange)="updateSelected({ elevationMm: $event })" />
     </ng-container>
+    <ng-container *ngIf="(selectedTemplate.blindWidthMm ?? 0) > 0">
+      <label for="cabinetBlindSide" i18n="@@design.blindSide">Côté aveugle</label>
+      <select class="form-select form-select-sm" id="cabinetBlindSide" [ngModel]="selected.blindSide ?? 'RIGHT'" (ngModelChange)="updateSelected({ blindSide: $event })">
+        <option value="LEFT" i18n="@@design.left">Gauche</option>
+        <option value="RIGHT" i18n="@@design.right">Droite</option>
+      </select>
+    </ng-container>
+    <span class="trim-label" i18n="@@design.trimLabel">Garnitures</span>
+    <div class="trim">
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" id="cabinetFinishedLeft" [ngModel]="!!selected.finishedLeft" (ngModelChange)="updateSelected({ finishedLeft: $event })" />
+        <span i18n="@@design.finishedLeft">Panneau de finition à gauche</span>
+      </label>
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" id="cabinetFinishedRight" [ngModel]="!!selected.finishedRight" (ngModelChange)="updateSelected({ finishedRight: $event })" />
+        <span i18n="@@design.finishedRight">Panneau de finition à droite</span>
+      </label>
+      <label class="form-check" *ngIf="selectedTemplate.type !== 'BASE'">
+        <input class="form-check-input" type="checkbox" id="cabinetCrown" [ngModel]="!!selected.crown" (ngModelChange)="updateSelected({ crown: $event })" />
+        <span i18n="@@design.crown">Moulure couronne</span>
+      </label>
+    </div>
+    <label for="cabinetFrontSource" i18n="@@design.frontSource">Façades</label>
+    <select class="form-select form-select-sm" id="cabinetFrontSource" [ngModel]="selected.frontSource ?? 'MADE'" (ngModelChange)="updateSelected({ frontSource: $event })">
+      <option value="MADE" i18n="@@design.frontsMade">Fabriquées à l'atelier</option>
+      <option value="ORDERED" i18n="@@design.frontsOrdered">Commandées</option>
+    </select>
+    <ng-container *ngIf="selected.frontSource === 'ORDERED'">
+      <label for="cabinetFrontStyle" i18n="@@design.frontStyle">Style</label>
+      <select class="form-select form-select-sm" id="cabinetFrontStyle" [ngModel]="selected.orderedFrontId ?? ''" (ngModelChange)="updateSelected({ orderedFrontId: $event || null })">
+        <option value="" i18n="@@design.defaultFrontStyle">Style par défaut de l'atelier</option>
+        <option *ngFor="let style of frontStyles" [value]="style.id">{{ style.name }}</option>
+      </select>
+    </ng-container>
     <ng-container *ngIf="selectedTemplate.maxShelfCount > 0">
-      <label for="cabinetShelves" i18n="@@design.shelves">Tablettes</label>
+      <label for="cabinetShelves" i18n="@@design.shelvesPerSection">Tablettes par section</label>
       <input class="form-control form-control-sm" id="cabinetShelves" type="number" min="0" [max]="selectedTemplate.maxShelfCount"
         [ngModel]="selected.shelfCount" (ngModelChange)="updateSelected({ shelfCount: $event })" />
     </ng-container>
+  </div>
+  <div class="save-template" *ngIf="canSaveTemplates">
+    <button class="btn btn-sm btn-outline-secondary" *ngIf="templateName === null" (click)="templateName = ''"
+      i18n="@@design.saveAsTemplate">Enregistrer comme modèle de l'atelier</button>
+    <ng-container *ngIf="templateName !== null">
+      <input class="form-control form-control-sm" id="templateName" [(ngModel)]="templateName" (keydown.enter)="saveSelectedAsTemplate()"
+        i18n-placeholder="@@design.templateName" placeholder="Nom du modèle" />
+      <button class="btn btn-sm btn-primary" (click)="saveSelectedAsTemplate()" [disabled]="!templateName.trim()" i18n="@@common.save">Enregistrer</button>
+      <button class="btn btn-sm btn-link" (click)="templateName = null" i18n="@@common.cancel">Annuler</button>
+    </ng-container>
+  </div>
+  <div class="dividers" *ngIf="allowsDividers(selectedTemplate)">
+    <h3 i18n="@@design.dividers">Séparateurs</h3>
+    <div class="divider" *ngFor="let position of selected.dividerPositionsMm ?? []; let index = index">
+      <label [for]="'divider' + index" i18n="@@design.dividerNumber">Séparateur {{ index + 1 }}</label>
+      <length-input [inputId]="'divider' + index" [units]="units" [valueMm]="position" (valueMmChange)="moveDivider(index, $event)" />
+      <button class="btn btn-sm btn-link text-danger" (click)="removeDivider(index)" i18n="@@common.remove">Retirer</button>
+    </div>
+    <p class="hint" i18n="@@design.dividerHint">Distance depuis le côté gauche. Glissez les séparateurs dans la vue 3D.</p>
+    <button class="btn btn-sm btn-outline-secondary" (click)="addDivider()" i18n="@@design.addDivider">Ajouter un séparateur</button>
   </div>
 </section>
 
@@ -75,9 +187,10 @@
 <section class="block" *ngIf="violations.length > 0">
   <h2 class="text-danger" i18n="@@design.violations">Règles de construction</h2>
   <ul class="violations">
-    <li *ngFor="let violation of violations" (click)="violation.cabinetId && selectCabinet.emit(violation.cabinetId)">
+    <li *ngFor="let violation of violations" (click)="(violation.cabinetId || violation.itemId) && selectItem.emit(violation.cabinetId ?? violation.itemId ?? null)">
       <strong *ngIf="violation.cabinetId">{{ cabinetLabels.get(violation.cabinetId) ?? "" }}</strong>
-      <strong *ngIf="!violation.cabinetId && violation.wallId" i18n="@@design.wallNumber">Mur {{ wallNumber(violation.wallId) }}</strong>
+      <strong *ngIf="!violation.cabinetId && violation.itemId">{{ itemLabel(violation.itemId) }}</strong>
+      <strong *ngIf="!violation.cabinetId && !violation.itemId && violation.wallId" i18n="@@design.wallNumber">Mur {{ wallNumber(violation.wallId) }}</strong>
       {{ violationLabels[violation.code] ?? violation.code }}
     </li>
   </ul>

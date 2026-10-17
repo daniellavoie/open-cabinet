@@ -5,7 +5,10 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from "rxjs";
 
+import { CatalogService } from "../../catalog/catalog-service";
+import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
+import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
@@ -16,14 +19,14 @@ import { QuotesComponent } from "../../quote/quotes/quotes.component";
 import { ErrorResponse } from "../../util/model/error-response";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
-import { updateCabinet } from "../design-edits";
+import { moveDivider, updateCabinet, updateItem } from "../design-edits";
 import { DesignPanelComponent } from "../design-panel/design-panel.component";
-import { CabinetTemplate, Design, Violation } from "../model/design";
+import { Cabinet, CabinetTemplate, Design, Violation } from "../model/design";
 import { Project } from "../model/project";
 import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
-import { snapOffset } from "../room-layout";
-import { CabinetMove, RoomViewComponent } from "../room-view/room-view.component";
+import { OnWall, snapOffset } from "../room-layout";
+import { ItemMove, RoomViewComponent } from "../room-view/room-view.component";
 
 type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
 
@@ -69,10 +72,17 @@ export class ProjectEditorComponent implements OnDestroy {
   draft?: Project;
   templates: CabinetTemplate[] = [];
   clients: Client[] = [];
+  /** The Shop's ordered Front styles. */
+  frontStyles: Material[] = [];
+  shopTemplates: ShopCabinetTemplate[] = [];
+  message = "";
   violations: Violation[] = [];
-  invalidCabinetIds = new Set<string>();
+  invalidIds = new Set<string>();
   cabinetLabels = new Map<string, string>();
-  selectedCabinetId: string | null = null;
+  /**
+   * The selected Cabinet, Opening or Appliance.
+   */
+  selectedId: string | null = null;
   tab: Tab = "design";
   output?: ProjectOutput;
   loadingOutput = false;
@@ -86,6 +96,8 @@ export class ProjectEditorComponent implements OnDestroy {
     public memberService: MemberService,
     private projectService: ProjectService,
     clientService: ClientService,
+    catalogService: CatalogService,
+    private shopTemplateService: ShopTemplateService,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -93,10 +105,14 @@ export class ProjectEditorComponent implements OnDestroy {
         this.projectService.findById(projectId),
         this.projectService.templates(),
         clientService.findAll(),
+        catalogService.findAll(),
+        shopTemplateService.findAll(),
       ])))
-      .pipe(tap(([project, templates, clients]) => {
+      .pipe(tap(([project, templates, clients, materials, shopTemplates]) => {
+        this.shopTemplates = shopTemplates;
         this.templates = templates;
         this.clients = clients;
+        this.frontStyles = materials.filter(material => material.kind === "FRONT");
         this.saved = project;
         this.setDraft(structuredClone(project));
         this.takeLock();
@@ -151,11 +167,10 @@ export class ProjectEditorComponent implements OnDestroy {
 
   setDraft(project: Project) {
     this.draft = project;
-    this.violations = checkConstructionRules(project.design, this.templates);
-    this.invalidCabinetIds = new Set(this.violations.map(violation => violation.cabinetId).filter(id => id !== null));
+    this.setViolations(checkConstructionRules(project.design, this.templates));
     this.cabinetLabels = readingOrderLabels(project.design);
-    if (this.selectedCabinetId && !project.design.cabinets.some(cabinet => cabinet.id === this.selectedCabinetId)) {
-      this.selectedCabinetId = null;
+    if (this.selectedId && !onWall(project.design).some(item => item.id === this.selectedId)) {
+      this.selectedId = null;
     }
   }
 
@@ -163,18 +178,51 @@ export class ProjectEditorComponent implements OnDestroy {
     this.setDraft({ ...this.draft!, design });
   }
 
-  onMove(move: CabinetMove) {
+  /**
+   * Cabinets snap to each other, to Appliances and to Fillers; Openings,
+   * Appliances and Fillers snap to everything on their Wall.
+   */
+  onMove(move: ItemMove) {
     const design = this.draft!.design;
-    const cabinet = design.cabinets.find(item => item.id === move.cabinetId);
-    const wall = design.walls.find(item => item.id === cabinet?.wallId);
-    if (!cabinet || !wall) {
+    const cabinet = design.cabinets.find(item => item.id === move.id);
+    if (cabinet && move.dividerIndex !== undefined) {
+      this.onDividerMove(cabinet, move.dividerIndex, move.offsetMm);
+      return;
+    }
+    const item = cabinet ?? onWall(design).find(candidate => candidate.id === move.id);
+    const wall = design.walls.find(candidate => candidate.id === item?.wallId);
+    if (!item || !wall) {
       return;
     }
     const step = this.units === "IMPERIAL" ? MM_PER_INCH / 2 : 5;
-    const offsetMm = snapOffset(cabinet, move.offsetMm, wall, design.cabinets, step, SNAP_DISTANCE_MM);
-    if (offsetMm !== cabinet.offsetMm) {
-      this.setDesign(updateCabinet(design, cabinet.id, { offsetMm }));
+    const others = cabinet ? [...design.cabinets, ...design.appliances ?? [], ...design.fillers ?? []] : onWall(design);
+    const offsetMm = snapOffset(item, move.offsetMm, wall, others, step, SNAP_DISTANCE_MM);
+    if (offsetMm !== item.offsetMm) {
+      this.setDesign(cabinet ? updateCabinet(design, item.id, { offsetMm }) : updateItem(design, item.id, { offsetMm }));
     }
+  }
+
+  /**
+   * Dividers snap to the grid; the Construction Rules flag sections left too narrow.
+   */
+  private onDividerMove(cabinet: Cabinet, index: number, positionMm: number) {
+    const step = this.units === "IMPERIAL" ? MM_PER_INCH / 4 : 5;
+    const clamped = Math.min(Math.max(positionMm, 0), cabinet.widthMm);
+    const snapped = Math.round(Math.round(clamped / step) * step * 10) / 10;
+    if (snapped !== (cabinet.dividerPositionsMm ?? [])[index]) {
+      this.setDesign(moveDivider(this.draft!.design, cabinet.id, index, snapped));
+    }
+  }
+
+  saveTemplate(request: { name: string; cabinet: Cabinet }) {
+    this.error = "";
+    this.shopTemplateService.create(request.name, request.cabinet)
+      .pipe(tap(template => {
+        this.shopTemplates = [...this.shopTemplates, template].sort((first, second) => first.name.localeCompare(second.name));
+        this.message = $localize`:@@editor.templateSaved:Modèle « ${template.name}:name: » enregistré.`;
+      }))
+      .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
+        ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
   }
 
   selectTab(tab: Tab) {
@@ -216,8 +264,7 @@ export class ProjectEditorComponent implements OnDestroy {
   private onSaveError(response: HttpErrorResponse) {
     const body = response.error as ErrorResponse | null;
     if (response.status === 422 && body?.details) {
-      this.violations = body.details as Violation[];
-      this.invalidCabinetIds = new Set(this.violations.map(violation => violation.cabinetId).filter(id => id !== null));
+      this.setViolations(body.details as Violation[]);
       this.error = $localize`:@@editor.rulesBroken:Le serveur a refusé la conception : corrigez les règles de construction.`;
     } else if (response.status === 409) {
       this.error = $localize`:@@editor.lockLost:Quelqu'un d'autre modifie ce projet : vos changements n'ont pas été enregistrés.`;
@@ -227,6 +274,11 @@ export class ProjectEditorComponent implements OnDestroy {
     }
   }
 
+  private setViolations(violations: Violation[]) {
+    this.violations = violations;
+    this.invalidIds = new Set(violations.map(violation => violation.cabinetId ?? violation.itemId ?? null).filter(id => id !== null));
+  }
+
   private loadOutput() {
     this.loadingOutput = true;
     this.projectService.output(this.saved!.id)
@@ -234,6 +286,10 @@ export class ProjectEditorComponent implements OnDestroy {
       .pipe(finalize(() => this.loadingOutput = false))
       .subscribe({ error: () => this.error = $localize`:@@editor.outputError:Impossible de calculer la liste de coupe.` });
   }
+}
+
+function onWall(design: Design): OnWall[] {
+  return [...design.cabinets, ...design.openings ?? [], ...design.appliances ?? [], ...design.fillers ?? []];
 }
 
 /**

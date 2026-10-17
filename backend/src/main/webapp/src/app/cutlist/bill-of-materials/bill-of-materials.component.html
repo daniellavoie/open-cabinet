@@ -15,7 +15,7 @@
       <td class="meta">{{ kindLabels[line.kind] }}</td>
       <td>{{ line.name }}</td>
       <td class="meta">{{ line.sku }}</td>
-      <td class="text-end">{{ line.quantity | number: "1.0-1" }} {{ unit(line) }}</td>
+      <td class="text-end">{{ line.quantity | number: (line.kind === "FRONT" ? "1.2-2" : "1.0-1") }} {{ unit(line) }}</td>
       <td class="text-end">{{ line.unitPrice | currency: currency }}</td>
       <td class="text-end">{{ line.total | currency: currency }}</td>
     </tr>

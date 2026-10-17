@@ -76,7 +76,7 @@ class OpenCabinetApplicationTests {
 
 		mockMvc.perform(as(owner, get("/api/material")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(11)));
+				.andExpect(jsonPath("$", hasSize(13)));
 
 		var exported = mockMvc.perform(as(owner, get("/api/material/export")))
 				.andExpect(status().isOk())
@@ -89,7 +89,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.applied").value(true))
 				.andExpect(jsonPath("$.created").value(1))
-				.andExpect(jsonPath("$.updated").value(11));
+				.andExpect(jsonPath("$.updated").value(13));
 		mockMvc.perform(as(owner, post("/api/material/import"))
 				.contentType("text/csv")
 				.content("kind,name,sku,price\nSHEET,Mélamine,MEL-WH-58,abc\nHARDWARE,Coulisse,MEL-WH-14,1\n"))
@@ -97,7 +97,22 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.errors", hasSize(2)))
 				.andExpect(jsonPath("$.errors[1].line").value(3));
 		mockMvc.perform(as(owner, get("/api/material")))
-				.andExpect(jsonPath("$", hasSize(12)));
+				.andExpect(jsonPath("$", hasSize(14)));
+
+		mockMvc.perform(as(owner, post("/api/shop-template"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"name": "Vanité 30", "cabinet": {"id": "c1", "templateCode": "BASE_DOOR", "wallId": "w1",
+						"offsetMm": 300, "widthMm": 762, "heightMm": 876.3, "depthMm": 533.4, "elevationMm": 0,
+						"shelfCount": 1, "dividerPositionsMm": [381], "finishedLeft": true}}
+						"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCode").value("BASE_DOOR"));
+		mockMvc.perform(as(owner, get("/api/shop-template")))
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].preset.widthMm").value(762))
+				.andExpect(jsonPath("$[0].preset.dividerPositionsMm[0]").value(381))
+				.andExpect(jsonPath("$[0].preset.finishedLeft").value(true));
 
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)

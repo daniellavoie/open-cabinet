@@ -7,10 +7,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import dev.daniellavoie.opencabinet.project.domain.model.Appliance;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.Filler;
+import dev.daniellavoie.opencabinet.project.domain.model.Opening;
+import dev.daniellavoie.opencabinet.project.domain.model.Side;
 import dev.daniellavoie.opencabinet.project.domain.model.Violation;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 
@@ -36,11 +40,28 @@ public final class ConstructionRules {
 	public static final String OUTSIDE_WALL = "OUTSIDE_WALL";
 	public static final String ABOVE_WALL = "ABOVE_WALL";
 	public static final String OVERLAP = "OVERLAP";
+	public static final String ITEM_OUTSIDE_WALL = "ITEM_OUTSIDE_WALL";
+	public static final String BLOCKS_OPENING = "BLOCKS_OPENING";
+	public static final String OVERLAPS_APPLIANCE = "OVERLAPS_APPLIANCE";
+	public static final String CORNER_OVERLAP = "CORNER_OVERLAP";
+	public static final String FRONT_BLOCKED = "FRONT_BLOCKED";
+	public static final String DIVIDERS_NOT_ALLOWED = "DIVIDERS_NOT_ALLOWED";
+	public static final String SECTION_TOO_NARROW = "SECTION_TOO_NARROW";
 
 	/**
 	 * Slack allowed on every comparison, in millimetres, so values rounded for display still pass.
 	 */
 	static final double TOLERANCE_MM = 0.5;
+
+	/**
+	 * Depth of the strip in front of a Cabinet's fronts that nothing may stand in.
+	 */
+	static final double FRONT_STRIP_MM = 2;
+
+	/**
+	 * Narrowest section between dividers (or a divider and a side), centre to centre.
+	 */
+	static final double MIN_SECTION_MM = 152.4;
 
 	private ConstructionRules() {
 	}
@@ -49,6 +70,9 @@ public final class ConstructionRules {
 		var violations = new ArrayList<Violation>();
 		var walls = Optional.ofNullable(design.getWalls()).orElse(List.of());
 		var cabinets = Optional.ofNullable(design.getCabinets()).orElse(List.of());
+		var openings = Optional.ofNullable(design.getOpenings()).orElse(List.of());
+		var appliances = Optional.ofNullable(design.getAppliances()).orElse(List.of());
+		var fillers = Optional.ofNullable(design.getFillers()).orElse(List.of());
 		Map<String, Wall> wallsById = walls.stream()
 				.collect(Collectors.toMap(Wall::getId, Function.identity(), (first, second) -> first));
 		Map<String, CabinetTemplate> templatesByCode = templates.stream()
@@ -57,6 +81,36 @@ public final class ConstructionRules {
 		for (var wall : walls) {
 			if (wall.getLengthMm() <= 0 || wall.getHeightMm() <= 0) {
 				violations.add(wallViolation(INVALID_WALL, wall));
+			}
+		}
+
+		for (var opening : openings) {
+			var wall = wallsById.get(opening.getWallId());
+			if (wall == null) {
+				violations.add(itemViolation(UNKNOWN_WALL, opening.getWallId(), opening.getId()));
+			} else if (outsideWall(opening.getOffsetMm(), opening.getWidthMm(), opening.getElevationMm(),
+					opening.getHeightMm(), wall)) {
+				violations.add(itemViolation(ITEM_OUTSIDE_WALL, opening.getWallId(), opening.getId()));
+			}
+		}
+
+		for (var appliance : appliances) {
+			var wall = wallsById.get(appliance.getWallId());
+			if (wall == null) {
+				violations.add(itemViolation(UNKNOWN_WALL, appliance.getWallId(), appliance.getId()));
+			} else if (outsideWall(appliance.getOffsetMm(), appliance.getWidthMm(), appliance.getElevationMm(),
+					appliance.getHeightMm(), wall)) {
+				violations.add(itemViolation(ITEM_OUTSIDE_WALL, appliance.getWallId(), appliance.getId()));
+			}
+		}
+
+		for (var filler : fillers) {
+			var wall = wallsById.get(filler.getWallId());
+			if (wall == null) {
+				violations.add(itemViolation(UNKNOWN_WALL, filler.getWallId(), filler.getId()));
+			} else if (outsideWall(filler.getOffsetMm(), filler.getWidthMm(), filler.getElevationMm(),
+					filler.getHeightMm(), wall)) {
+				violations.add(itemViolation(ITEM_OUTSIDE_WALL, filler.getWallId(), filler.getId()));
 			}
 		}
 
@@ -85,7 +139,12 @@ public final class ConstructionRules {
 			if (cabinet.getShelfCount() < 0 || cabinet.getShelfCount() > template.getMaxShelfCount()) {
 				violations.add(cabinetViolation(SHELF_COUNT_OUT_OF_RANGE, cabinet));
 			}
-			if (template.getType() == CabinetType.BASE && Math.abs(cabinet.getElevationMm()) > TOLERANCE_MM) {
+			if (!cabinet.dividers().isEmpty() && !template.allowsDividers()) {
+				violations.add(cabinetViolation(DIVIDERS_NOT_ALLOWED, cabinet));
+			} else if (sectionTooNarrow(cabinet)) {
+				violations.add(cabinetViolation(SECTION_TOO_NARROW, cabinet));
+			}
+			if (template.getType().standsOnFloor() && Math.abs(cabinet.getElevationMm()) > TOLERANCE_MM) {
 				violations.add(cabinetViolation(BASE_NOT_ON_FLOOR, cabinet));
 			} else if (cabinet.getElevationMm() < -TOLERANCE_MM) {
 				violations.add(cabinetViolation(BELOW_FLOOR, cabinet));
@@ -96,6 +155,11 @@ public final class ConstructionRules {
 			}
 			if (cabinet.getElevationMm() + cabinet.getHeightMm() > wall.getHeightMm() + TOLERANCE_MM) {
 				violations.add(cabinetViolation(ABOVE_WALL, cabinet));
+			}
+			if (openings.stream().anyMatch(opening -> opening.getWallId().equals(cabinet.getWallId())
+					&& covers(cabinet, opening.getOffsetMm(), opening.getWidthMm(), opening.getElevationMm(),
+							opening.getHeightMm()))) {
+				violations.add(cabinetViolation(BLOCKS_OPENING, cabinet));
 			}
 		}
 
@@ -108,7 +172,154 @@ public final class ConstructionRules {
 			}
 		}
 
+		for (var cabinet : cabinets) {
+			if (wallsById.containsKey(cabinet.getWallId()) && appliances.stream()
+					.anyMatch(appliance -> appliance.getWallId().equals(cabinet.getWallId())
+							&& covers(cabinet, appliance.getOffsetMm(), appliance.getWidthMm(),
+									appliance.getElevationMm(), appliance.getHeightMm()))) {
+				violations.add(cabinetViolation(OVERLAPS_APPLIANCE, cabinet));
+			}
+		}
+
+		for (int second = 0; second < appliances.size(); second++) {
+			var later = appliances.get(second);
+			for (int first = 0; first < second; first++) {
+				var earlier = appliances.get(first);
+				if (wallsById.containsKey(later.getWallId()) && earlier.getWallId().equals(later.getWallId())
+						&& intersect(earlier.getOffsetMm(), earlier.getWidthMm(), later.getOffsetMm(), later.getWidthMm())
+						&& intersect(earlier.getElevationMm(), earlier.getHeightMm(), later.getElevationMm(),
+								later.getHeightMm())) {
+					violations.add(itemViolation(OVERLAP, later.getWallId(), later.getId()));
+					break;
+				}
+			}
+		}
+
+		for (int index = 0; index < fillers.size(); index++) {
+			var filler = fillers.get(index);
+			var earlier = fillers.subList(0, index);
+			if (wallsById.containsKey(filler.getWallId()) && (cabinets.stream()
+					.anyMatch(cabinet -> onSameWallCovering(cabinet.getWallId(), cabinet.getOffsetMm(),
+							cabinet.getWidthMm(), cabinet.getElevationMm(), cabinet.getHeightMm(), filler))
+					|| appliances.stream().anyMatch(appliance -> onSameWallCovering(appliance.getWallId(),
+							appliance.getOffsetMm(), appliance.getWidthMm(), appliance.getElevationMm(),
+							appliance.getHeightMm(), filler))
+					|| earlier.stream().anyMatch(other -> onSameWallCovering(other.getWallId(), other.getOffsetMm(),
+							other.getWidthMm(), other.getElevationMm(), other.getHeightMm(), filler)))) {
+				violations.add(itemViolation(OVERLAP, filler.getWallId(), filler.getId()));
+			}
+		}
+
+		checkCorners(design, cabinets, appliances, templatesByCode, violations);
+
 		return violations;
+	}
+
+	/**
+	 * Rules across Walls, in plan view. A Cabinet must not overlap a Cabinet or Appliance on another
+	 * Wall at the same height, nor have one standing right in front of its fronts; the blind part of
+	 * a blind corner Cabinet is meant to be covered by the neighbouring run. On a single Wall, the
+	 * overlap rules above already cover both.
+	 */
+	private static void checkCorners(Design design, List<Cabinet> cabinets, List<Appliance> appliances,
+			Map<String, CabinetTemplate> templatesByCode, List<Violation> violations) {
+		var placements = RoomLayout.layout(Optional.ofNullable(design.getWalls()).orElse(List.of()));
+		var footprints = new ArrayList<Footprint>();
+		for (var cabinet : cabinets) {
+			var placement = placements.get(cabinet.getWallId());
+			if (placement != null) {
+				footprints.add(new Footprint(cabinet.getId(), cabinet.getWallId(),
+						placement.rectangle(cabinet.getOffsetMm(), cabinet.getOffsetMm() + cabinet.getWidthMm(), 0,
+								cabinet.getDepthMm()),
+						cabinet.getElevationMm(), cabinet.getHeightMm()));
+			}
+		}
+		for (var appliance : appliances) {
+			var placement = placements.get(appliance.getWallId());
+			if (placement != null) {
+				footprints.add(new Footprint(appliance.getId(), appliance.getWallId(),
+						placement.rectangle(appliance.getOffsetMm(), appliance.getOffsetMm() + appliance.getWidthMm(),
+								0, appliance.getDepthMm()),
+						appliance.getElevationMm(), appliance.getHeightMm()));
+			}
+		}
+
+		for (var cabinet : cabinets) {
+			var placement = placements.get(cabinet.getWallId());
+			if (placement == null) {
+				continue;
+			}
+			var own = footprints.stream().filter(footprint -> footprint.id().equals(cabinet.getId())).findFirst()
+					.orElseThrow();
+			if (footprints.stream().anyMatch(other -> other != own && !other.wallId().equals(cabinet.getWallId())
+					&& own.atSameHeightAs(other) && RoomLayout.overlap(own.polygon(), other.polygon(), TOLERANCE_MM))) {
+				violations.add(cabinetViolation(CORNER_OVERLAP, cabinet));
+				continue;
+			}
+
+			var template = templatesByCode.get(cabinet.getTemplateCode());
+			if (template == null) {
+				continue;
+			}
+			var blind = Math.max(0, template.getBlindWidthMm());
+			var frontStart = cabinet.getOffsetMm() + (cabinet.effectiveBlindSide() == Side.LEFT ? blind : 0);
+			var frontEnd = cabinet.getOffsetMm() + cabinet.getWidthMm()
+					- (cabinet.effectiveBlindSide() == Side.RIGHT ? blind : 0);
+			var strip = placement.rectangle(frontStart, frontEnd, cabinet.getDepthMm(),
+					cabinet.getDepthMm() + FRONT_STRIP_MM);
+			if (footprints.stream().anyMatch(other -> !other.wallId().equals(cabinet.getWallId())
+					&& own.atSameHeightAs(other) && RoomLayout.overlap(strip, other.polygon(), TOLERANCE_MM))) {
+				violations.add(cabinetViolation(FRONT_BLOCKED, cabinet));
+			}
+		}
+	}
+
+	/**
+	 * A Cabinet's or Appliance's plan-view footprint and the heights it spans.
+	 */
+	private record Footprint(String id, String wallId, List<RoomLayout.Point> polygon, double elevationMm,
+			double heightMm) {
+		boolean atSameHeightAs(Footprint other) {
+			return intersect(elevationMm, heightMm, other.elevationMm(), other.heightMm());
+		}
+	}
+
+	/**
+	 * Whether a Cabinet's face, seen straight on, overlaps a rectangle on its Wall.
+	 */
+	private static boolean covers(Cabinet cabinet, double offsetMm, double widthMm, double elevationMm,
+			double heightMm) {
+		return intersect(cabinet.getOffsetMm(), cabinet.getWidthMm(), offsetMm, widthMm)
+				&& intersect(cabinet.getElevationMm(), cabinet.getHeightMm(), elevationMm, heightMm);
+	}
+
+	private static boolean sectionTooNarrow(Cabinet cabinet) {
+		var previous = 0d;
+		for (var position : cabinet.dividers()) {
+			if (position == null || position - previous < MIN_SECTION_MM - TOLERANCE_MM) {
+				return true;
+			}
+			previous = position;
+		}
+		return !cabinet.dividers().isEmpty() && cabinet.getWidthMm() - previous < MIN_SECTION_MM - TOLERANCE_MM;
+	}
+
+	private static boolean onSameWallCovering(String wallId, double offsetMm, double widthMm, double elevationMm,
+			double heightMm, Filler filler) {
+		return wallId.equals(filler.getWallId())
+				&& intersect(offsetMm, widthMm, filler.getOffsetMm(), filler.getWidthMm())
+				&& intersect(elevationMm, heightMm, filler.getElevationMm(), filler.getHeightMm());
+	}
+
+	private static boolean outsideWall(double offsetMm, double widthMm, double elevationMm, double heightMm,
+			Wall wall) {
+		return offsetMm < -TOLERANCE_MM || offsetMm + widthMm > wall.getLengthMm() + TOLERANCE_MM
+				|| elevationMm < -TOLERANCE_MM || elevationMm + heightMm > wall.getHeightMm() + TOLERANCE_MM
+				|| widthMm <= 0 || heightMm <= 0;
+	}
+
+	private static Violation itemViolation(String code, String wallId, String itemId) {
+		return Violation.builder().code(code).wallId(wallId).itemId(itemId).build();
 	}
 
 	private static boolean overlap(Cabinet first, Cabinet second, Map<String, Wall> wallsById) {

@@ -79,6 +79,9 @@ public class DefaultProjectDomain implements ProjectDomain {
 								.angleToNextDegrees(90)
 								.build()))
 						.cabinets(List.of())
+						.openings(List.of())
+						.appliances(List.of())
+						.fillers(List.of())
 						.build())
 				.manualLines(List.of())
 				.build(), shopId);
@@ -124,6 +127,9 @@ public class DefaultProjectDomain implements ProjectDomain {
 				.design(design.toBuilder()
 						.walls(List.copyOf(design.getWalls()))
 						.cabinets(Optional.ofNullable(design.getCabinets()).map(List::copyOf).orElse(List.of()))
+						.openings(Optional.ofNullable(design.getOpenings()).map(List::copyOf).orElse(List.of()))
+						.appliances(Optional.ofNullable(design.getAppliances()).map(List::copyOf).orElse(List.of()))
+						.fillers(Optional.ofNullable(design.getFillers()).map(List::copyOf).orElse(List.of()))
 						.build())
 				.labourMethod(request.getLabourMethod())
 				.labourHours(labourHours)
@@ -176,6 +182,23 @@ public class DefaultProjectDomain implements ProjectDomain {
 		Optional.ofNullable(design.getCabinets())
 				.orElse(List.of())
 				.forEach(cabinet -> requireUniqueId(cabinet.getId(), ids));
+		Optional.ofNullable(design.getOpenings())
+				.orElse(List.of())
+				.forEach(opening -> {
+					requireUniqueId(opening.getId(), ids);
+					Optional.ofNullable(opening.getKind())
+							.orElseThrow(() -> new IllegalArgumentException("every opening needs a kind"));
+				});
+		Optional.ofNullable(design.getAppliances())
+				.orElse(List.of())
+				.forEach(appliance -> {
+					requireUniqueId(appliance.getId(), ids);
+					Optional.ofNullable(appliance.getKind())
+							.orElseThrow(() -> new IllegalArgumentException("every appliance needs a kind"));
+				});
+		Optional.ofNullable(design.getFillers())
+				.orElse(List.of())
+				.forEach(filler -> requireUniqueId(filler.getId(), ids));
 	}
 
 	private static void requireUniqueId(String id, HashSet<String> ids) {

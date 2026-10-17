@@ -9,8 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
+import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.FrontLayout;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
@@ -21,14 +23,17 @@ import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
  *
  * <p>
  * The box is built from two full-height sides with the bottom and top (or two stretchers on base
- * cabinets) between them, and the back applied over the whole rear. Base cabinets stand on legs, so
- * their box is the cabinet height minus the toe kick. Fronts are full overlay.
+ * cabinets) between them, and the back applied over the whole rear. Base and tall cabinets stand on
+ * legs, so their box is the cabinet height minus the toe kick. Fronts are full overlay and follow
+ * the template's front rows ({@link FrontLayout}). Dividers stand between the bottom and the top (or
+ * stretchers) and split the interior into sections, each with its own shelves. Fronts of a Cabinet
+ * whose Fronts are ordered come out as ordered Parts of the Front style, made to size by the
+ * supplier, rather than cut from sheets.
  */
 final class PartGenerator {
 	static final double STRETCHER_WIDTH_MM = 101.6;
 	static final double SHELF_SIDE_CLEARANCE_MM = 2;
 	static final double SHELF_SETBACK_MM = 25;
-	static final double DOUBLE_DOOR_MIN_WIDTH_MM = 609.6;
 	static final double WIDE_BASE_MIN_WIDTH_MM = 914.4;
 
 	record PartSet(List<Part> parts, Map<UUID, Integer> hardware) {
@@ -42,11 +47,12 @@ final class PartGenerator {
 		var carcass = material(catalog, standard.getCarcassMaterialId());
 		var back = material(catalog, standard.getBackMaterialId());
 		var front = material(catalog, standard.getFrontMaterialId());
+		var orderedStyle = cabinet.frontsOrdered() ? orderedStyle(cabinet, standard, catalog) : null;
 
 		var t = carcass.getThicknessMm();
 		var gap = standard.getDoorGapMm();
 		var width = cabinet.getWidthMm();
-		var boxHeight = template.getType() == CabinetType.BASE
+		var boxHeight = template.getType().standsOnFloor()
 				? cabinet.getHeightMm() - standard.getToeKickHeightMm()
 				: cabinet.getHeightMm();
 		var carcassDepth = cabinet.getDepthMm() - front.getThicknessMm() - back.getThicknessMm();
@@ -54,7 +60,7 @@ final class PartGenerator {
 
 		var parts = new ArrayList<Part>();
 		var hardware = new LinkedHashMap<UUID, Integer>();
-		var builder = new Builder(cabinet, label, parts);
+		var builder = new Builder(cabinet, label, parts, orderedStyle);
 
 		builder.add(PartRole.SIDE, carcass, boxHeight, carcassDepth, 1, 0, standard.getCarcassEdgeBandingId(), 2);
 		builder.add(PartRole.BOTTOM, carcass, innerWidth, carcassDepth, 1, 0, standard.getCarcassEdgeBandingId(), 1);
@@ -66,39 +72,79 @@ final class PartGenerator {
 		}
 		builder.add(PartRole.BACK, back, width, boxHeight, 0, 0, null, 1);
 
+		var dividers = cabinet.dividers();
+		if (!dividers.isEmpty()) {
+			builder.add(PartRole.DIVIDER, carcass, boxHeight - 2 * t, carcassDepth, 1, 0,
+					standard.getCarcassEdgeBandingId(), dividers.size());
+		}
+
 		if (cabinet.getShelfCount() > 0) {
-			builder.add(PartRole.SHELF, carcass, innerWidth - SHELF_SIDE_CLEARANCE_MM,
-					carcassDepth - SHELF_SETBACK_MM, 1, 0, standard.getCarcassEdgeBandingId(), cabinet.getShelfCount());
-			add(hardware, standard.getShelfPinId(), 4 * cabinet.getShelfCount());
+			for (var sectionWidth : sectionWidths(width, t, dividers)) {
+				builder.add(PartRole.SHELF, carcass, sectionWidth - SHELF_SIDE_CLEARANCE_MM,
+						carcassDepth - SHELF_SETBACK_MM, 1, 0, standard.getCarcassEdgeBandingId(),
+						cabinet.getShelfCount());
+				add(hardware, standard.getShelfPinId(), 4 * cabinet.getShelfCount());
+			}
 		}
 
-		var fronts = 0;
-		if (template.isDoors()) {
-			var doors = width > DOUBLE_DOOR_MIN_WIDTH_MM ? 2 : 1;
-			var doorHeight = boxHeight - gap;
-			builder.add(PartRole.DOOR, front, doorHeight, (width - gap * doors) / doors, 2, 2,
-					standard.getFrontEdgeBandingId(), doors);
-			add(hardware, standard.getHingeId(), doors * hingesPerDoor(doorHeight));
-			fronts += doors;
+		var frontWidth = FrontLayout.frontWidth(template, width);
+		var pulls = 0;
+		for (var row : FrontLayout.rows(template, boxHeight, gap)) {
+			switch (row.kind()) {
+			case DOOR -> {
+				var leaves = FrontLayout.doorLeaves(frontWidth);
+				builder.front(PartRole.DOOR, front, row.heightMm(), (frontWidth - gap * leaves) / leaves, true,
+						standard.getFrontEdgeBandingId(), leaves);
+				add(hardware, standard.getHingeId(), leaves * hingesPerDoor(row.heightMm()));
+				pulls += leaves;
+			}
+			case DRAWER -> {
+				builder.front(PartRole.DRAWER_FRONT, front, row.heightMm(), frontWidth - gap, false,
+						standard.getFrontEdgeBandingId(), 1);
+				add(hardware, standard.getDrawerSlideId(), 1);
+				add(hardware, standard.getDrawerBoxId(), 1);
+				pulls++;
+			}
+			case FALSE_FRONT -> builder.front(PartRole.FALSE_FRONT, front, row.heightMm(), frontWidth - gap, false,
+					standard.getFrontEdgeBandingId(), 1);
+			case OPENING -> {
+			}
+			}
 		}
 
-		var drawers = template.getDrawerCount();
-		if (drawers > 0) {
-			var frontHeight = (boxHeight - gap * drawers) / drawers;
-			builder.add(PartRole.DRAWER_FRONT, front, width - gap, frontHeight, 2, 2,
-					standard.getFrontEdgeBandingId(), drawers);
-			add(hardware, standard.getDrawerSlideId(), drawers);
-			add(hardware, standard.getDrawerBoxId(), drawers);
-			fronts += drawers;
+		var finishedEnds = (cabinet.isFinishedLeft() ? 1 : 0) + (cabinet.isFinishedRight() ? 1 : 0);
+		if (finishedEnds > 0) {
+			builder.add(PartRole.FINISHED_END, front, cabinet.getHeightMm(), cabinet.getDepthMm(), 1, 1,
+					standard.getFrontEdgeBandingId(), finishedEnds);
 		}
 
-		add(hardware, standard.getPullId(), fronts);
+		if (template.getBlindWidthMm() > 0) {
+			builder.front(PartRole.BLIND_PANEL, front, boxHeight - gap, template.getBlindWidthMm() - gap, true,
+					standard.getFrontEdgeBandingId(), 1);
+		}
 
-		if (template.getType() == CabinetType.BASE) {
+		add(hardware, standard.getPullId(), pulls);
+
+		if (template.getType().standsOnFloor()) {
 			add(hardware, standard.getLegId(), width > WIDE_BASE_MIN_WIDTH_MM ? 6 : 4);
 		}
 
 		return new PartSet(parts, hardware);
+	}
+
+	/**
+	 * Clear width of each section, left to right, between the sides and dividers of thickness
+	 * {@code t}.
+	 */
+	static List<Double> sectionWidths(double width, double t, List<Double> dividers) {
+		var widths = new ArrayList<Double>();
+		var left = t;
+		for (var position : dividers) {
+			widths.add(position - t / 2 - left);
+			left = position + t / 2;
+		}
+		widths.add(width - t - left);
+		return widths;
 	}
 
 	static int hingesPerDoor(double doorHeightMm) {
@@ -114,6 +160,18 @@ final class PartGenerator {
 		}
 	}
 
+	/**
+	 * The Cabinet's own Front style if it is still a FRONT in the catalog, else the Construction
+	 * Standard's.
+	 */
+	private static Material orderedStyle(Cabinet cabinet, ConstructionStandard standard,
+			Map<UUID, Material> catalog) {
+		return Optional.ofNullable(cabinet.getOrderedFrontId())
+				.map(catalog::get)
+				.filter(material -> material.getKind() == MaterialKind.FRONT)
+				.orElseGet(() -> material(catalog, standard.getOrderedFrontId()));
+	}
+
 	private static Material material(Map<UUID, Material> catalog, UUID materialId) {
 		return Optional.ofNullable(materialId)
 				.map(catalog::get)
@@ -121,7 +179,31 @@ final class PartGenerator {
 						"material " + materialId + " of the construction standard is not in the catalog"));
 	}
 
-	private record Builder(Cabinet cabinet, String label, List<Part> parts) {
+	private record Builder(Cabinet cabinet, String label, List<Part> parts, Material orderedStyle) {
+		/**
+		 * Adds Fronts {@code heightMm} by {@code widthMm}: cut from {@code made}, banded all round
+		 * with the grain running up ({@code grainUp}) or across, or ordered in the Cabinet's style.
+		 */
+		void front(PartRole role, Material made, double heightMm, double widthMm, boolean grainUp,
+				UUID edgeBandingId, int quantity) {
+			if (orderedStyle == null) {
+				add(role, made, grainUp ? heightMm : widthMm, grainUp ? widthMm : heightMm, 2, 2, edgeBandingId,
+						quantity);
+				return;
+			}
+			for (int index = 0; index < quantity; index++) {
+				parts.add(Part.builder()
+						.cabinetId(cabinet.getId())
+						.cabinetLabel(label)
+						.role(role)
+						.materialId(orderedStyle.getId())
+						.lengthMm(round(heightMm))
+						.widthMm(round(widthMm))
+						.ordered(true)
+						.build());
+			}
+		}
+
 		/**
 		 * Adds {@code quantity} Parts. {@code grainSide} is the dimension the grain should follow;
 		 * banded edge counts refer to the edges along each of the two given dimensions.

@@ -85,7 +85,7 @@ _Avoid_: European, Euro-style, full-access
 ## Pricing
 
 **Material Catalog**:
-A Shop's list of the sheet goods, edge banding and hardware it uses, with prices and sheet sizes.
+A Shop's list of the sheet goods, edge banding, hardware, ordered Front styles and mouldings it uses, with prices and sheet sizes.
 _Avoid_: Price list, inventory, materials database
 
 **Labour Method**:
@@ -99,7 +99,7 @@ _Avoid_: Extra, custom item, add-on
 ## Output
 
 **Bill of Materials**:
-Everything that must be bought to build a Project: sheet goods, edge banding and hardware, with quantities.
+Everything that must be bought to build a Project: sheet goods, edge banding, hardware, ordered Fronts and mouldings, with quantities.
 _Avoid_: BOM, materials list, shopping list
 
 **Cut List**:

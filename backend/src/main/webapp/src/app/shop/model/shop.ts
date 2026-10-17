@@ -23,6 +23,10 @@ export class ConstructionStandard {
   frontMaterialId!: string;
   carcassEdgeBandingId!: string;
   frontEdgeBandingId!: string;
+  /** The Front style ordered when a Cabinet's Fronts are ordered and it picks none. */
+  orderedFrontId!: string;
+  /** The crown moulding put on Cabinets that ask for it. */
+  crownMouldingId!: string;
   hingeId!: string;
   shelfPinId!: string;
   legId!: string;
