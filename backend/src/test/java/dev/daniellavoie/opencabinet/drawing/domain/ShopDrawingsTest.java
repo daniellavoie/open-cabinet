@@ -41,4 +41,14 @@ class ShopDrawingsTest {
 				.contains("144\"", "96\"", "36\"", "18\"", "42\"", "34 1/2\"");
 	}
 
+
+	@Test
+	void drawsTheRoomIn3d() throws IOException {
+		var view = IsometricView.draw(DrawingFixtures.context(Language.FR));
+
+		assertThat(view.title()).isEqualTo("Vue 3D");
+		assertThat(view.shapes()).hasSizeGreaterThan(50);
+		Files.createDirectories(Path.of("target", "drawings"));
+		Files.writeString(Path.of("target", "drawings", "iso.svg"), SvgCanvas.render(view));
+	}
 }

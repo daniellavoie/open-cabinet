@@ -28,4 +28,8 @@ public class QuoteContent {
 	List<TaxLine> taxes;
 	BigDecimal total;
 	QuoteBreakdown breakdown;
+	/**
+	 * Absent on Quotes created before Quotes carried pictures.
+	 */
+	DesignSnapshot designSnapshot;
 }

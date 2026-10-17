@@ -18,7 +18,9 @@ import dev.daniellavoie.opencabinet.quote.domain.model.TaxLine;
 import dev.daniellavoie.opencabinet.shop.domain.model.LabourMethod;
 import dev.daniellavoie.opencabinet.shop.domain.model.LabourSettings;
 import dev.daniellavoie.opencabinet.shop.domain.model.Shop;
+import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
 import dev.daniellavoie.opencabinet.shop.domain.model.ShopSettings;
+import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 import dev.daniellavoie.opencabinet.shop.domain.model.Tax;
 
 class QuoteCalculatorTest {
@@ -35,7 +37,9 @@ class QuoteCalculatorTest {
 	private static final Shop SHOP = Shop.builder()
 			.name("Atelier")
 			.currency("CAD")
+			.units(Units.IMPERIAL)
 			.settings(ShopSettings.builder()
+					.constructionStandard(ConstructionStandard.builder().toeKickHeightMm(101.6).doorGapMm(3).build())
 					.markupPercent(new BigDecimal("25"))
 					.taxes(List.of(
 							Tax.builder().name("TPS").ratePercent(new BigDecimal("5")).build(),
@@ -78,6 +82,9 @@ class QuoteCalculatorTest {
 		assertThat(content.getLines().get(0).getKind()).isEqualTo(QuoteLineKind.CABINETS);
 		assertThat(content.getLines().get(0).getAmount()).isEqualByComparingTo("1112.50");
 		assertThat(content.getLines().get(0).getDescription()).contains("3 caisson(s), 6 pi linéaire(s)");
+		assertThat(content.getDesignSnapshot().getToeKickHeightMm()).as("the pictures are drawn as priced")
+				.isEqualTo(101.6);
+		assertThat(content.getDesignSnapshot().getUnits()).isEqualTo(Units.IMPERIAL);
 		assertThat(content.getLines().get(1).getAmount()).isEqualByComparingTo("400.00");
 
 		assertThat(content.getSubtotal()).isEqualByComparingTo("1512.50");

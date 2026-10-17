@@ -11,6 +11,7 @@ import java.util.Optional;
 import dev.daniellavoie.opencabinet.client.domain.model.Client;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.ProjectOutput;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
+import dev.daniellavoie.opencabinet.quote.domain.model.DesignSnapshot;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteBreakdown;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteContent;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteLine;
@@ -92,6 +93,12 @@ final class QuoteCalculator {
 						.hardwareItems(operations.getHardwareItems())
 						.linearFeet(operations.getLinearFeet())
 						.labourHours(hours)
+						.build())
+				.designSnapshot(DesignSnapshot.builder()
+						.design(project.getDesign())
+						.toeKickHeightMm(settings.getConstructionStandard().getToeKickHeightMm())
+						.frontGapMm(settings.getConstructionStandard().getDoorGapMm())
+						.units(shop.getUnits())
 						.build())
 				.build();
 	}
