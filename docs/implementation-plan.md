@@ -4,13 +4,13 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 
 ## Current step
 
-**Milestone 3 review, then production.** Milestone 3 (Design depth) is done on `claude/milestone-3`, waiting for review and merge. Milestones 0–2 are merged into `main` (PRs #1, #2 and #3), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
+**Milestone 4 review, then production.** Milestone 4 (Outputs) is done on `claude/milestone-4`, waiting for review and merge. Milestones 0–3 are merged into `main` (PRs #1 to #4), and the `Build and Deploy` workflow builds, tests and publishes the image. The deploy job fails at its first cluster call because the production environment isn't configured yet. To finish:
 
 1. Add `KUBECONFIG_BASE64` and `GHCR_PAT` to the `open-cabinet-production` GitHub environment.
 2. Create the `open-cabinet` realm and `open-cabinet-web` client: [`docs/operations/keycloak-realm.md`](operations/keycloak-realm.md).
 3. Re-run the latest `Build and Deploy` run, then smoke-test `https://cabinet.arendal.ca`: sign in, create a Shop, design a Project, download a Quote PDF.
 
-The next successful deploy ships everything merged into `main`. After Milestone 3 is merged, start Milestone 4.
+The next successful deploy ships everything merged into `main`. Milestone 4 completes the v1 plan; after it, pick from "After v1" and the follow-ups below.
 
 ## Status
 
@@ -19,8 +19,8 @@ The next successful deploy ships everything merged into `main`. After Milestone 
 | 0. Foundation and delivery | Done (PR #1); deploy pending, see Current step |
 | 1. First end-to-end slice | Done (PR #2); deploy pending, see Current step |
 | 2. Shop-ready | Done (PR #3); deploy pending, see Current step |
-| 3. Design depth | Done (`claude/milestone-3`), in review |
-| 4. Outputs for the shop floor and the Client | Next |
+| 3. Design depth | Done (PR #4); deploy pending, see Current step |
+| 4. Outputs for the shop floor and the Client | Done (`claude/milestone-4`), in review |
 | 5. After v1 | Not scheduled |
 
 ## 0. Foundation and delivery: done
@@ -55,7 +55,7 @@ Follow-ups found while building it:
 - Email delivery for Invitations.
 - The Keycloak login page follows the realm's default language, not the app's.
 
-## 3. Design depth: done, in review
+## 3. Design depth: done
 
 The design freedom ADR 0001 allows: free 3D editing, constrained to buildable Parts.
 
@@ -72,12 +72,17 @@ Follow-ups found while building it:
 - Fillers are always made in the Shop and are not checked across Walls; ordered Fronts have one price per m² per style, no size tiers.
 - Toe kicks are cut from the carcass material; a Shop may want its own toe kick material in the Construction Standard.
 
-## 4. Outputs for the shop floor and the Client: planned
+## 4. Outputs for the shop floor and the Client: done, in review
 
-1. **Shop Drawings**: plan view, an Elevation per Wall and per-Cabinet details, printable.
-2. **Quote PDF with pictures**: a 3D render and Elevations alongside the price.
-3. **Printable and exportable outputs**: Cut List, Nesting layouts and Bill of Materials as PDF and CSV.
-4. **Better Nesting**: fill partly used sheets before opening new ones, compare layouts, keep grain and saw constraints.
+1. **Shop Drawings.** Done. A plan, an Elevation per Wall and a detail per Cabinet (front and side, with its Parts on the printed page), dimensioned in the Shop's units. Shown in the Drawings tab and printed as a PDF, one drawing per page.
+2. **Quote PDF with pictures.** Done. A Quote freezes the design it was priced from; its PDF adds a 3D view, the plan and the Elevations. The 3D view is drawn on the server, so it is the same on every device. Quotes created before keep one page.
+3. **Printable and exportable outputs.** Done. Cut List (with the Fronts to order), Nesting and Bill of Materials as PDF and CSV, in the app's language.
+4. **Better Nesting.** Done. Three-stage guillotine cuts (strips, stacks, Parts), twelve strategies compared, fewest sheets then largest offcut; the next best layouts are shown to compare.
+
+Follow-ups found while building it:
+- The Quote PDF and its pictures are in French only; printed outputs and drawings follow the app's language. Localize the Quote by the Client's language.
+- Shop Drawings show the saved Project; they are not frozen like a Quote. Keep a copy with each sent Quote if Shops need to build exactly what was quoted.
+- Offcuts are not kept between Projects: a Shop's leftover stock is not used by Nesting.
 
 ## 5. After v1: not scheduled
 
