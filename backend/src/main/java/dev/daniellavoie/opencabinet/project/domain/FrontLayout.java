@@ -33,7 +33,13 @@ public final class FrontLayout {
 	 * share what remains by weight. Rows left without height are dropped.
 	 */
 	public static List<Row> rows(CabinetTemplate template, double boxHeightMm, double gapMm) {
-		var rows = Optional.ofNullable(template.getFrontRows()).orElse(List.of());
+		return rows(Optional.ofNullable(template.getFrontRows()).orElse(List.of()), boxHeightMm, gapMm);
+	}
+
+	/**
+	 * The same for any rows, such as an assembled template's front stack.
+	 */
+	public static List<Row> rows(List<FrontRow> rows, double boxHeightMm, double gapMm) {
 		var available = boxHeightMm - gapMm * rows.size();
 		var fixed = rows.stream().filter(row -> row.getHeightMm() != null).mapToDouble(FrontRow::getHeightMm).sum();
 		var weights = rows.stream().filter(row -> row.getHeightMm() == null).mapToDouble(FrontRow::effectiveWeight)

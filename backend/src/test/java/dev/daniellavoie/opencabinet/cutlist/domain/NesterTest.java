@@ -16,7 +16,7 @@ import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.MaterialNesting;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.NestingAlternative;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.SheetCut;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.SheetPlacement;
 import dev.daniellavoie.opencabinet.project.domain.model.NestingLayout;

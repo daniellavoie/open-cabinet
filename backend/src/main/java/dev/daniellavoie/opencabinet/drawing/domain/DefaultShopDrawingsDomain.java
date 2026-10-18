@@ -68,9 +68,11 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 	}
 
 	@Override
-	public List<View> quotePictures(Project project, ConstructionStandard standard, Units units) {
+	public List<View> quotePictures(Project project, ConstructionStandard standard, Units units,
+			List<Material> catalog) {
 		return QuotePicturesGenerator.generate(new ShopDrawingsGenerator.Source(project.getDesign(), templates(),
-				Map.of(), List.of(), Map.of(), standard, units, DrawingLanguage.FR));
+				Map.of(), List.of(), catalog.stream().collect(Collectors.toMap(Material::getId, Function.identity())),
+				standard, units, DrawingLanguage.FR));
 	}
 
 	@Override

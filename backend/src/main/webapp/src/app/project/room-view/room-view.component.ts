@@ -2,6 +2,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmi
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import { Material } from "../../catalog/model/material";
+import { ConstructionStandard } from "../../shop/model/shop";
+import { assemble, cabinetContext } from "../assembly";
 import { doorLeaves, frontRows, frontWidth } from "../front-layout";
 import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor, templateKey } from "../model/design";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
@@ -73,6 +76,9 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   @Input() outdatedIds = new Set<string>();
   @Input() toeKickHeightMm = 101.6;
+  /** For assembled templates: the Shop's Standard and catalog give their materials' thicknesses. */
+  @Input() standard: ConstructionStandard | null = null;
+  @Input() materials: Material[] = [];
   /**
    * Things can still be picked, but not dragged.
    */
@@ -316,6 +322,9 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
    * the Wall towards its front.
    */
   private cabinetMesh(cabinet: Cabinet, template: CabinetTemplate, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
+    if (template.assembly && this.standard) {
+      return this.assembledMesh(cabinet, template, placement, colors, highlight);
+    }
     const group = this.onWallGroup(cabinet, cabinet.depthMm, placement);
 
     const base = standsOnFloor(template.type);
@@ -358,6 +367,24 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       group.add(crown);
     }
 
+    this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);
+    return tagged(group, cabinet.id);
+  }
+
+  /**
+   * An assembled Cabinet drawn as its own Parts (ADR 0006), from the same
+   * assembly as its Cut List; Fronts turn see-through when it is selected.
+   */
+  private assembledMesh(cabinet: Cabinet, template: CabinetTemplate, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
+    const group = this.onWallGroup(cabinet, cabinet.depthMm, placement);
+    const interior = cabinet.id === this.selectedId;
+    const result = assemble(template.assembly!, cabinetContext(cabinet, this.standard!, this.materials));
+    for (const part of result.parts) {
+      const { x0, x1, y0, y1, z0, z1 } = part.box;
+      const mesh = box(x1 - x0, y1 - y0, z1 - z0, part.front ? colors.front : colors.carcass, interior && part.front ? 0.25 : 1);
+      mesh.position.set(((x0 + x1) / 2 - cabinet.widthMm / 2) * MM, (y0 + y1) / 2 * MM, ((z0 + z1) / 2 - cabinet.depthMm / 2) * MM);
+      group.add(mesh);
+    }
     this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);
     return tagged(group, cabinet.id);
   }

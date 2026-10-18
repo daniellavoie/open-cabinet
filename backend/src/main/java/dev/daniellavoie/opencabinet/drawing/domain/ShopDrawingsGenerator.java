@@ -17,15 +17,18 @@ import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
 import dev.daniellavoie.opencabinet.drawing.domain.model.PartsTable;
-import dev.daniellavoie.opencabinet.drawing.domain.model.Shape;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Dimension;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Label;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Line;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Outline;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Point;
+import dev.daniellavoie.opencabinet.drawing.domain.model.Shape;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Sheet;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Stroke;
 import dev.daniellavoie.opencabinet.drawing.domain.model.View;
+import dev.daniellavoie.opencabinet.project.domain.Assembly.AssembledPart;
+import dev.daniellavoie.opencabinet.project.domain.Assembly;
+import dev.daniellavoie.opencabinet.project.domain.CabinetAssemblies;
 import dev.daniellavoie.opencabinet.project.domain.FrontLayout;
 import dev.daniellavoie.opencabinet.project.domain.RoomLayout;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
@@ -34,6 +37,8 @@ import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.FrontKind;
 import dev.daniellavoie.opencabinet.project.domain.model.Side;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Axis;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.PartKind;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
 import dev.daniellavoie.opencabinet.shop.domain.model.Units;
@@ -51,6 +56,10 @@ final class ShopDrawingsGenerator {
 	static final double FRONT_THICKNESS_MM = 19;
 	static final double TOE_KICK_SETBACK_MM = 75;
 	static final double LABEL_CLEARANCE_MM = 90;
+	/**
+	 * How far behind the nearest Part a Part still counts as seen in a front or side view.
+	 */
+	static final double SEEN_DEPTH_MM = 30;
 
 	/**
 	 * What the drawings are made from. {@code labels} map Cabinet ids to C1, C2… in reading order;
@@ -264,10 +273,8 @@ final class ShopDrawingsGenerator {
 		}
 		front.add(new Dimension(new Point(width, 0), new Point(0, 0), 1, source.length(width)));
 		front.add(new Dimension(new Point(0, 0), new Point(0, height), 1, source.length(height)));
-		for (var row : FrontLayout.rows(template, height - boxBottom, source.standard().getDoorGapMm())) {
-			var bottom = boxBottom + row.bottomMm();
-			front.add(new Dimension(new Point(width, bottom + row.heightMm()), new Point(width, bottom), 1,
-					source.length(row.heightMm())));
+		for (var row : frontHeights(source, cabinet, template)) {
+			front.add(new Dimension(new Point(width, row[1]), new Point(width, row[0]), 1, source.length(row[1] - row[0])));
 		}
 		if (boxBottom > 0) {
 			front.add(new Dimension(new Point(width, boxBottom), new Point(width, 0), 1, source.length(boxBottom)));
@@ -275,11 +282,15 @@ final class ShopDrawingsGenerator {
 
 		var depth = cabinet.getDepthMm();
 		var side = new ArrayList<Shape>();
-		side.add(Outline.box(0, boxBottom, depth - FRONT_THICKNESS_MM, height - boxBottom, Stroke.OUTLINE));
-		side.add(Outline.box(depth - FRONT_THICKNESS_MM, boxBottom, FRONT_THICKNESS_MM, height - boxBottom,
-				Stroke.THIN));
-		if (boxBottom > 0) {
-			side.add(Outline.box(0, 0, depth - FRONT_THICKNESS_MM - TOE_KICK_SETBACK_MM, boxBottom, Stroke.THIN));
+		if (template.getAssembly() != null) {
+			side.addAll(seen(assembled(source, cabinet, template), Axis.X, 0, 0));
+		} else {
+			side.add(Outline.box(0, boxBottom, depth - FRONT_THICKNESS_MM, height - boxBottom, Stroke.OUTLINE));
+			side.add(Outline.box(depth - FRONT_THICKNESS_MM, boxBottom, FRONT_THICKNESS_MM, height - boxBottom,
+					Stroke.THIN));
+			if (boxBottom > 0) {
+				side.add(Outline.box(0, 0, depth - FRONT_THICKNESS_MM - TOE_KICK_SETBACK_MM, boxBottom, Stroke.THIN));
+			}
 		}
 		side.add(new Dimension(new Point(depth, 0), new Point(0, 0), 1, source.length(depth)));
 
@@ -320,6 +331,12 @@ final class ShopDrawingsGenerator {
 	 * Blind corners leave {@code blindWidthMm} on their blind side, covered by a blind panel.
 	 */
 	static List<Shape> front(Source source, Cabinet cabinet, CabinetTemplate template, double x, double y) {
+		if (template.getAssembly() != null) {
+			var shapes = new ArrayList<Shape>();
+			shapes.add(Outline.box(x, y, cabinet.getWidthMm(), cabinet.getHeightMm(), Stroke.OUTLINE));
+			shapes.addAll(seen(assembled(source, cabinet, template), Axis.Z, x, y));
+			return shapes;
+		}
 		var shapes = new ArrayList<Shape>();
 		var width = cabinet.getWidthMm();
 		var boxBottom = boxBottom(source, template);
@@ -355,6 +372,51 @@ final class ShopDrawingsGenerator {
 					Stroke.THIN));
 		}
 		return shapes;
+	}
+
+	/**
+	 * An assembled Cabinet's Parts at its size (ADR 0006).
+	 */
+	static List<AssembledPart> assembled(Source source, Cabinet cabinet, CabinetTemplate template) {
+		return Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, source.standard(),
+				materialId -> Optional.ofNullable(source.materials().get(materialId)).map(Material::getThicknessMm)
+						.orElse(0d)))
+				.parts();
+	}
+
+	/**
+	 * The Parts seen when looking along {@code axis} from its high end (the front for z, the right
+	 * side for x): those within a front's thickness of the nearest, Fronts thin, others outlined. In
+	 * a side view, depth runs left to right from the back.
+	 */
+	static List<Shape> seen(List<AssembledPart> parts, Axis axis, double x, double y) {
+		var nearest = parts.stream().mapToDouble(part -> part.box().max(axis)).max().orElse(0);
+		var horizontal = axis == Axis.Z ? Axis.X : Axis.Z;
+		return parts.stream()
+				.filter(part -> part.kind() == PartKind.PANEL && part.box().max(axis) >= nearest - SEEN_DEPTH_MM)
+				.<Shape>map(part -> Outline.box(x + part.box().min(horizontal), y + part.box().y0(),
+						part.box().size(horizontal), part.box().size(Axis.Y), part.front() ? Stroke.THIN : Stroke.OUTLINE))
+				.toList();
+	}
+
+	/**
+	 * Each Front's bottom and top, for dimensioning: an assembled template's front Parts, or a starter
+	 * template's front rows.
+	 */
+	private static List<double[]> frontHeights(Source source, Cabinet cabinet, CabinetTemplate template) {
+		if (template.getAssembly() != null) {
+			// Door leaves side by side share a row: one dimension each.
+			var rows = new LinkedHashMap<String, double[]>();
+			assembled(source, cabinet, template).stream()
+					.filter(AssembledPart::front)
+					.forEach(part -> rows.putIfAbsent(Math.round(part.box().y0() * 10) + "/" + Math.round(part.box().y1() * 10),
+							new double[] { part.box().y0(), part.box().y1() }));
+			return List.copyOf(rows.values());
+		}
+		var boxBottom = boxBottom(source, template);
+		return FrontLayout.rows(template, cabinet.getHeightMm() - boxBottom, source.standard().getDoorGapMm()).stream()
+				.map(row -> new double[] { boxBottom + row.bottomMm(), boxBottom + row.bottomMm() + row.heightMm() })
+				.toList();
 	}
 
 	/**

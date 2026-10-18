@@ -79,6 +79,8 @@ export class ProjectEditorComponent implements OnDestroy {
   clients: Client[] = [];
   /** The Shop's ordered Front styles. */
   frontStyles: Material[] = [];
+  /** The Shop's whole catalog, for assembled templates' material thicknesses. */
+  materials: Material[] = [];
   shopTemplates: ShopCabinetTemplate[] = [];
   message = "";
   violations: Violation[] = [];
@@ -127,6 +129,7 @@ export class ProjectEditorComponent implements OnDestroy {
         this.shopTemplates = shopTemplates;
         this.templates = templates;
         this.clients = clients;
+        this.materials = materials;
         this.frontStyles = materials.filter(material => material.kind === "FRONT");
         this.saved = project;
         this.setDraft(structuredClone(project));

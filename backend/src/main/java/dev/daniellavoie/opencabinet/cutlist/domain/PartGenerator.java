@@ -7,15 +7,22 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.Assembly;
+import dev.daniellavoie.opencabinet.project.domain.CabinetAssemblies;
 import dev.daniellavoie.opencabinet.project.domain.FrontLayout;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Axis;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Face;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRef;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.PartKind;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
 
 /**
@@ -36,7 +43,10 @@ final class PartGenerator {
 	static final double SHELF_SETBACK_MM = 25;
 	static final double WIDE_BASE_MIN_WIDTH_MM = 914.4;
 
-	record PartSet(List<Part> parts, Map<UUID, Integer> hardware) {
+	/**
+	 * A Cabinet's Parts, its hardware by material, and the length of each moulding it uses.
+	 */
+	record PartSet(List<Part> parts, Map<UUID, Integer> hardware, Map<UUID, Double> mouldingMillimetres) {
 	}
 
 	private PartGenerator() {
@@ -44,6 +54,9 @@ final class PartGenerator {
 
 	static PartSet generate(Cabinet cabinet, CabinetTemplate template, String label, ConstructionStandard standard,
 			Map<UUID, Material> catalog) {
+		if (template.getAssembly() != null) {
+			return assembled(cabinet, template, label, standard, catalog);
+		}
 		var carcass = material(catalog, standard.getCarcassMaterialId());
 		var back = material(catalog, standard.getBackMaterialId());
 		var front = material(catalog, standard.getFrontMaterialId());
@@ -129,7 +142,7 @@ final class PartGenerator {
 			add(hardware, standard.getLegId(), width > WIDE_BASE_MIN_WIDTH_MM ? 6 : 4);
 		}
 
-		return new PartSet(parts, hardware);
+		return new PartSet(parts, hardware, Map.of());
 	}
 
 	/**
@@ -145,6 +158,56 @@ final class PartGenerator {
 		}
 		widths.add(width - t - left);
 		return widths;
+	}
+
+	/**
+	 * An assembled template's Parts as built at the Cabinet's size (ADR 0006): panels cut with their
+	 * grain and banded faces, Fronts ordered when the Cabinet orders them, mouldings by length,
+	 * hardware as counted by the template.
+	 */
+	private static PartSet assembled(Cabinet cabinet, CabinetTemplate template, String label,
+			ConstructionStandard standard, Map<UUID, Material> catalog) {
+		Function<MaterialRef, Material> resolve = reference -> material(catalog,
+				CabinetAssemblies.materialId(reference, standard));
+		var result = Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, standard,
+				materialId -> Optional.ofNullable(catalog.get(materialId)).map(Material::getThicknessMm).orElse(0d)));
+		if (!result.violations().isEmpty()) {
+			throw new IllegalStateException("template " + template.key() + " cannot be built: " + result.violations());
+		}
+
+		var orderedStyle = cabinet.frontsOrdered() ? orderedStyle(cabinet, standard, catalog) : null;
+		var parts = new ArrayList<Part>();
+		var mouldings = new LinkedHashMap<UUID, Double>();
+		for (var part : result.parts()) {
+			var box = part.box();
+			if (part.kind() == PartKind.MOULDING) {
+				var length = Math.max(box.size(Axis.X), Math.max(box.size(Axis.Y), box.size(Axis.Z)));
+				mouldings.merge(resolve.apply(part.material()).getId(), length, Double::sum);
+				continue;
+			}
+
+			var grain = part.grain();
+			var other = Assembly.otherAxis(part.thickness(), grain);
+			var builder = new Builder(cabinet, label, parts, part.front() ? orderedStyle : null);
+			if (part.front() && orderedStyle != null) {
+				builder.front(part.role(), null, box.size(Axis.Y), box.size(Axis.X), true, null, 1);
+				continue;
+			}
+			var banding = part.banding();
+			var faces = banding == null ? List.<Face>of() : Optional.ofNullable(banding.faces()).orElse(List.of());
+			var bandingId = banding == null || banding.material() == null ? null
+					: CabinetAssemblies.materialId(banding.material(), standard);
+			// Edges along the grain lie on the other axis' faces, and the reverse.
+			var alongGrain = (int) faces.stream().filter(face -> face.axis() == other).count();
+			var acrossGrain = (int) faces.stream().filter(face -> face.axis() == grain).count();
+			builder.add(part.role(), resolve.apply(part.material()), box.size(grain), box.size(other), alongGrain,
+					acrossGrain, bandingId, 1);
+		}
+
+		var hardware = new LinkedHashMap<UUID, Integer>();
+		result.hardware().forEach(item -> add(hardware, CabinetAssemblies.materialId(item.material(), standard),
+				item.quantity()));
+		return new PartSet(parts, hardware, mouldings);
 	}
 
 	static int hingesPerDoor(double doorHeightMm) {

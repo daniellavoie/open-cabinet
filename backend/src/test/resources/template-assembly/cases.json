@@ -1,0 +1,2076 @@
+[
+  {
+    "name": "a base cabinet is built from its attachments",
+    "assembly": {
+      "parts": [
+        {
+          "id": "left",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "right",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "back",
+          "role": "BACK",
+          "material": {
+            "role": "BACK"
+          },
+          "thickness": "Z",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            }
+          }
+        },
+        {
+          "id": "bottom",
+          "role": "BOTTOM",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "stretcher",
+          "role": "STRETCHER",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "sizes": {
+            "Z": [
+              {
+                "mm": 101.6
+              }
+            ]
+          }
+        },
+        {
+          "id": "shelf",
+          "role": "SHELF",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "repeat": {
+            "count": "SHELVES"
+          },
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "bottom",
+              "face": "TOP"
+            },
+            "TOP": {
+              "to": "stretcher",
+              "face": "BOTTOM"
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                },
+                {
+                  "mm": -25
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "divider": {
+        "id": "divider",
+        "role": "DIVIDER",
+        "material": {
+          "role": "CARCASS"
+        },
+        "thickness": "X",
+        "faces": {
+          "BOTTOM": {
+            "to": "bottom",
+            "face": "TOP"
+          },
+          "TOP": {
+            "to": "stretcher",
+            "face": "BOTTOM"
+          },
+          "BACK": {
+            "to": "back",
+            "face": "FRONT"
+          },
+          "FRONT": {
+            "to": "CABINET",
+            "face": "FRONT",
+            "offset": [
+              {
+                "thickness": {
+                  "role": "FRONT"
+                },
+                "factor": -1
+              }
+            ]
+          }
+        }
+      },
+      "frontStacks": [
+        {
+          "id": "fronts",
+          "material": {
+            "role": "FRONT"
+          },
+          "splitAboveMm": 609.6,
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "rows": [
+            {
+              "kind": "DRAWER",
+              "heightMm": 152.4
+            },
+            {
+              "kind": "DOOR"
+            }
+          ]
+        }
+      ],
+      "hardware": [
+        {
+          "material": {
+            "role": "HINGE"
+          },
+          "on": "fronts",
+          "frontKind": "DOOR",
+          "quantity": {
+            "perMm": 508,
+            "axis": "Y",
+            "minimum": 2
+          }
+        },
+        {
+          "material": {
+            "role": "DRAWER_SLIDE"
+          },
+          "on": "fronts",
+          "frontKind": "DRAWER",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "PULL"
+          },
+          "on": "fronts",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "SHELF_PIN"
+          },
+          "on": "shelf",
+          "quantity": {
+            "fixed": 4
+          }
+        },
+        {
+          "material": {
+            "role": "LEG"
+          },
+          "quantity": {
+            "fixed": 4
+          }
+        }
+      ]
+    },
+    "context": {
+      "width": 457.2,
+      "height": 876.3,
+      "depth": 609.6,
+      "shelfCount": 1,
+      "dividers": [],
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      }
+    },
+    "parts": [
+      {
+        "id": "left",
+        "role": "SIDE",
+        "box": [
+          0,
+          15.9,
+          101.6,
+          876.3,
+          0,
+          593.7
+        ]
+      },
+      {
+        "id": "right",
+        "role": "SIDE",
+        "box": [
+          441.3,
+          457.2,
+          101.6,
+          876.3,
+          0,
+          593.7
+        ]
+      },
+      {
+        "id": "back",
+        "role": "BACK",
+        "box": [
+          15.9,
+          441.3,
+          101.6,
+          876.3,
+          0,
+          6.4
+        ]
+      },
+      {
+        "id": "bottom",
+        "role": "BOTTOM",
+        "box": [
+          15.9,
+          441.3,
+          101.6,
+          117.5,
+          6.4,
+          593.7
+        ]
+      },
+      {
+        "id": "stretcher",
+        "role": "STRETCHER",
+        "box": [
+          15.9,
+          441.3,
+          860.4,
+          876.3,
+          492.1,
+          593.7
+        ]
+      },
+      {
+        "id": "shelf#1",
+        "role": "SHELF",
+        "box": [
+          15.9,
+          441.3,
+          481.0,
+          496.9,
+          6.4,
+          568.7
+        ]
+      },
+      {
+        "id": "fronts.1",
+        "role": "DRAWER_FRONT",
+        "box": [
+          1.5,
+          455.7,
+          722.4,
+          874.8,
+          593.7,
+          609.6
+        ]
+      },
+      {
+        "id": "fronts.2.1",
+        "role": "DOOR",
+        "box": [
+          1.5,
+          455.7,
+          103.1,
+          719.4,
+          593.7,
+          609.6
+        ]
+      }
+    ],
+    "hardware": [
+      {
+        "role": "HINGE",
+        "quantity": 2
+      },
+      {
+        "role": "DRAWER_SLIDE",
+        "quantity": 1
+      },
+      {
+        "role": "PULL",
+        "quantity": 2
+      },
+      {
+        "role": "SHELF_PIN",
+        "quantity": 4
+      },
+      {
+        "role": "LEG",
+        "quantity": 4
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "wide doors split in two leaves and dividers split the shelves into sections",
+    "assembly": {
+      "parts": [
+        {
+          "id": "left",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "right",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "back",
+          "role": "BACK",
+          "material": {
+            "role": "BACK"
+          },
+          "thickness": "Z",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            }
+          }
+        },
+        {
+          "id": "bottom",
+          "role": "BOTTOM",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "stretcher",
+          "role": "STRETCHER",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "sizes": {
+            "Z": [
+              {
+                "mm": 101.6
+              }
+            ]
+          }
+        },
+        {
+          "id": "shelf",
+          "role": "SHELF",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "repeat": {
+            "count": "SHELVES"
+          },
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "bottom",
+              "face": "TOP"
+            },
+            "TOP": {
+              "to": "stretcher",
+              "face": "BOTTOM"
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                },
+                {
+                  "mm": -25
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "divider": {
+        "id": "divider",
+        "role": "DIVIDER",
+        "material": {
+          "role": "CARCASS"
+        },
+        "thickness": "X",
+        "faces": {
+          "BOTTOM": {
+            "to": "bottom",
+            "face": "TOP"
+          },
+          "TOP": {
+            "to": "stretcher",
+            "face": "BOTTOM"
+          },
+          "BACK": {
+            "to": "back",
+            "face": "FRONT"
+          },
+          "FRONT": {
+            "to": "CABINET",
+            "face": "FRONT",
+            "offset": [
+              {
+                "thickness": {
+                  "role": "FRONT"
+                },
+                "factor": -1
+              }
+            ]
+          }
+        }
+      },
+      "frontStacks": [
+        {
+          "id": "fronts",
+          "material": {
+            "role": "FRONT"
+          },
+          "splitAboveMm": 609.6,
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "rows": [
+            {
+              "kind": "DRAWER",
+              "heightMm": 152.4
+            },
+            {
+              "kind": "DOOR"
+            }
+          ]
+        }
+      ],
+      "hardware": [
+        {
+          "material": {
+            "role": "HINGE"
+          },
+          "on": "fronts",
+          "frontKind": "DOOR",
+          "quantity": {
+            "perMm": 508,
+            "axis": "Y",
+            "minimum": 2
+          }
+        },
+        {
+          "material": {
+            "role": "DRAWER_SLIDE"
+          },
+          "on": "fronts",
+          "frontKind": "DRAWER",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "PULL"
+          },
+          "on": "fronts",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "SHELF_PIN"
+          },
+          "on": "shelf",
+          "quantity": {
+            "fixed": 4
+          }
+        },
+        {
+          "material": {
+            "role": "LEG"
+          },
+          "quantity": {
+            "fixed": 4
+          }
+        }
+      ]
+    },
+    "context": {
+      "width": 914.4,
+      "height": 876.3,
+      "depth": 609.6,
+      "shelfCount": 2,
+      "dividers": [
+        457.2
+      ],
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      }
+    },
+    "parts": [
+      {
+        "id": "left",
+        "role": "SIDE",
+        "box": [
+          0.0,
+          15.9,
+          101.6,
+          876.3,
+          0.0,
+          593.7
+        ]
+      },
+      {
+        "id": "right",
+        "role": "SIDE",
+        "box": [
+          898.5,
+          914.4,
+          101.6,
+          876.3,
+          0.0,
+          593.7
+        ]
+      },
+      {
+        "id": "back",
+        "role": "BACK",
+        "box": [
+          15.9,
+          898.5,
+          101.6,
+          876.3,
+          0.0,
+          6.4
+        ]
+      },
+      {
+        "id": "bottom",
+        "role": "BOTTOM",
+        "box": [
+          15.9,
+          898.5,
+          101.6,
+          117.5,
+          6.4,
+          593.7
+        ]
+      },
+      {
+        "id": "stretcher",
+        "role": "STRETCHER",
+        "box": [
+          15.9,
+          898.5,
+          860.4,
+          876.3,
+          492.1,
+          593.7
+        ]
+      },
+      {
+        "id": "shelf#1.1",
+        "role": "SHELF",
+        "box": [
+          15.9,
+          449.3,
+          354.5,
+          370.4,
+          6.4,
+          568.7
+        ]
+      },
+      {
+        "id": "shelf#1.2",
+        "role": "SHELF",
+        "box": [
+          15.9,
+          449.3,
+          607.5,
+          623.4,
+          6.4,
+          568.7
+        ]
+      },
+      {
+        "id": "shelf#2.1",
+        "role": "SHELF",
+        "box": [
+          465.2,
+          898.5,
+          354.5,
+          370.4,
+          6.4,
+          568.7
+        ]
+      },
+      {
+        "id": "shelf#2.2",
+        "role": "SHELF",
+        "box": [
+          465.2,
+          898.5,
+          607.5,
+          623.4,
+          6.4,
+          568.7
+        ]
+      },
+      {
+        "id": "divider#1",
+        "role": "DIVIDER",
+        "box": [
+          449.3,
+          465.2,
+          117.5,
+          860.4,
+          6.4,
+          593.7
+        ]
+      },
+      {
+        "id": "fronts.1",
+        "role": "DRAWER_FRONT",
+        "box": [
+          1.5,
+          912.9,
+          722.4,
+          874.8,
+          593.7,
+          609.6
+        ]
+      },
+      {
+        "id": "fronts.2.1",
+        "role": "DOOR",
+        "box": [
+          1.5,
+          455.7,
+          103.1,
+          719.4,
+          593.7,
+          609.6
+        ]
+      },
+      {
+        "id": "fronts.2.2",
+        "role": "DOOR",
+        "box": [
+          458.7,
+          912.9,
+          103.1,
+          719.4,
+          593.7,
+          609.6
+        ]
+      }
+    ],
+    "hardware": [
+      {
+        "role": "HINGE",
+        "quantity": 4
+      },
+      {
+        "role": "DRAWER_SLIDE",
+        "quantity": 1
+      },
+      {
+        "role": "PULL",
+        "quantity": 3
+      },
+      {
+        "role": "SHELF_PIN",
+        "quantity": 16
+      },
+      {
+        "role": "LEG",
+        "quantity": 4
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "an attachment to a part that does not exist",
+    "assembly": {
+      "parts": [
+        {
+          "id": "left",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "missing",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "right",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "back",
+          "role": "BACK",
+          "material": {
+            "role": "BACK"
+          },
+          "thickness": "Z",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            }
+          }
+        },
+        {
+          "id": "bottom",
+          "role": "BOTTOM",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "stretcher",
+          "role": "STRETCHER",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "sizes": {
+            "Z": [
+              {
+                "mm": 101.6
+              }
+            ]
+          }
+        },
+        {
+          "id": "shelf",
+          "role": "SHELF",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "repeat": {
+            "count": "SHELVES"
+          },
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "bottom",
+              "face": "TOP"
+            },
+            "TOP": {
+              "to": "stretcher",
+              "face": "BOTTOM"
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                },
+                {
+                  "mm": -25
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "divider": {
+        "id": "divider",
+        "role": "DIVIDER",
+        "material": {
+          "role": "CARCASS"
+        },
+        "thickness": "X",
+        "faces": {
+          "BOTTOM": {
+            "to": "bottom",
+            "face": "TOP"
+          },
+          "TOP": {
+            "to": "stretcher",
+            "face": "BOTTOM"
+          },
+          "BACK": {
+            "to": "back",
+            "face": "FRONT"
+          },
+          "FRONT": {
+            "to": "CABINET",
+            "face": "FRONT",
+            "offset": [
+              {
+                "thickness": {
+                  "role": "FRONT"
+                },
+                "factor": -1
+              }
+            ]
+          }
+        }
+      },
+      "frontStacks": [
+        {
+          "id": "fronts",
+          "material": {
+            "role": "FRONT"
+          },
+          "splitAboveMm": 609.6,
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "rows": [
+            {
+              "kind": "DRAWER",
+              "heightMm": 152.4
+            },
+            {
+              "kind": "DOOR"
+            }
+          ]
+        }
+      ],
+      "hardware": [
+        {
+          "material": {
+            "role": "HINGE"
+          },
+          "on": "fronts",
+          "frontKind": "DOOR",
+          "quantity": {
+            "perMm": 508,
+            "axis": "Y",
+            "minimum": 2
+          }
+        },
+        {
+          "material": {
+            "role": "DRAWER_SLIDE"
+          },
+          "on": "fronts",
+          "frontKind": "DRAWER",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "PULL"
+          },
+          "on": "fronts",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "SHELF_PIN"
+          },
+          "on": "shelf",
+          "quantity": {
+            "fixed": 4
+          }
+        },
+        {
+          "material": {
+            "role": "LEG"
+          },
+          "quantity": {
+            "fixed": 4
+          }
+        }
+      ]
+    },
+    "context": {
+      "width": 457.2,
+      "height": 876.3,
+      "depth": 609.6,
+      "shelfCount": 1,
+      "dividers": [],
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      }
+    },
+    "parts": [],
+    "hardware": [],
+    "violations": [
+      {
+        "code": "UNKNOWN_TARGET",
+        "partId": "left"
+      }
+    ]
+  },
+  {
+    "name": "a face, a face and a size is one too many",
+    "assembly": {
+      "parts": [
+        {
+          "id": "left",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "sizes": {
+            "Y": [
+              {
+                "mm": 700
+              }
+            ]
+          }
+        },
+        {
+          "id": "right",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "back",
+          "role": "BACK",
+          "material": {
+            "role": "BACK"
+          },
+          "thickness": "Z",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            }
+          }
+        },
+        {
+          "id": "bottom",
+          "role": "BOTTOM",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "stretcher",
+          "role": "STRETCHER",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "sizes": {
+            "Z": [
+              {
+                "mm": 101.6
+              }
+            ]
+          }
+        },
+        {
+          "id": "shelf",
+          "role": "SHELF",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "Y",
+          "repeat": {
+            "count": "SHELVES"
+          },
+          "faces": {
+            "LEFT": {
+              "to": "left",
+              "face": "RIGHT"
+            },
+            "RIGHT": {
+              "to": "right",
+              "face": "LEFT"
+            },
+            "BOTTOM": {
+              "to": "bottom",
+              "face": "TOP"
+            },
+            "TOP": {
+              "to": "stretcher",
+              "face": "BOTTOM"
+            },
+            "BACK": {
+              "to": "back",
+              "face": "FRONT"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                },
+                {
+                  "mm": -25
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "divider": {
+        "id": "divider",
+        "role": "DIVIDER",
+        "material": {
+          "role": "CARCASS"
+        },
+        "thickness": "X",
+        "faces": {
+          "BOTTOM": {
+            "to": "bottom",
+            "face": "TOP"
+          },
+          "TOP": {
+            "to": "stretcher",
+            "face": "BOTTOM"
+          },
+          "BACK": {
+            "to": "back",
+            "face": "FRONT"
+          },
+          "FRONT": {
+            "to": "CABINET",
+            "face": "FRONT",
+            "offset": [
+              {
+                "thickness": {
+                  "role": "FRONT"
+                },
+                "factor": -1
+              }
+            ]
+          }
+        }
+      },
+      "frontStacks": [
+        {
+          "id": "fronts",
+          "material": {
+            "role": "FRONT"
+          },
+          "splitAboveMm": 609.6,
+          "faces": {
+            "LEFT": {
+              "to": "CABINET",
+              "face": "LEFT"
+            },
+            "RIGHT": {
+              "to": "CABINET",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM",
+              "offset": [
+                {
+                  "standard": "TOE_KICK_HEIGHT"
+                }
+              ]
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "FRONT",
+              "offset": [
+                {
+                  "thickness": {
+                    "role": "FRONT"
+                  },
+                  "factor": -1
+                }
+              ]
+            }
+          },
+          "rows": [
+            {
+              "kind": "DRAWER",
+              "heightMm": 152.4
+            },
+            {
+              "kind": "DOOR"
+            }
+          ]
+        }
+      ],
+      "hardware": [
+        {
+          "material": {
+            "role": "HINGE"
+          },
+          "on": "fronts",
+          "frontKind": "DOOR",
+          "quantity": {
+            "perMm": 508,
+            "axis": "Y",
+            "minimum": 2
+          }
+        },
+        {
+          "material": {
+            "role": "DRAWER_SLIDE"
+          },
+          "on": "fronts",
+          "frontKind": "DRAWER",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "PULL"
+          },
+          "on": "fronts",
+          "quantity": {
+            "fixed": 1
+          }
+        },
+        {
+          "material": {
+            "role": "SHELF_PIN"
+          },
+          "on": "shelf",
+          "quantity": {
+            "fixed": 4
+          }
+        },
+        {
+          "material": {
+            "role": "LEG"
+          },
+          "quantity": {
+            "fixed": 4
+          }
+        }
+      ]
+    },
+    "context": {
+      "width": 457.2,
+      "height": 876.3,
+      "depth": 609.6,
+      "shelfCount": 1,
+      "dividers": [],
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      }
+    },
+    "parts": [],
+    "hardware": [],
+    "violations": [
+      {
+        "code": "WRONG_ATTACHMENTS",
+        "partId": "left"
+      }
+    ]
+  },
+  {
+    "name": "parts attached to each other in a loop cannot be placed",
+    "assembly": {
+      "parts": [
+        {
+          "id": "a",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "b",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "role": "SIDE",
+          "material": {
+            "role": "CARCASS"
+          },
+          "thickness": "X",
+          "faces": {
+            "LEFT": {
+              "to": "a",
+              "face": "RIGHT"
+            },
+            "BOTTOM": {
+              "to": "CABINET",
+              "face": "BOTTOM"
+            },
+            "TOP": {
+              "to": "CABINET",
+              "face": "TOP"
+            },
+            "BACK": {
+              "to": "CABINET",
+              "face": "BACK"
+            },
+            "FRONT": {
+              "to": "CABINET",
+              "face": "FRONT"
+            }
+          }
+        }
+      ]
+    },
+    "context": {
+      "width": 457.2,
+      "height": 876.3,
+      "depth": 609.6,
+      "shelfCount": 1,
+      "dividers": [],
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      }
+    },
+    "parts": [],
+    "hardware": [],
+    "violations": [
+      {
+        "code": "UNRESOLVED",
+        "partId": "a"
+      },
+      {
+        "code": "UNRESOLVED",
+        "partId": "b"
+      }
+    ]
+  }
+]

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.BomLine;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;

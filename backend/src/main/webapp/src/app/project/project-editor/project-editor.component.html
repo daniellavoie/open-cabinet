@@ -56,6 +56,7 @@
   <div class="design" *ngIf="tab === 'design'">
     <room-view class="view" [design]="draft.design" [templates]="templates" [selectedId]="selectedId"
       [invalidIds]="invalidIds" [outdatedIds]="outdatedIds" [readOnly]="readOnly" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+      [standard]="memberService.shop()!.settings.constructionStandard" [materials]="materials"
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
       [violations]="violations" [outdatedIds]="outdatedIds" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"

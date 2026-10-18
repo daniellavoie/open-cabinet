@@ -15,8 +15,14 @@ export interface SizedRow {
 }
 
 export function frontRows(template: CabinetTemplate, boxHeightMm: number, gapMm: number): SizedRow[] {
-  const rows = template.frontRows ?? [];
-  const weight = (row: { weight?: number }) => (row.weight ?? 0) > 0 ? row.weight! : 1;
+  return sizeRows(template.frontRows ?? [], boxHeightMm, gapMm);
+}
+
+/**
+ * The same for any rows, such as an assembled template's front stack.
+ */
+export function sizeRows(rows: { kind: FrontKind; heightMm?: number | null; weight?: number | null }[], boxHeightMm: number, gapMm: number): SizedRow[] {
+  const weight = (row: { weight?: number | null }) => (row.weight ?? 0) > 0 ? row.weight! : 1;
   const available = boxHeightMm - gapMm * rows.length;
   const fixed = rows.filter(row => row.heightMm != null).reduce((sum, row) => sum + row.heightMm!, 0);
   const weights = rows.filter(row => row.heightMm == null).reduce((sum, row) => sum + weight(row), 0);

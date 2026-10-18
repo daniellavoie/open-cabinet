@@ -78,11 +78,14 @@ public class DefaultCutListDomain implements CutListDomain {
 		var parts = new ArrayList<Part>();
 		var orderedParts = new ArrayList<Part>();
 		var hardware = new LinkedHashMap<UUID, Integer>();
+		var mouldingMillimetres = new LinkedHashMap<UUID, Double>();
 		for (var cabinet : cabinets) {
 			var set = PartGenerator.generate(cabinet, templates.get(cabinet.templateKey()),
 					labels.get(cabinet.getId()), standard, materials);
 			set.parts().forEach(part -> (part.isOrdered() ? orderedParts : parts).add(part));
 			set.hardware().forEach((materialId, quantity) -> hardware.merge(materialId, quantity, Integer::sum));
+			set.mouldingMillimetres().forEach((materialId, millimetres) -> mouldingMillimetres.merge(materialId,
+					millimetres, Double::sum));
 		}
 		var trim = TrimGenerator.generate(project.getDesign(), labels, templates, standard, materials);
 		parts.addAll(trim.parts());
@@ -104,8 +107,12 @@ public class DefaultCutListDomain implements CutListDomain {
 		edgeBanding.forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId), meters)));
 		orderedSquareMeters(orderedParts).forEach((materialId, squareMeters) -> billOfMaterials
 				.add(line(materials.get(materialId), squareMeters)));
-		trim.mouldingMeters().forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId),
-				meters)));
+		var mouldingMeters = new LinkedHashMap<UUID, BigDecimal>(trim.mouldingMeters());
+		mouldingMillimetres.forEach((materialId, millimetres) -> mouldingMeters.merge(materialId,
+				BigDecimal.valueOf(millimetres / 1000).multiply(TrimGenerator.MOULDING_WASTE)
+						.setScale(1, RoundingMode.CEILING),
+				BigDecimal::add));
+		mouldingMeters.forEach((materialId, meters) -> billOfMaterials.add(line(materials.get(materialId), meters)));
 		hardware.forEach((materialId, quantity) -> billOfMaterials.add(line(materials.get(materialId),
 				BigDecimal.valueOf(quantity))));
 

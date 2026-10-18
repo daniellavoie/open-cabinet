@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.cutlist.domain.model;
 
 import java.util.UUID;
 
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;

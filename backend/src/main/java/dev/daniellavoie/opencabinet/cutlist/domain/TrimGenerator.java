@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;

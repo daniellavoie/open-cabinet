@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 
 class PartGeneratorTest {

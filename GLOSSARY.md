@@ -62,6 +62,10 @@ _Avoid_: Preset, model, cabinet type, catalog item, piece
 How a Part in a Cabinet Template is held: one of its faces fixed to a face of the Cabinet or of another Part, at an offset, so the Part follows when the Cabinet is resized.
 _Avoid_: Constraint, anchor, joint, link
 
+**Front Stack**:
+The Fronts of a Cabinet Template laid out as rows inside an area, each row a fixed height or a share of what is left, with the Construction Standard's gap between them.
+_Avoid_: Front rows, face layout
+
 **Template Version**:
 One published, numbered state of a Cabinet Template (v1, v2…) that never changes. Each Cabinet keeps the version it was placed with until a Member updates or reverts it.
 _Avoid_: Revision, release, edition

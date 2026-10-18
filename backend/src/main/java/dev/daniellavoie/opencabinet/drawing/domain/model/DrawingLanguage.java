@@ -3,7 +3,7 @@ package dev.daniellavoie.opencabinet.drawing.domain.model;
 import java.util.Locale;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
-import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
+import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.model.ApplianceKind;
 import dev.daniellavoie.opencabinet.project.domain.model.OpeningKind;
 

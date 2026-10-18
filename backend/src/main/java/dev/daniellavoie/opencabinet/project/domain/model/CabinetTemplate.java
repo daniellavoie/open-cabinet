@@ -35,6 +35,11 @@ public class CabinetTemplate {
 	int maxShelfCount;
 	List<FrontRow> frontRows;
 	double blindWidthMm;
+	/**
+	 * The template's Parts, held by Attachments (ADR 0006). Without one, the template is built by the
+	 * fixed recipe that version 1 of the starter library uses.
+	 */
+	TemplateAssembly assembly;
 
 	/**
 	 * Identifies a Template Version: its template's code and its number.
@@ -48,9 +53,13 @@ public class CabinetTemplate {
 	}
 
 	/**
-	 * Dividers fit behind doors only: drawers, false fronts and appliance openings span the width.
+	 * Dividers fit behind doors only: drawers, false fronts and appliance openings span the width. An
+	 * assembled template takes dividers when it defines a divider Part.
 	 */
 	public boolean allowsDividers() {
+		if (assembly != null) {
+			return assembly.divider() != null;
+		}
 		return frontRows != null && !frontRows.isEmpty()
 				&& frontRows.stream().allMatch(row -> row.getKind() == FrontKind.DOOR);
 	}

@@ -1,3 +1,5 @@
+import type { PartRole } from "../../cutlist/model/project-output";
+
 export type CabinetType = "BASE" | "WALL" | "TALL";
 
 export type FrontKind = "DOOR" | "DRAWER" | "FALSE_FRONT" | "OPENING";
@@ -132,6 +134,11 @@ export class CabinetTemplate {
   maxShelfCount!: number;
   frontRows!: FrontRow[];
   blindWidthMm?: number;
+  /**
+   * The template's Parts held by Attachments (ADR 0006); without one, the
+   * fixed recipe of the starter library's version 1 builds it.
+   */
+  assembly?: TemplateAssembly | null;
 }
 
 /**
@@ -146,6 +153,9 @@ export function templateKey(code: string, version: number): string {
  * openings span the width.
  */
 export function allowsDividers(template: CabinetTemplate): boolean {
+  if (template.assembly) {
+    return !!template.assembly.divider;
+  }
   return template.frontRows.length > 0 && template.frontRows.every(row => row.kind === "DOOR");
 }
 
@@ -162,4 +172,87 @@ export class Violation {
   cabinetId!: string | null;
   /** The Opening or Appliance, for violations about one. */
   itemId?: string | null;
+}
+
+// Assembled templates (docs/adr/0006-template-is-an-assembly-of-parts.md), in the
+// Cabinet's frame: x from its left side, y up from its bottom, z from its back.
+
+export type Axis = "X" | "Y" | "Z";
+
+/** LEFT and RIGHT across x, BOTTOM and TOP across y, BACK and FRONT across z. */
+export type Face = "LEFT" | "RIGHT" | "BOTTOM" | "TOP" | "BACK" | "FRONT";
+
+export type AssemblyPartKind = "PANEL" | "MOULDING";
+
+export type StandardValue = "DOOR_GAP" | "TOE_KICK_HEIGHT";
+
+export type MaterialRole = "CARCASS" | "BACK" | "FRONT" | "CARCASS_BANDING" | "FRONT_BANDING" | "CROWN_MOULDING"
+  | "HINGE" | "SHELF_PIN" | "LEG" | "PULL" | "DRAWER_SLIDE" | "DRAWER_BOX";
+
+/** A Construction Standard role, or a specific catalog material. */
+export class MaterialRef {
+  role?: MaterialRole | null;
+  materialId?: string | null;
+}
+
+/** Millimetres, a Standard value or a material's thickness, times `factor` (1 when unset). */
+export class Term {
+  mm?: number | null;
+  standard?: StandardValue | null;
+  thickness?: MaterialRef | null;
+  factor?: number | null;
+}
+
+/** A face held at a face of the Cabinet (`to` = CABINET) or of the Part named `to`, moved by `offset`. */
+export class Attachment {
+  to!: string;
+  face!: Face;
+  offset?: Term[] | null;
+}
+
+export class Banding {
+  faces!: Face[];
+  material!: MaterialRef;
+}
+
+export class AssemblyPart {
+  id!: string;
+  role!: PartRole;
+  name?: string | null;
+  kind?: AssemblyPartKind | null;
+  material!: MaterialRef;
+  thickness?: Axis | null;
+  grain?: Axis | null;
+  faces?: Partial<Record<Face, Attachment>> | null;
+  sizes?: Partial<Record<Axis, Term[]>> | null;
+  repeat?: { count: "SHELVES" } | null;
+  banding?: Banding | null;
+}
+
+export class StackRow {
+  kind!: FrontKind;
+  heightMm?: number | null;
+  weight?: number | null;
+}
+
+export class FrontStack {
+  id!: string;
+  material!: MaterialRef;
+  faces?: Partial<Record<Face, Attachment>> | null;
+  rows?: StackRow[] | null;
+  splitAboveMm?: number | null;
+}
+
+export class Hardware {
+  material!: MaterialRef;
+  on?: string | null;
+  frontKind?: FrontKind | null;
+  quantity!: { fixed?: number | null; perMm?: number | null; axis?: Axis | null; minimum?: number | null };
+}
+
+export class TemplateAssembly {
+  parts?: AssemblyPart[] | null;
+  frontStacks?: FrontStack[] | null;
+  divider?: AssemblyPart | null;
+  hardware?: Hardware[] | null;
 }

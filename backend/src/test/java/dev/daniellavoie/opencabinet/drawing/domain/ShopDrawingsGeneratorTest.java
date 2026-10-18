@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.daniellavoie.opencabinet.cutlist.domain.SampleKitchen;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
@@ -15,6 +18,9 @@ import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Outline;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Sheet;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Stroke;
 import dev.daniellavoie.opencabinet.project.domain.ConstructionRules;
+import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
+import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly;
 import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
 class ShopDrawingsGeneratorTest {
@@ -97,6 +103,26 @@ class ShopDrawingsGeneratorTest {
 		assertThat(sheets.get(1).getTitle()).isEqualTo("Elevation — Wall 1");
 		assertThat(texts(shapes(sheets.get(0), 0), Dimension.class)).startsWith("Wall 1 : 3658 mm");
 		assertThat(sheets.get(6).getParts().getHeaders()).startsWith("Part", "Material");
+	}
+
+	@Test
+	void assembledCabinetsAreDrawnFromTheirParts() throws Exception {
+		var source = ShopDrawingsSamples.source(DrawingLanguage.FR, Units.IMPERIAL);
+		var mapper = new ObjectMapper();
+		var assembly = mapper.treeToValue(mapper.readTree(new ClassPathResource("template-assembly/cases.json")
+				.getInputStream()).get(0).get("assembly"), TemplateAssembly.class);
+		var template = CabinetTemplate.builder().code("TEST_BASE").version(1).type(CabinetType.BASE).assembly(assembly)
+				.build();
+		var cabinet = SampleKitchen.design().getCabinets().get(0).toBuilder().templateCode("TEST_BASE")
+				.dividerPositionsMm(null).build();
+
+		var front = ShopDrawingsGenerator.front(source, cabinet, template, 0, 0);
+
+		// The Cabinet's outline, then what is seen from the front: both sides, the bottom and the
+		// stretcher at the carcass' front, and the drawer front and door; not the set-back shelf or the back.
+		assertThat(front).hasSize(1 + 6);
+		assertThat(front).filteredOn(shape -> shape instanceof Outline outline && outline.stroke() == Stroke.THIN)
+				.hasSize(2);
 	}
 
 	private static List<Shape> shapes(Sheet sheet, int view) {

@@ -91,7 +91,8 @@ public class DefaultQuoteDomain implements QuoteDomain {
 		var shop = shopRepository.findById(shopId);
 		var project = projectDomain.findById(projectId, shopId);
 		var standard = shop.getSettings().getConstructionStandard();
-		var output = cutListDomain.output(project, standard, catalogDomain.findByShop(shopId));
+		var catalog = catalogDomain.findByShop(shopId);
+		var output = cutListDomain.output(project, standard, catalog);
 
 		if (output.getOperations().getCabinets() == 0
 				&& Optional.ofNullable(project.getManualLines()).orElse(List.of()).isEmpty()) {
@@ -105,7 +106,7 @@ public class DefaultQuoteDomain implements QuoteDomain {
 				.content(QuoteCalculator.calculate(shop, project, clientDomain.findById(project.getClientId(), shopId),
 						output))
 				.pictures(QuotePictures.builder()
-						.views(shopDrawingsDomain.quotePictures(project, standard, shop.getUnits()))
+						.views(shopDrawingsDomain.quotePictures(project, standard, shop.getUnits(), catalog))
 						.build())
 				.creationTimestamp(LocalDateTime.now())
 				.build();

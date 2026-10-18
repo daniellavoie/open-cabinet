@@ -7,7 +7,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 **Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
 1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
-2. Milestone 4 is done; start Milestone 5, the Template Designer.
+2. Milestone 5 is under way: the assembly model is done; the designer for Project templates is next.
 
 ## Status
 
@@ -18,7 +18,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | Done, in production |
-| 5. Template Designer | Next |
+| 5. Template Designer | In progress |
 | 6. Design Assistant | Planned |
 | 7. After v1 | Not scheduled |
 
@@ -86,7 +86,7 @@ Follow-ups found while building it:
 - Bill of Materials quantities have no unit (sheets, metres, m², pieces), in the app and in its exports.
 - The 3D view in the Quote draws boxes farthest first, which can misdraw Cabinets that cross in depth (deep Appliances beside a corner); counters are not drawn.
 
-## 5. Template Designer: next
+## 5. Template Designer: in progress
 
 Members design their own Cabinet Templates in a separate 3D designer, assembling Parts and hardware from the Shop's catalog, and the starter library is redrawn the same way (ADR 0006). Templates stay versioned (ADR 0005), so Projects never change under them; what a Project places is still a Cabinet.
 
@@ -99,12 +99,14 @@ What a template is:
 - Butt joints only. Templates keep their type (base, wall, tall) and size ranges.
 - Template rules, live in the designer and enforced on publish at the minimum, default and maximum size: every Part has a positive size, nothing overlaps, every Part fits its sheet, every Part touches another. Assembly runs in Java and TypeScript, kept in step by a shared `template-assembly/cases.json`.
 
-1. **The assembly model.** Parts, Attachments, Front stacks, repetition, hardware; assembly in both languages with shared cases; the Cut List, Bill of Materials, Shop Drawings and the 3D view built from an assembled template's real Parts; the template rules. Templates written as JSON, no designer yet.
+1. **The assembly model.** Done. A Cabinet Template may carry an `assembly` (Parts held by Attachments, front stacks, repeated Parts split into sections by dividers, a divider Part, hardware counted fixed or by length, mouldings by the metre); templates without one keep the frozen recipe. `Assembly.java` and `assembly.ts` build it at a Cabinet's size, `TemplateRules.java` and `template-rules.ts` check a template at its minimum, default and maximum size, kept in step by `template-assembly/cases.json` and `rules.json`. The Cut List, Bill of Materials, Shop Drawings, Quote pictures and the Project's 3D view use an assembled template's real Parts. No published template is assembled yet: they exist as test data until step 3.
 2. **The designer, for Project templates.** A separate screen opened from the Project editor: a palette of the Shop's materials and Standard roles, a 3D view where snapping creates Attachments, a properties panel (Attachments, offsets, banding, grain, repetition, hardware), a minimum / default / maximum preview and the rules listed live. Start from an existing template or from a Cabinet. One draft and published Template Versions with change notes; a template belongs to its Project until shared; on first publish the editor offers to switch the original Cabinet to it. Names are typed once, not translated, unique within the Project and the Shop library.
 3. **Starter library, version 2.** Every starter template redrawn as an assembly, with tests showing it produces the same Parts as version 1 at sampled sizes. The version 1 recipe (`PartGenerator`, `FrontLayout` and their TypeScript side) stays, frozen, for Cabinets still on version 1.
 4. **Shop library and Mirror.** Sharing moves a Project template with its history into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates. Templates are archived, never deleted, once a version is in use. Milestone 3's Shop Cabinet Template presets become Shop templates and the preset feature goes away. Blind side becomes **Mirror**, for any Cabinet.
 
 In Projects, made or ordered Fronts applies to Parts marked as Fronts; finished ends and crown moulding stay Trim.
+
+Found while building step 1, for step 2: the "other" Part role with a typed name; dragging an assembled Cabinet's dividers in 3D.
 
 Follow-ups: joinery (dados, rabbets, dowels), which changes Part sizes and matters most for CNC export; moving version 1 Cabinets to version 2 without a Member, which would need its own decision against ADR 0005.
 
