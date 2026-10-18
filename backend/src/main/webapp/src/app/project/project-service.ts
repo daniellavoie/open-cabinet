@@ -44,6 +44,13 @@ export class ProjectService {
     return this.httpClient.delete<void>(`/api/project/${projectId}/lock`);
   }
 
+  /**
+   * The saved Project's Shop Drawings as a PDF, in `language` (fr or en).
+   */
+  shopDrawings(projectId: string, language: string): Observable<Blob> {
+    return this.httpClient.get(`/api/project/${projectId}/shop-drawings/pdf?language=${language}`, { responseType: "blob" });
+  }
+
   output(projectId: string): Observable<ProjectOutput> {
     return this.httpClient.get<ProjectOutput>(`/api/project/${projectId}/output`);
   }

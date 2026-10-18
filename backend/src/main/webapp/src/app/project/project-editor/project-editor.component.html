@@ -9,6 +9,9 @@
     </select>
     <span class="status" *ngIf="dirty && violations.length === 0" i18n="@@editor.unsaved">Modifications non enregistrées</span>
     <span class="status invalid" *ngIf="violations.length > 0" i18n="@@editor.violations">{{ violations.length }} règle(s) non respectée(s)</span>
+    <button class="btn btn-outline-secondary" [class.ms-auto]="!dirty && violations.length === 0" (click)="downloadShopDrawings()"
+      [disabled]="dirty || downloadingDrawings" i18n-title="@@editor.shopDrawingsHint" title="Plan, élévations et caissons du projet enregistré, à imprimer"
+      i18n="@@editor.shopDrawings">Dessins d'atelier</button>
     <ng-container *ngIf="!readOnly">
       <button class="btn btn-outline-secondary" (click)="revert()" [disabled]="!dirty || saving" i18n="@@editor.revert">Annuler</button>
       <button class="btn btn-primary" (click)="save()" [disabled]="!dirty || saving || violations.length > 0" i18n="@@common.save">Enregistrer</button>

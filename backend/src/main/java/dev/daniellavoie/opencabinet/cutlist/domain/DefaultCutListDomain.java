@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -109,6 +110,7 @@ public class DefaultCutListDomain implements CutListDomain {
 
 		return ProjectOutput.builder()
 				.cabinetLabels(labels)
+				.parts(Stream.concat(parts.stream(), orderedParts.stream()).toList())
 				.cutList(cutList(parts, materials))
 				.orderedFronts(orderedFronts(orderedParts, materials))
 				.nesting(nesting)

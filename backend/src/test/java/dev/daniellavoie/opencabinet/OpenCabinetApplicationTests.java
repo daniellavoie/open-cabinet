@@ -163,7 +163,12 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.cabinetLabels.c1").value("C1"))
 				.andExpect(jsonPath("$.operations.cabinets").value(3))
-				.andExpect(jsonPath("$.nesting[0].sheets[0].placements").isNotEmpty());
+				.andExpect(jsonPath("$.nesting[0].sheets[0].placements").isNotEmpty())
+				.andExpect(jsonPath("$.parts").doesNotExist());
+
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/shop-drawings/pdf?language=en")))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Content-Type", startsWith("application/pdf")));
 
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())

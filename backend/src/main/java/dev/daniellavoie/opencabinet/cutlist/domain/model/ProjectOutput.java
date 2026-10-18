@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -26,4 +28,10 @@ public class ProjectOutput {
 	List<BomLine> billOfMaterials;
 	BigDecimal materialsTotal;
 	OperationCounts operations;
+	/**
+	 * Every Part, cut or ordered, Trim included, for the Shop Drawings. Not sent to the app, which
+	 * shows the grouped Cut List.
+	 */
+	@JsonIgnore
+	List<Part> parts;
 }

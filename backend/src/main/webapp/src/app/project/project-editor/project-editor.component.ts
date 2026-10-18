@@ -1,6 +1,6 @@
 import { NgFor, NgIf } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, OnDestroy } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Inject, LOCALE_ID, OnDestroy } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from "rxjs";
@@ -101,6 +101,7 @@ export class ProjectEditorComponent implements OnDestroy {
   saving = false;
   error = "";
   lock?: ProjectLock;
+  downloadingDrawings = false;
   private renewal?: Subscription;
 
   constructor(
@@ -110,6 +111,7 @@ export class ProjectEditorComponent implements OnDestroy {
     clientService: ClientService,
     catalogService: CatalogService,
     private shopTemplateService: ShopTemplateService,
+    @Inject(LOCALE_ID) private locale: string,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
@@ -261,6 +263,26 @@ export class ProjectEditorComponent implements OnDestroy {
       }))
       .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
         ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
+  }
+
+  /**
+   * Downloads the saved Project's Shop Drawings, in the app's language.
+   */
+  downloadShopDrawings() {
+    const project = this.saved!;
+    this.downloadingDrawings = true;
+    this.error = "";
+    this.projectService.shopDrawings(project.id, this.locale.startsWith("en") ? "en" : "fr")
+      .pipe(tap(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = $localize`:@@editor.shopDrawingsFile:${project.name}:name: - dessins d'atelier` + ".pdf";
+        link.click();
+        URL.revokeObjectURL(url);
+      }))
+      .pipe(finalize(() => this.downloadingDrawings = false))
+      .subscribe({ error: () => this.error = $localize`:@@editor.shopDrawingsError:Impossible de produire les dessins d'atelier.` });
   }
 
   selectTab(tab: Tab) {
