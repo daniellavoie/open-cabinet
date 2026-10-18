@@ -2,6 +2,7 @@ import { MaterialKind } from "../catalog/model/material";
 import { Role } from "../member/model/member";
 import { PartRole } from "../cutlist/model/project-output";
 import { ApplianceKind, OpeningKind } from "../project/model/design";
+import { NestingLayout } from "../project/model/project";
 import { QuoteStatus } from "../quote/model/quote";
 import { LabourMethod } from "../shop/model/shop";
 
@@ -67,6 +68,11 @@ export const APPLIANCE_KIND_LABELS: Record<ApplianceKind, string> = {
   RANGE: $localize`:@@applianceKind.range:Cuisinière`,
   DISHWASHER: $localize`:@@applianceKind.dishwasher:Lave-vaisselle`,
   HOOD: $localize`:@@applianceKind.hood:Hotte`,
+};
+
+export const NESTING_LAYOUT_LABELS: Record<NestingLayout, string> = {
+  RIP_FIRST: $localize`:@@nestingLayout.ripFirst:Refendre d'abord`,
+  CROSSCUT_FIRST: $localize`:@@nestingLayout.crosscutFirst:Tronçonner d'abord`,
 };
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {

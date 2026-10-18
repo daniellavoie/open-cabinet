@@ -165,6 +165,7 @@ public class DefaultCatalogDomain implements CatalogDomain {
 				.toeKickHeightMm(4 * INCH)
 				.kerfMm(4)
 				.sheetTrimMm(10)
+				.minOffcutMm(INCH)
 				.build();
 	}
 

@@ -17,6 +17,7 @@ public class UpdateProjectRequest {
 	String name;
 	Design design;
 	LabourMethod labourMethod;
+	NestingLayout nestingLayout;
 	BigDecimal labourHours;
 	List<ManualLine> manualLines;
 }

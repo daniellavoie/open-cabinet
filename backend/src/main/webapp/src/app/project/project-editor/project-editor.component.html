@@ -73,7 +73,8 @@
     <div *ngIf="loadingOutput" i18n="@@editor.computing">Calcul en cours…</div>
     <ng-container *ngIf="output && !loadingOutput">
       <cut-list *ngIf="tab === 'cutList'" [rows]="output.cutList" [orderedFronts]="output.orderedFronts ?? []" [units]="units" />
-      <nesting *ngIf="tab === 'nesting'" [nesting]="output.nesting" [units]="units" />
+      <nesting *ngIf="tab === 'nesting'" [nesting]="output.nesting" [units]="units" [layout]="draft.nestingLayout ?? null"
+        [readOnly]="readOnly" (layoutChange)="chooseLayout($event)" />
       <bill-of-materials *ngIf="tab === 'materials'" [lines]="output.billOfMaterials" [total]="output.materialsTotal"
         [operations]="output.operations" [currency]="memberService.shop()!.currency" />
     </ng-container>

@@ -132,6 +132,7 @@ public class DefaultProjectDomain implements ProjectDomain {
 						.fillers(Optional.ofNullable(design.getFillers()).map(List::copyOf).orElse(List.of()))
 						.build())
 				.labourMethod(request.getLabourMethod())
+				.nestingLayout(request.getNestingLayout())
 				.labourHours(labourHours)
 				.manualLines(List.copyOf(manualLines))
 				.build(), shopId);

@@ -23,7 +23,7 @@ import { checkConstructionRules } from "../construction-rules";
 import { moveDivider, updateCabinet, updateItem } from "../design-edits";
 import { DesignPanelComponent } from "../design-panel/design-panel.component";
 import { Cabinet, CabinetTemplate, Design, Violation } from "../model/design";
-import { Project } from "../model/project";
+import { NestingLayout, Project } from "../model/project";
 import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
 import { OnWall, snapOffset } from "../room-layout";
@@ -297,6 +297,18 @@ export class ProjectEditorComponent implements OnDestroy {
     return this.locale.startsWith("en") ? "en" : "fr";
   }
 
+  /**
+   * Changes how the Project's sheets are nested, saving right away when nothing else is unsaved so
+   * the Nesting tab shows the new layout.
+   */
+  chooseLayout(layout: NestingLayout | null) {
+    const clean = !this.dirty;
+    this.setDraft({ ...this.draft!, nestingLayout: layout });
+    if (clean) {
+      this.save();
+    }
+  }
+
   selectTab(tab: Tab) {
     this.tab = tab;
     if (tab !== "design" && tab !== "quotes" && !this.dirty) {
@@ -321,6 +333,7 @@ export class ProjectEditorComponent implements OnDestroy {
       labourMethod: draft.labourMethod,
       labourHours: draft.labourHours,
       manualLines: draft.manualLines,
+      nestingLayout: draft.nestingLayout ?? null,
     })
       .pipe(tap(project => {
         this.saved = project;

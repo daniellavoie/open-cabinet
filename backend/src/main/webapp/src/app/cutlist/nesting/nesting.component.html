@@ -1,9 +1,27 @@
 <p class="hint" *ngIf="nesting.length === 0" i18n="@@nesting.empty">Aucun panneau à découper.</p>
+<fieldset class="layout-choice" *ngIf="nesting.length > 0" [disabled]="readOnly">
+  <legend i18n="@@nesting.layout">Disposition des coupes</legend>
+  <label class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="nestingLayout" [checked]="layout === null" (change)="layoutChange.emit(null)" />
+    <span i18n="@@nesting.automatic">Automatique (le moins de panneaux)</span>
+  </label>
+  <label class="form-check form-check-inline" *ngFor="let option of layouts">
+    <input class="form-check-input" type="radio" name="nestingLayout" [checked]="layout === option" (change)="layoutChange.emit(option)" />
+    <span>{{ layoutLabels[option] }}</span>
+  </label>
+</fieldset>
 <section class="material" *ngFor="let material of nesting">
   <h3>
     {{ material.materialName }}
     <span class="meta" i18n="@@nesting.sheetCount">{{ material.sheets.length }} panneau(x) de {{ formatLength(material.sheetLengthMm, units) }} × {{ formatLength(material.sheetWidthMm, units) }}</span>
   </h3>
+  <ul class="alternatives">
+    <li *ngFor="let alternative of material.alternatives" [class.used]="alternative.layout === material.layout">
+      <strong>{{ layoutLabels[alternative.layout] }}</strong>
+      <span i18n="@@nesting.alternative">{{ alternative.sheets }} panneau(x), {{ alternative.cuts }} coupes, {{ alternative.utilization | percent: "1.0-0" }} utilisé</span>
+      <span class="badge text-bg-secondary" *ngIf="alternative.layout === material.layout" i18n="@@nesting.used">retenue</span>
+    </li>
+  </ul>
   <div class="alert alert-warning" *ngIf="material.oversizedParts.length > 0" i18n="@@nesting.oversized">
     {{ material.oversizedParts.length }} pièce(s) plus grande(s) que le panneau ne peuvent pas être découpées.
   </div>

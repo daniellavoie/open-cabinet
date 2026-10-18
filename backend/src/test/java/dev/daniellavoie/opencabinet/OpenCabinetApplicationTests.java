@@ -158,15 +158,20 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.details[0].code").value("OVERLAP"));
 
+		update.put("nestingLayout", "CROSSCUT_FIRST");
 		mockMvc.perform(as(owner, put("/api/project/" + projectId))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(update.toString()))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.design.cabinets", hasSize(3)));
+				.andExpect(jsonPath("$.design.cabinets", hasSize(3)))
+				.andExpect(jsonPath("$.nestingLayout").value("CROSSCUT_FIRST"));
 
 		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.cabinetLabels.c1").value("C1"))
+				.andExpect(jsonPath("$.nesting[0].layout").value("CROSSCUT_FIRST"))
+				.andExpect(jsonPath("$.nesting[0].alternatives", hasSize(2)))
+				.andExpect(jsonPath("$.nesting[0].sheets[0].cuts").isNotEmpty())
 				.andExpect(jsonPath("$.operations.cabinets").value(3))
 				.andExpect(jsonPath("$.nesting[0].sheets[0].placements").isNotEmpty())
 				.andExpect(jsonPath("$.parts").doesNotExist());

@@ -55,6 +55,7 @@ public class ProjectDatabaseRepository implements ProjectRepository {
 				.name(project.getName())
 				.design(project.getDesign())
 				.labourMethod(project.getLabourMethod())
+				.nestingLayout(project.getNestingLayout())
 				.labourHours(project.getLabourHours())
 				.manualLines(project.getManualLines())
 				.updateTimestamp(now)

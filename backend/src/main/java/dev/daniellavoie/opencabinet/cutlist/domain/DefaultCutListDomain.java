@@ -93,7 +93,8 @@ public class DefaultCutListDomain implements CutListDomain {
 				.stream()
 				.map(materialId -> Nester.nest(materials.get(materialId),
 						parts.stream().filter(part -> part.getMaterialId().equals(materialId)).toList(),
-						standard.getKerfMm(), standard.getSheetTrimMm()))
+						new Nester.Saw(standard.getKerfMm(), standard.getSheetTrimMm(), standard.getMinOffcutMm()),
+						project.getNestingLayout()))
 				.toList();
 
 		var edgeBanding = edgeBandingMeters(parts);

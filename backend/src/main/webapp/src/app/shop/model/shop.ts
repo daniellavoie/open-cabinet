@@ -37,6 +37,8 @@ export class ConstructionStandard {
   toeKickHeightMm!: number;
   kerfMm!: number;
   sheetTrimMm!: number;
+  /** The narrowest strip the saw can hold. */
+  minOffcutMm!: number;
 }
 
 export class ShopSettings {

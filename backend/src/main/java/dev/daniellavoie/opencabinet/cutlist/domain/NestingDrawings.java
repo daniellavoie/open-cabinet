@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.cutlist.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import dev.daniellavoie.opencabinet.cutlist.domain.model.MaterialNesting;
 import dev.daniellavoie.opencabinet.drawing.domain.LengthFormat;
@@ -13,11 +14,13 @@ import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Outline;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Point;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Stroke;
 import dev.daniellavoie.opencabinet.drawing.domain.model.View;
+import dev.daniellavoie.opencabinet.project.domain.model.NestingLayout;
 import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
 /**
  * Each nested sheet drawn as the app shows it: the sheet's length left to right, its first strip at
- * the top, every Part outlined, labelled when there is room, and the sheet's size dimensioned.
+ * the top, every Part outlined, labelled when there is room, each cut numbered where it starts, and
+ * the sheet's size dimensioned.
  */
 final class NestingDrawings {
 	/**
@@ -27,6 +30,11 @@ final class NestingDrawings {
 	static final double LABEL_MIN_WIDTH_MM = 90;
 
 	private NestingDrawings() {
+	}
+
+	static String layout(NestingLayout layout, DrawingLanguage language) {
+		return layout == NestingLayout.CROSSCUT_FIRST ? language.pick("tronçonner d'abord", "crosscut first")
+				: language.pick("refendre d'abord", "rip first");
 	}
 
 	static List<View> sheets(List<MaterialNesting> nesting, Units units, DrawingLanguage language) {
@@ -50,13 +58,16 @@ final class NestingDrawings {
 								placement.getCabinetLabel() + " " + language.partRole(placement.getRole())));
 					}
 				}
+				for (var cut : Optional.ofNullable(sheet.getCuts()).orElse(List.of())) {
+					shapes.add(new Label(new Point(cut.getFromAlongMm(), width - cut.getFromAcrossMm()), cut.getNumber()));
+				}
 				shapes.add(new Dimension(new Point(length, 0), new Point(0, 0), 1, LengthFormat.format(length, units)));
 				shapes.add(new Dimension(new Point(0, 0), new Point(0, width), 1, LengthFormat.format(width, units)));
 
 				views.add(View.builder()
 						.title(material.getMaterialName() + " — " + language.pick("panneau ", "sheet ") + (index + 1)
 								+ " / " + sheets.size() + " — " + Math.round(sheet.getUtilization() * 100)
-								+ language.pick(" % utilisé", "% used"))
+								+ language.pick(" % utilisé", "% used") + " — " + layout(material.getLayout(), language))
 						.shapes(shapes)
 						.build());
 			}

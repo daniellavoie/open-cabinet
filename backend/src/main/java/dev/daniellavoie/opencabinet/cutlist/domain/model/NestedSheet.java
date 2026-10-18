@@ -15,4 +15,8 @@ public class NestedSheet {
 	 * Share of the sheet's area covered by Parts, from 0 to 1.
 	 */
 	double utilization;
+	/**
+	 * The cuts that free every Part, in cutting order.
+	 */
+	List<SheetCut> cuts;
 }

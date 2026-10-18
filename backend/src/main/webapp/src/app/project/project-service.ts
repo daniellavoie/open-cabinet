@@ -8,7 +8,7 @@ import { CabinetTemplate } from "./model/design";
 import { Project } from "./model/project";
 import { ProjectLock } from "./model/project-lock";
 
-export type UpdateProjectRequest = Pick<Project, "clientId" | "name" | "design" | "labourMethod" | "labourHours" | "manualLines">;
+export type UpdateProjectRequest = Pick<Project, "clientId" | "name" | "design" | "labourMethod" | "labourHours" | "manualLines" | "nestingLayout">;
 
 @Injectable({ providedIn: "root" })
 export class ProjectService {

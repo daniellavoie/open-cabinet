@@ -1,4 +1,5 @@
 import { MaterialKind } from "../../catalog/model/material";
+import { NestingLayout } from "../../project/model/project";
 
 export type PartRole = "SIDE" | "BOTTOM" | "TOP" | "STRETCHER" | "BACK" | "SHELF" | "DOOR" | "DRAWER_FRONT" | "FALSE_FRONT" | "BLIND_PANEL" | "DIVIDER" | "FINISHED_END" | "FILLER" | "TOE_KICK";
 
@@ -28,8 +29,28 @@ export class SheetPlacement {
   rotated!: boolean;
 }
 
+/**
+ * One saw cut, numbered in cutting order (1, 1.1, 1.1.1…), from the sheet's corner.
+ */
+export class SheetCut {
+  number!: string;
+  fromAlongMm!: number;
+  fromAcrossMm!: number;
+  toAlongMm!: number;
+  toAcrossMm!: number;
+}
+
 export class NestedSheet {
   placements!: SheetPlacement[];
+  utilization!: number;
+  cuts!: SheetCut[];
+}
+
+/** What one layout would take for a material. */
+export class NestingAlternative {
+  layout!: NestingLayout;
+  sheets!: number;
+  cuts!: number;
   utilization!: number;
 }
 
@@ -46,8 +67,10 @@ export class MaterialNesting {
   sheetLengthMm!: number;
   sheetWidthMm!: number;
   grain!: boolean;
+  layout!: NestingLayout;
   sheets!: NestedSheet[];
   oversizedParts!: OversizedPart[];
+  alternatives!: NestingAlternative[];
 }
 
 export class BomLine {

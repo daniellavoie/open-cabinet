@@ -23,6 +23,11 @@ public class Project {
 	 */
 	LabourMethod labourMethod;
 	/**
+	 * How this Project's sheets are nested; null keeps the layout with the fewest sheets for each
+	 * material.
+	 */
+	NestingLayout nestingLayout;
+	/**
 	 * Estimated hours, used by the HOURLY Labour Method.
 	 */
 	BigDecimal labourHours;

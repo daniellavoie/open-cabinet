@@ -51,3 +51,42 @@ figcaption,
   color: var(--oc-text-tertiary);
   font-size: var(--oc-font-size-sm);
 }
+
+.layout-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--oc-space-3);
+  margin-bottom: var(--oc-space-4);
+  border: none;
+  padding: 0;
+}
+
+.layout-choice legend {
+  float: none;
+  width: auto;
+  margin: 0 var(--oc-space-2) 0 0;
+  font-size: var(--oc-font-size-sm);
+  font-weight: 600;
+}
+
+.alternatives {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--oc-space-4);
+  margin: 0 0 var(--oc-space-3);
+  padding: 0;
+  font-size: var(--oc-font-size-sm);
+  color: var(--oc-text-secondary);
+}
+
+.alternatives li {
+  display: flex;
+  gap: var(--oc-space-2);
+  align-items: center;
+}
+
+.alternatives li.used {
+  color: var(--oc-text-default);
+}

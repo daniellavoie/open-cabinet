@@ -39,4 +39,9 @@ public class ConstructionStandard {
 	double toeKickHeightMm;
 	double kerfMm;
 	double sheetTrimMm;
+	/**
+	 * The narrowest strip the saw can hold safely: Nesting never plans a narrower one, and narrower
+	 * Parts are cut from a strip this wide, then trimmed.
+	 */
+	double minOffcutMm;
 }

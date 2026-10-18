@@ -19,7 +19,7 @@ type StandardMaterialField = keyof Pick<ConstructionStandard,
   "carcassMaterialId" | "backMaterialId" | "frontMaterialId" | "carcassEdgeBandingId" | "frontEdgeBandingId" | "orderedFrontId" | "crownMouldingId"
   | "hingeId" | "shelfPinId" | "legId" | "pullId" | "drawerSlideId" | "drawerBoxId">;
 
-type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKickHeightMm" | "kerfMm" | "sheetTrimMm">;
+type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKickHeightMm" | "kerfMm" | "sheetTrimMm" | "minOffcutMm">;
 
 @Component({
   selector: "settings",
@@ -54,6 +54,7 @@ export class SettingsComponent {
     { field: "toeKickHeightMm", label: $localize`:@@settings.toeKick:Hauteur du coup de pied` },
     { field: "kerfMm", label: $localize`:@@settings.kerf:Trait de scie` },
     { field: "sheetTrimMm", label: $localize`:@@settings.trim:Rognage des panneaux` },
+    { field: "minOffcutMm", label: $localize`:@@settings.minOffcut:Chute minimale` },
   ];
 
   @ViewChild(StaleDraftsComponent) staleDrafts?: StaleDraftsComponent;

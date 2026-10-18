@@ -153,7 +153,7 @@ public class DefaultShopDomain implements ShopDomain {
 				.forEach(id -> requireKind(byId, id, MaterialKind.HARDWARE, "hardware"));
 
 		if (standard.getDoorGapMm() < 0 || standard.getToeKickHeightMm() < 0 || standard.getKerfMm() < 0
-				|| standard.getSheetTrimMm() < 0) {
+				|| standard.getSheetTrimMm() < 0 || standard.getMinOffcutMm() < 0) {
 			throw new IllegalArgumentException("construction standard dimensions cannot be negative");
 		}
 	}

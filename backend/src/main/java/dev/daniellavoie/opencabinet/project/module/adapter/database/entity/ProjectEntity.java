@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.ManualLine;
+import dev.daniellavoie.opencabinet.project.domain.model.NestingLayout;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.shop.domain.model.LabourMethod;
 import jakarta.persistence.Entity;
@@ -39,6 +40,8 @@ public class ProjectEntity {
 	Design design;
 	@Enumerated(EnumType.STRING)
 	LabourMethod labourMethod;
+	@Enumerated(EnumType.STRING)
+	NestingLayout nestingLayout;
 	BigDecimal labourHours;
 	@JdbcTypeCode(SqlTypes.JSON)
 	List<ManualLine> manualLines;
@@ -54,6 +57,7 @@ public class ProjectEntity {
 				.name(name)
 				.design(design)
 				.labourMethod(labourMethod)
+				.nestingLayout(nestingLayout)
 				.labourHours(labourHours)
 				.manualLines(manualLines)
 				.creationTimestamp(creationTimestamp)

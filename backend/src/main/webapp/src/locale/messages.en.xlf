@@ -2632,6 +2632,62 @@
           <context context-type="linenumber">371</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="nesting.layout" datatype="html">
+        <source>Disposition des coupes</source>
+        <target>Cutting layout</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.automatic" datatype="html">
+        <source>Automatique (le moins de panneaux)</source>
+        <target>Automatic (fewest sheets)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.alternative" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ alternative.sheets }}"/> panneau(x), <x id="INTERPOLATION_1" equiv-text="{{ alternative.cuts }}"/> coupes, <x id="INTERPOLATION_2" equiv-text="{{ alternative.utilization | percent: &quot;1.0-0&quot; }}"/> utilisé</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ alternative.sheets }}"/> sheet(s), <x id="INTERPOLATION_1" equiv-text="{{ alternative.cuts }}"/> cuts, <x id="INTERPOLATION_2" equiv-text="{{ alternative.utilization | percent: &quot;1.0-0&quot; }}"/> used</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nesting.used" datatype="html">
+        <source>retenue</source>
+        <target>in use</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/cutlist/nesting/nesting.component.html</context>
+          <context context-type="linenumber">22,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="settings.minOffcut" datatype="html">
+        <source>Chute minimale</source>
+        <target>Minimum offcut</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/settings/settings.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nestingLayout.ripFirst" datatype="html">
+        <source>Refendre d&apos;abord</source>
+        <target>Rip first</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nestingLayout.crosscutFirst" datatype="html">
+        <source>Tronçonner d&apos;abord</source>
+        <target>Crosscut first</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/util/labels.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>
