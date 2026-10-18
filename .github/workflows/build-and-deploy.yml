@@ -81,6 +81,21 @@ jobs:
             --docker-password=${{ secrets.GHCR_PAT }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      # The chart loads this Secret into the server's environment. Without the
+      # key, the Design Assistant stays off.
+      - name: Create server secret
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "No ANTHROPIC_API_KEY: the Design Assistant cannot be turned on."
+            exit 0
+          fi
+          kubectl create secret generic open-cabinet-server \
+            --namespace $NAMESPACE \
+            --from-literal=ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy Open Cabinet
         run: |
           helm upgrade --install open-cabinet helm/open-cabinet \

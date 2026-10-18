@@ -92,6 +92,25 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.role").value("OWNER"));
 
+		// The Design Assistant is off until an Owner opts in, and cannot be turned on without a key.
+		mockMvc.perform(as(owner, get("/api/assistant")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.configured").value(false))
+				.andExpect(jsonPath("$.enabled").value(false))
+				.andExpect(jsonPath("$.spentThisMonthUsd").value(0))
+				.andExpect(jsonPath("$.builderModel").value("claude-sonnet-5-5"));
+		mockMvc.perform(as(owner, put("/api/assistant"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"enabled\": true, \"monthlyBudgetUsd\": 20}"))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, put("/api/assistant"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"enabled\": false, \"monthlyBudgetUsd\": 20}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.monthlyBudgetUsd").value(20));
+		mockMvc.perform(as(owner, post("/api/assistant/check")))
+				.andExpect(status().isConflict());
+
 		mockMvc.perform(as(owner, get("/api/material")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(13)));
@@ -386,6 +405,13 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Atelier Villeray"));
 		mockMvc.perform(as(designer, get("/api/member")))
+				.andExpect(status().isForbidden());
+		mockMvc.perform(as(designer, get("/api/assistant")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.enabled").value(false));
+		mockMvc.perform(as(designer, put("/api/assistant"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"enabled\": false, \"monthlyBudgetUsd\": 20}"))
 				.andExpect(status().isForbidden());
 		mockMvc.perform(as(designer, post("/api/invitation"))
 				.contentType(MediaType.APPLICATION_JSON)

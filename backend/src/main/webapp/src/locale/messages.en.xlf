@@ -4164,6 +4164,90 @@
         <source>Le modèle n&apos;a encore aucune pièce.</source>
         <target>The template has no parts yet.</target>
       </trans-unit>
+      <trans-unit id="assistant.title" datatype="html">
+        <source>Assistant de conception</source>
+        <target>Design Assistant</target>
+      </trans-unit>
+      <trans-unit id="assistant.intro" datatype="html">
+        <source>Les membres décrivent des changements et l&apos;assistant propose un plan à revoir en 3D. Il ne fait que proposer : rien ne change tant qu&apos;un membre n&apos;accepte pas.</source>
+        <target>Members describe changes and the assistant proposes a design to review in 3D. It only proposes: nothing changes until a member accepts.</target>
+      </trans-unit>
+      <trans-unit id="assistant.notConfigured" datatype="html">
+        <source>Le serveur n&apos;a pas de clé du fournisseur du modèle : l&apos;assistant ne peut pas être activé.</source>
+        <target>The server has no model provider key, so the assistant cannot be turned on.</target>
+      </trans-unit>
+      <trans-unit id="assistant.sentTitle" datatype="html">
+        <source>Ce qui est envoyé</source>
+        <target>What is sent</target>
+      </trans-unit>
+      <trans-unit id="assistant.sentModel" datatype="html">
+        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation sont envoyés à Anthropic, le fournisseur du modèle.</source>
+        <target>When a member uses the assistant, the project&apos;s design, published cabinet templates, the construction standard, material and front style names, the client&apos;s name and the conversation&apos;s messages are sent to Anthropic, the model provider.</target>
+      </trans-unit>
+      <trans-unit id="assistant.sentNever" datatype="html">
+        <source>Jamais les prix, les soumissions ni les autres projets.</source>
+        <target>Never prices, quotes or other projects.</target>
+      </trans-unit>
+      <trans-unit id="assistant.sentEmail" datatype="html">
+        <source>Les courriels transférés à l&apos;atelier, quand ils seront offerts, passeront par Resend, qui garde le courrier reçu 30 jours.</source>
+        <target>Emails forwarded to the shop, once offered, will go through Resend, which keeps received mail for 30 days.</target>
+      </trans-unit>
+      <trans-unit id="assistant.enable" datatype="html">
+        <source>Activer l&apos;assistant pour l&apos;atelier</source>
+        <target>Turn the assistant on for the shop</target>
+      </trans-unit>
+      <trans-unit id="assistant.budget" datatype="html">
+        <source>Budget mensuel ($ US)</source>
+        <target>Monthly budget (US$)</target>
+      </trans-unit>
+      <trans-unit id="assistant.budgetHint" datatype="html">
+        <source>L&apos;assistant s&apos;arrête quand le budget du mois est dépensé, jusqu&apos;au 1er du mois suivant.</source>
+        <target>The assistant stops once the month&apos;s budget is spent, until the 1st of the next month.</target>
+      </trans-unit>
+      <trans-unit id="assistant.spent" datatype="html">
+        <source>Dépensé ce mois-ci : <x id="INTERPOLATION" equiv-text="{{ status.spentThisMonthUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-2&apos; }}"/></source>
+        <target>Spent this month: <x id="INTERPOLATION" equiv-text="{{ status.spentThisMonthUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-2&apos; }}"/></target>
+      </trans-unit>
+      <trans-unit id="assistant.ofBudget" datatype="html">
+        <source> sur <x id="INTERPOLATION" equiv-text="{{ status.monthlyBudgetUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-2&apos; }}"/></source>
+        <target> of <x id="INTERPOLATION" equiv-text="{{ status.monthlyBudgetUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-2&apos; }}"/></target>
+      </trans-unit>
+      <trans-unit id="assistant.enabledBy" datatype="html">
+        <source>Activé par <x id="INTERPOLATION" equiv-text="{{ status.enabledByName }}"/> le <x id="INTERPOLATION_1" equiv-text="{{ status.enabledTimestamp | date: &apos;longDate&apos; }}"/>.</source>
+        <target>Turned on by <x id="INTERPOLATION" equiv-text="{{ status.enabledByName }}"/> on <x id="INTERPOLATION_1" equiv-text="{{ status.enabledTimestamp | date: &apos;longDate&apos; }}"/>.</target>
+      </trans-unit>
+      <trans-unit id="assistant.models" datatype="html">
+        <source>Modèles : <x id="INTERPOLATION" equiv-text="{{ status.builderModel }}"/> pour les propositions, <x id="INTERPOLATION_1" equiv-text="{{ status.sorterModel }}"/> pour la boîte de réception.</source>
+        <target>Models: <x id="INTERPOLATION" equiv-text="{{ status.builderModel }}"/> for proposals, <x id="INTERPOLATION_1" equiv-text="{{ status.sorterModel }}"/> for the inbox.</target>
+      </trans-unit>
+      <trans-unit id="assistant.checked" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ checkReply.model }}"/> a répondu « <x id="INTERPOLATION_1" equiv-text="{{ checkReply.text }}"/> » pour <x id="INTERPOLATION_2" equiv-text="{{ checkReply.costUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-6&apos; }}"/>.</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ checkReply.model }}"/> replied “<x id="INTERPOLATION_1" equiv-text="{{ checkReply.text }}"/>” for <x id="INTERPOLATION_2" equiv-text="{{ checkReply.costUsd | currency: &apos;USD&apos; : &apos;symbol&apos; : &apos;1.2-6&apos; }}"/>.</target>
+      </trans-unit>
+      <trans-unit id="assistant.save" datatype="html">
+        <source>Enregistrer l&apos;assistant</source>
+        <target>Save assistant</target>
+      </trans-unit>
+      <trans-unit id="assistant.check" datatype="html">
+        <source>Tester l&apos;assistant</source>
+        <target>Test the assistant</target>
+      </trans-unit>
+      <trans-unit id="assistant.loadError" datatype="html">
+        <source>Impossible de lire l&apos;état de l&apos;assistant.</source>
+        <target>Could not read the assistant&apos;s status.</target>
+      </trans-unit>
+      <trans-unit id="assistant.saved" datatype="html">
+        <source>Assistant enregistré.</source>
+        <target>Assistant saved.</target>
+      </trans-unit>
+      <trans-unit id="assistant.saveError" datatype="html">
+        <source>Impossible d&apos;enregistrer l&apos;assistant.</source>
+        <target>Could not save the assistant.</target>
+      </trans-unit>
+      <trans-unit id="assistant.checkError" datatype="html">
+        <source>L&apos;assistant n&apos;a pas répondu.</source>
+        <target>The assistant did not answer.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

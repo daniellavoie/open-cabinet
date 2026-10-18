@@ -1,0 +1,39 @@
+<section class="panel assistant" *ngIf="status">
+  <h2 i18n="@@assistant.title">Assistant de conception</h2>
+  <p class="intro" i18n="@@assistant.intro">Les membres décrivent des changements et l'assistant propose un plan à revoir en 3D. Il ne fait que proposer : rien ne change tant qu'un membre n'accepte pas.</p>
+
+  <div class="alert alert-warning" *ngIf="!status.configured" i18n="@@assistant.notConfigured">Le serveur n'a pas de clé du fournisseur du modèle : l'assistant ne peut pas être activé.</div>
+
+  <h3 i18n="@@assistant.sentTitle">Ce qui est envoyé</h3>
+  <ul class="disclosure">
+    <li i18n="@@assistant.sentModel">Quand un membre utilise l'assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation sont envoyés à Anthropic, le fournisseur du modèle.</li>
+    <li i18n="@@assistant.sentNever">Jamais les prix, les soumissions ni les autres projets.</li>
+    <li i18n="@@assistant.sentEmail">Les courriels transférés à l'atelier, quand ils seront offerts, passeront par Resend, qui garde le courrier reçu 30 jours.</li>
+  </ul>
+
+  <div class="fields">
+    <label class="form-check">
+      <input class="form-check-input" type="checkbox" [(ngModel)]="enabled" [disabled]="!status.configured && !status.enabled" />
+      <span i18n="@@assistant.enable">Activer l'assistant pour l'atelier</span>
+    </label>
+    <label for="assistantBudget" i18n="@@assistant.budget">Budget mensuel ($ US)</label>
+    <input class="form-control form-control-sm budget" id="assistantBudget" type="number" min="1" max="10000" step="1" [(ngModel)]="budget" />
+  </div>
+  <p class="hint" i18n="@@assistant.budgetHint">L'assistant s'arrête quand le budget du mois est dépensé, jusqu'au 1er du mois suivant.</p>
+  <p class="spent" [class.over]="budgetSpent">
+    <span i18n="@@assistant.spent">Dépensé ce mois-ci : {{ status.spentThisMonthUsd | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+    <span *ngIf="status.monthlyBudgetUsd !== null" i18n="@@assistant.ofBudget"> sur {{ status.monthlyBudgetUsd | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+  </p>
+  <p class="hint" *ngIf="status.enabled && status.enabledByName" i18n="@@assistant.enabledBy">Activé par {{ status.enabledByName }} le {{ status.enabledTimestamp | date: 'longDate' }}.</p>
+  <p class="hint" i18n="@@assistant.models">Modèles : {{ status.builderModel }} pour les propositions, {{ status.sorterModel }} pour la boîte de réception.</p>
+
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="alert alert-info" *ngIf="checkReply" i18n="@@assistant.checked">{{ checkReply.model }} a répondu « {{ checkReply.text }} » pour {{ checkReply.costUsd | currency: 'USD' : 'symbol' : '1.2-6' }}.</div>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving || !dirty || !budget" i18n="@@assistant.save">Enregistrer l'assistant</button>
+    <button class="btn btn-outline-secondary" *ngIf="status.enabled && !dirty" (click)="check()" [disabled]="checking"
+      i18n="@@assistant.check">Tester l'assistant</button>
+  </div>
+</section>

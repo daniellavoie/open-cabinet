@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { finalize, tap } from "rxjs";
 
+import { AssistantSettingsComponent } from "../../assistant/assistant-settings/assistant-settings.component";
 import { CatalogService } from "../../catalog/catalog-service";
 import { Material, MaterialKind } from "../../catalog/model/material";
 import { MemberService } from "../../member/member-service";
@@ -11,7 +12,6 @@ import { LABOUR_METHOD_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
 import { ConstructionStandard, LabourMethod, ShopSettings } from "../model/shop";
-import { TEMPLATE_LABELS } from "../../util/labels";
 import { ShopService } from "../shop-service";
 
 type StandardMaterialField = keyof Pick<ConstructionStandard,
@@ -24,12 +24,11 @@ type StandardLengthField = keyof Pick<ConstructionStandard, "doorGapMm" | "toeKi
   selector: "settings",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, LengthInputComponent, NgFor, NgIf, StaleDraftsComponent],
+  imports: [AssistantSettingsComponent, FormsModule, LengthInputComponent, NgFor, NgIf, StaleDraftsComponent],
   styleUrls: ["./settings.component.css"],
   templateUrl: "./settings.component.html",
 })
 export class SettingsComponent {
-  readonly templateLabels = TEMPLATE_LABELS;
   readonly labourMethods = Object.entries(LABOUR_METHOD_LABELS) as [LabourMethod, string][];
 
   readonly materialFields: { field: StandardMaterialField; kind: MaterialKind; label: string }[] = [

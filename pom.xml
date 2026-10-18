@@ -25,6 +25,8 @@
     <jib.version>3.4.4</jib.version>
     <lombok.version>1.18.44</lombok.version>
     <openpdf.version>2.0.3</openpdf.version>
+    <!-- 1.1 is the last line on Spring Boot 3; 2.x needs Spring Boot 4. -->
+    <spring-ai.version>1.1.8</spring-ai.version>
     <testcontainers.version>1.20.4</testcontainers.version>
 
     <!--
@@ -70,6 +72,14 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-bom</artifactId>
+        <version>${spring-ai.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>

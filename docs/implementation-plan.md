@@ -7,7 +7,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 **Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
 1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
-2. Milestone 5 is done once deployed; Milestone 6, the Design Assistant, is next.
+2. Milestone 6 is under way: the foundation is done; the Conversation and Design Proposals are next. The assistant needs an `ANTHROPIC_API_KEY` secret in the `open-cabinet-production` GitHub environment before it can be turned on.
 
 ## Status
 
@@ -18,8 +18,8 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | Done, in production |
-| 5. Template Designer | Done |
-| 6. Design Assistant | Planned |
+| 5. Template Designer | Done, in production |
+| 6. Design Assistant | In progress |
 | 7. After v1 | Not scheduled |
 
 ## 0. Foundation and delivery: done
@@ -110,7 +110,7 @@ Found while building: a preset's per-Cabinet choices (made or ordered Fronts, fi
 
 Follow-ups: joinery (dados, rabbets, dowels), which changes Part sizes and matters most for CNC export; moving version 1 Cabinets to version 2 without a Member, which would need its own decision against ADR 0005.
 
-## 6. Design Assistant: planned
+## 6. Design Assistant: in progress
 
 Members describe changes in a Conversation, or forward a Client's email thread, and the Design Assistant answers with a Design Proposal they review in 3D and accept or discard (ADR 0004). Built with Spring AI on Claude: Sonnet builds Proposals, Haiku sorts the Inbox, both set in configuration.
 
@@ -119,12 +119,14 @@ Ground rules for every step:
 - Owners and Designers use it. It reads the current design, published Cabinet Templates (starter, Shop and the Project's own), the Construction Standard, material and Front style names and the Client's name; never prices, Quotes or other Projects. It places Cabinets from published templates but never creates, publishes or updates templates, nor moves Cabinets to a newer Template Version.
 - It answers in the Member's language. Email content is untrusted: it is quoted to the model, never followed as instructions.
 
-1. **Foundation.** The `assistant` module (hexagonal: Spring AI and Resend in adapters only), the model port, the Shop opt-in and budget, the glossary terms and ADR 0004.
+1. **Foundation.** The `assistant` module (hexagonal: Spring AI and Resend in adapters only), the model port, the Shop opt-in and budget, the glossary terms and ADR 0004. Done (V16: `assistant_settings`, `assistant_usage`). As built: Spring AI 1.1 (the last line on Spring Boot 3), the Anthropic module without its starter, so the model exists only when `ANTHROPIC_API_KEY` is set; the deploy workflow copies that GitHub secret into the `open-cabinet-server` Secret the chart already loads. The builder and sorter models and their prices (US dollars per million tokens) are configuration; a configured model without prices stops the server at startup, so no call goes uncounted. Every call goes through one gate that refuses it unless the Shop opted in and has budget left this calendar month, then records its tokens and cost, rounded up. The Settings page has an Owner-only "Design Assistant" section: what is sent to Anthropic and to Resend, the opt-in (impossible without a key), the monthly budget, this month's spending, who turned it on, the models, and "Test the assistant", a tiny request to the sorter model, counted like any other.
 2. **Conversation → Design Proposal.** Tools for every editor action, each checked by the Construction Rules, with a test that fails when an editor action has no tool. One open Proposal per Project; it must pass the rules and lists its open questions and assumptions. Each request runs as a background job, one at a time per Conversation, streaming progress to the page. A Live / Proposal toggle in the editor marks what is added, changed or removed. Accepting takes the editing lock and replays the Proposal's steps onto the current design, stopping at the first step that breaks a rule; Undo accept restores the earlier design if nobody has edited since. Chatting needs no lock; Proposals change only through the Conversation. Conversations start on an existing Project and are kept with it.
 3. **Attachments.** Photos, sketches and PDFs in the Conversation, stored in PostgreSQL behind a port (25 MB per message). Measurements read from a photo are always assumptions; only typed numbers or a dimensioned plan count as given.
 4. **Scenario suite.** Real-model scenarios ("galley kitchen from this sketch": passes the rules, expected Cabinets and Openings) as shared test data next to `construction-rules/cases.json`, run on demand, not on every pull request; use it to choose between Sonnet and Opus. Unit tests use recorded model replies.
 5. **Email with Resend.** Sending first: Invitation emails (closes the Milestone 2 follow-up) and notices to Members. Then receiving: one address per Shop at `in.cabinet.arendal.ca` (MX record from the Helm chart's DNSEndpoint), the signed `email.received` webhook, body, headers and attachments copied on arrival (Resend's download links expire after an hour). Only a Member's own address is accepted, with DMARC passing, or DKIM when the domain has no DMARC; everything else is dropped silently. Free plan to start, with a warning at 80% of the daily limit.
 6. **Inbox.** Forwarded emails land in the Shop's Inbox, seen by every Member with who forwarded each. Haiku summarises each one and suggests the Client (from addresses in the thread) and Project; a Member confirms, or creates the Client and Project from the email, and only then is a Proposal built. Later emails in the same thread join the same Conversation and refine the open Proposal. The forwarding Member is told in the app and by email when the Proposal is ready; Clients are never emailed. Unassigned Inbox items are deleted after 30 days.
+
+Found while building: the budget is checked before each call, so calls running at the same time can overshoot it slightly. The configured prices for `claude-sonnet-5-5` and `claude-opus-5-5` are to check against Anthropic's price list.
 
 To confirm when building step 5: Resend's maximum message size, and whether `In-Reply-To` and `References` come as named headers or only in the raw message.
 
