@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.drawing.domain.model;
 
 import java.util.Locale;
 
+import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.model.ApplianceKind;
 import dev.daniellavoie.opencabinet.project.domain.model.OpeningKind;
@@ -77,6 +78,16 @@ public enum DrawingLanguage {
 		case RANGE -> pick("Cuisinière", "Range");
 		case DISHWASHER -> pick("Lave-vaisselle", "Dishwasher");
 		case HOOD -> pick("Hotte", "Hood");
+		};
+	}
+
+	public String materialKind(MaterialKind kind) {
+		return switch (kind) {
+		case SHEET -> pick("Panneau", "Sheet");
+		case EDGE_BANDING -> pick("Bande de chant", "Edge banding");
+		case HARDWARE -> pick("Quincaillerie", "Hardware");
+		case FRONT -> pick("Façades commandées", "Ordered fronts");
+		case MOULDING -> pick("Moulures", "Mouldings");
 		};
 	}
 

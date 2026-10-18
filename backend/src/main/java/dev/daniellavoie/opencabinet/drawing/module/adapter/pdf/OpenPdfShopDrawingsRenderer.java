@@ -2,9 +2,6 @@ package dev.daniellavoie.opencabinet.drawing.module.adapter.pdf;
 
 import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.INK;
 import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.MUTED;
-import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.POINTS_PER_MM;
-import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.fit;
-import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.fits;
 import static dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter.text;
 
 import java.awt.Color;
@@ -29,9 +26,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import dev.daniellavoie.opencabinet.drawing.domain.model.PartsTable;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Sheet;
 import dev.daniellavoie.opencabinet.drawing.domain.model.ShopDrawings;
-import dev.daniellavoie.opencabinet.drawing.domain.model.View;
 import dev.daniellavoie.opencabinet.drawing.domain.port.backend.ShopDrawingsRenderer;
-import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
 /**
  * Prints each Sheet on a landscape Letter page: its Views side by side at the largest standard
@@ -43,34 +38,6 @@ public class OpenPdfShopDrawingsRenderer implements ShopDrawingsRenderer {
 	static final float MARGIN = 36;
 	static final float TITLE_BLOCK = 46;
 	static final float GAP = 18;
-
-	/**
-	 * Standard scales, largest first: {@code ratio} is model length over paper length.
-	 */
-	record Scale(double ratio, String imperial, String metric) {
-	}
-
-	static final List<Scale> IMPERIAL_SCALES = List.of(
-			new Scale(4, "3\" = 1'-0\"", null),
-			new Scale(8, "1 1/2\" = 1'-0\"", null),
-			new Scale(12, "1\" = 1'-0\"", null),
-			new Scale(16, "3/4\" = 1'-0\"", null),
-			new Scale(24, "1/2\" = 1'-0\"", null),
-			new Scale(32, "3/8\" = 1'-0\"", null),
-			new Scale(48, "1/4\" = 1'-0\"", null),
-			new Scale(64, "3/16\" = 1'-0\"", null),
-			new Scale(96, "1/8\" = 1'-0\"", null));
-	static final List<Scale> METRIC_SCALES = List.of(
-			new Scale(5, null, "1:5"),
-			new Scale(10, null, "1:10"),
-			new Scale(15, null, "1:15"),
-			new Scale(20, null, "1:20"),
-			new Scale(25, null, "1:25"),
-			new Scale(30, null, "1:30"),
-			new Scale(40, null, "1:40"),
-			new Scale(50, null, "1:50"),
-			new Scale(75, null, "1:75"),
-			new Scale(100, null, "1:100"));
 
 	private static final Color RULE = new Color(0xde, 0xe2, 0xe6);
 
@@ -117,68 +84,22 @@ public class OpenPdfShopDrawingsRenderer implements ShopDrawingsRenderer {
 		}
 		bottom += GAP / 2;
 
-		var scale = views(canvas, sheet.getViews(), drawings.getUnits(), left, bottom, right, top);
+		var scale = painter.drawAtScale(canvas, sheet.getViews(), drawings.getUnits(), left, bottom, right, top);
 		titleBlock(canvas, drawings, sheet, scale, number, count, left, right);
-	}
-
-	/**
-	 * Draws the Views side by side, centred, at one scale; returns the scale's name.
-	 */
-	private String views(PdfContentByte canvas, List<View> views, Units units, float left, float bottom, float right,
-			float top) {
-		var boxes = views.stream().map(PdfViewPainter.ViewBox::of).toList();
-		var titled = views.stream().anyMatch(view -> view.getTitle() != null && !view.getTitle().isBlank());
-		var availableWidth = right - left - GAP * (views.size() - 1);
-		var availableHeight = top - bottom - (titled ? 14 : 0);
-
-		var scales = units == Units.METRIC ? METRIC_SCALES : IMPERIAL_SCALES;
-		var chosen = scales.stream()
-				.filter(scale -> fits(boxes, POINTS_PER_MM / scale.ratio(), availableWidth, availableHeight))
-				.findFirst();
-		double pointsPerMm = chosen.map(scale -> POINTS_PER_MM / scale.ratio())
-				.orElseGet(() -> fit(boxes, availableWidth, availableHeight));
-
-		var totalWidth = boxes.stream().mapToDouble(box -> box.width(pointsPerMm)).sum() + GAP * (views.size() - 1);
-		var x = left + (right - left - totalWidth) / 2;
-		for (int index = 0; index < views.size(); index++) {
-			var box = boxes.get(index);
-			var height = box.height(pointsPerMm);
-			var y = bottom + (availableHeight - height) / 2;
-			var view = views.get(index);
-			if (view.getTitle() != null && !view.getTitle().isBlank()) {
-				text(canvas, painter.bold(), 8, INK, view.getTitle(), (float) (x + box.width(pointsPerMm) / 2),
-						(float) (bottom + availableHeight + 4), 0, Element.ALIGN_CENTER);
-			}
-			painter.draw(canvas, view, box, pointsPerMm, (float) x, (float) y);
-			x += box.width(pointsPerMm) + GAP;
-		}
-
-		return chosen.map(scale -> units == Units.METRIC ? scale.metric() : scale.imperial()).orElse(null);
 	}
 
 	private void titleBlock(PdfContentByte canvas, ShopDrawings drawings, Sheet sheet, String scale, int number,
 			int count, float left, float right) {
 		var language = drawings.getLanguage();
-		var top = MARGIN + TITLE_BLOCK;
-		canvas.saveState();
-		canvas.setLineWidth(0.75f);
-		canvas.setColorStroke(INK);
-		canvas.moveTo(left, top);
-		canvas.lineTo(right, top);
-		canvas.stroke();
-		canvas.restoreState();
-
-		text(canvas, painter.bold(), 11, INK, drawings.getShopName(), left, top - 16, 0, Element.ALIGN_LEFT);
-		text(canvas, painter.regular(), 8, MUTED, language.pick("Projet : ", "Project: ") + drawings.getProjectName()
-				+ "   ·   " + language.pick("Client : ", "Client: ") + drawings.getClientName(), left, top - 30, 0,
-				Element.ALIGN_LEFT);
-		text(canvas, painter.bold(), 11, INK, sheet.getTitle(), right, top - 16, 0, Element.ALIGN_RIGHT);
-		text(canvas, painter.regular(), 8, MUTED, String.join("   ·   ",
-				language.pick("Échelle ", "Scale ") + Optional.ofNullable(scale)
-						.orElse(language.pick("hors échelle", "not to scale")),
-				drawings.getDate().format(DateTimeFormatter.ofPattern("d MMMM yyyy", language.locale())),
-				language.pick("Feuille ", "Sheet ") + number + " / " + count), right, top - 30, 0,
-				Element.ALIGN_RIGHT);
+		painter.titleBlock(canvas, left, right, MARGIN + TITLE_BLOCK, drawings.getShopName(),
+				language.pick("Projet : ", "Project: ") + drawings.getProjectName() + "   ·   "
+						+ language.pick("Client : ", "Client: ") + drawings.getClientName(),
+				sheet.getTitle(),
+				String.join("   ·   ",
+						language.pick("Échelle ", "Scale ") + Optional.ofNullable(scale)
+								.orElse(language.pick("hors échelle", "not to scale")),
+						drawings.getDate().format(DateTimeFormatter.ofPattern("d MMMM yyyy", language.locale())),
+						language.pick("Feuille ", "Sheet ") + number + " / " + count));
 	}
 
 	private PdfPTable table(PartsTable parts, float width) {

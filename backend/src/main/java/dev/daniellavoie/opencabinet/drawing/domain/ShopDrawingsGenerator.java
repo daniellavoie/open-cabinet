@@ -379,7 +379,7 @@ final class ShopDrawingsGenerator {
 				.headers(List.of(language.pick("Pièce", "Part"), language.pick("Matériau", "Material"),
 						language.pick("Longueur", "Length"), language.pick("Largeur", "Width"),
 						language.pick("Épaisseur", "Thickness"), language.pick("Chants (long. / larg.)",
-								"Banded edges (length / width)"),
+								"Banded edges (len. / wid.)"),
 						language.pick("Qté", "Qty")))
 				.rows(rows.entrySet().stream()
 						.map(entry -> Stream.concat(entry.getKey().stream(), Stream.of(String.valueOf(entry.getValue())))

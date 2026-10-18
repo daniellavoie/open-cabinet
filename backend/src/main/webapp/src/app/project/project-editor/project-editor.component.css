@@ -118,3 +118,10 @@
   margin: 0;
   padding-left: var(--oc-space-4);
 }
+
+.output-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--oc-space-2);
+  margin-bottom: var(--oc-space-3);
+}

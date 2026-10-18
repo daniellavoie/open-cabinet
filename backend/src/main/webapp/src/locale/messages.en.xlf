@@ -2568,6 +2568,70 @@
           <context context-type="linenumber">285</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="editor.printHint" datatype="html">
+        <source>Document à imprimer</source>
+        <target>Document to print</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.pdf" datatype="html">
+        <source>PDF</source>
+        <target>PDF</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">69,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.csvHint" datatype="html">
+        <source>Pour un tableur</source>
+        <target>For a spreadsheet</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.csv" datatype="html">
+        <source>CSV</source>
+        <target>CSV</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">71,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.outputDownloadError" datatype="html">
+        <source>Impossible de produire le document.</source>
+        <target>Could not produce the document.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">293</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.cutListFile" datatype="html">
+        <source>liste de coupe</source>
+        <target>cut list</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">369</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.nestingFile" datatype="html">
+        <source>optimisation</source>
+        <target>nesting</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">370</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.materialsFile" datatype="html">
+        <source>liste des matériaux</source>
+        <target>bill of materials</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">371</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>

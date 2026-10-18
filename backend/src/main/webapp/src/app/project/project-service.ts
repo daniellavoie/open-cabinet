@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map, Observable, shareReplay } from "rxjs";
 
-import { ProjectOutput } from "../cutlist/model/project-output";
+import { OutputDocument, ProjectOutput } from "../cutlist/model/project-output";
 import { Page } from "../util/model/page";
 import { CabinetTemplate } from "./model/design";
 import { Project } from "./model/project";
@@ -49,6 +49,13 @@ export class ProjectService {
    */
   shopDrawings(projectId: string, language: string): Observable<Blob> {
     return this.httpClient.get(`/api/project/${projectId}/shop-drawings/pdf?language=${language}`, { responseType: "blob" });
+  }
+
+  /**
+   * The saved Project's Cut List, Nesting or Bill of Materials as a PDF or CSV, in `language` (fr or en).
+   */
+  outputDocument(projectId: string, document: OutputDocument, format: "pdf" | "csv", language: string): Observable<Blob> {
+    return this.httpClient.get(`/api/project/${projectId}/output/${document}/${format}?language=${language}`, { responseType: "blob" });
   }
 
   output(projectId: string): Observable<ProjectOutput> {

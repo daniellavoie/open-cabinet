@@ -12,7 +12,7 @@ import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-te
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
-import { ProjectOutput } from "../../cutlist/model/project-output";
+import { OutputDocument, ProjectOutput } from "../../cutlist/model/project-output";
 import { NestingComponent } from "../../cutlist/nesting/nesting.component";
 import { MemberService } from "../../member/member-service";
 import { QuotesComponent } from "../../quote/quotes/quotes.component";
@@ -102,6 +102,7 @@ export class ProjectEditorComponent implements OnDestroy {
   error = "";
   lock?: ProjectLock;
   downloadingDrawings = false;
+  downloadingOutput = false;
   private renewal?: Subscription;
 
   constructor(
@@ -272,17 +273,28 @@ export class ProjectEditorComponent implements OnDestroy {
     const project = this.saved!;
     this.downloadingDrawings = true;
     this.error = "";
-    this.projectService.shopDrawings(project.id, this.locale.startsWith("en") ? "en" : "fr")
-      .pipe(tap(blob => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = $localize`:@@editor.shopDrawingsFile:${project.name}:name: - dessins d'atelier` + ".pdf";
-        link.click();
-        URL.revokeObjectURL(url);
-      }))
+    this.projectService.shopDrawings(project.id, this.language)
+      .pipe(tap(blob => save(blob, $localize`:@@editor.shopDrawingsFile:${project.name}:name: - dessins d'atelier` + ".pdf")))
       .pipe(finalize(() => this.downloadingDrawings = false))
       .subscribe({ error: () => this.error = $localize`:@@editor.shopDrawingsError:Impossible de produire les dessins d'atelier.` });
+  }
+
+  /**
+   * Downloads the current tab's Cut List, Nesting or Bill of Materials, as saved.
+   */
+  downloadOutput(format: "pdf" | "csv") {
+    const project = this.saved!;
+    const output = OUTPUT_DOCUMENTS[this.tab]!;
+    this.downloadingOutput = true;
+    this.error = "";
+    this.projectService.outputDocument(project.id, output.name, format, this.language)
+      .pipe(tap(blob => save(blob, `${project.name} - ${output.file}.${format}`)))
+      .pipe(finalize(() => this.downloadingOutput = false))
+      .subscribe({ error: () => this.error = $localize`:@@editor.outputDownloadError:Impossible de produire le document.` });
+  }
+
+  private get language(): string {
+    return this.locale.startsWith("en") ? "en" : "fr";
   }
 
   selectTab(tab: Tab) {
@@ -348,6 +360,24 @@ export class ProjectEditorComponent implements OnDestroy {
       .pipe(finalize(() => this.loadingOutput = false))
       .subscribe({ error: () => this.error = $localize`:@@editor.outputError:Impossible de calculer la liste de coupe.` });
   }
+}
+
+/**
+ * The output tabs' documents, as named in the API and in downloaded files.
+ */
+const OUTPUT_DOCUMENTS: Partial<Record<Tab, { name: OutputDocument; file: string }>> = {
+  cutList: { name: "cut-list", file: $localize`:@@editor.cutListFile:liste de coupe` },
+  nesting: { name: "nesting", file: $localize`:@@editor.nestingFile:optimisation` },
+  materials: { name: "bill-of-materials", file: $localize`:@@editor.materialsFile:liste des matériaux` },
+};
+
+function save(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function onWall(design: Design): OnWall[] {

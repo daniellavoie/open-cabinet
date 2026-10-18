@@ -7,7 +7,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 **Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
 1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
-2. Milestone 4 is under way: Template Versions, Shop Drawings and the Quote PDF with pictures are done; printable and exportable outputs are next.
+2. Milestone 4 is under way: Template Versions, Shop Drawings, the Quote PDF with pictures and printable outputs are done; better Nesting is next.
 
 ## Status
 
@@ -76,12 +76,13 @@ Follow-ups found while building it:
 0. **Template Versions** (first, ahead of the outputs; ADR 0005). Done. A Cabinet used to keep only its template's code, so editing `cabinet-templates.json` silently changed every old Project. Each entry of `cabinet-templates.json` is now one Template Version, only ever added, never edited: `cabinet-templates.published` lists each with a hash of its content, and `CabinetTemplateVersionsTest` fails when a published one changes (one file rather than a file per version, because both test suites read it directly). Every Cabinet records its template and version; existing Cabinets are migrated to version 1. Outdated Cabinets get a badge in 3D and in the side panel, and the Project a notice ("3 Cabinets can be updated") with Update all and each version's change note. Updating keeps the Cabinet's own values (size, shelves, dividers, Fronts, finished ends, crown, blind side) and is refused, showing the broken rules, when they don't fit the new version; Revert goes back to any published version. Sent Quotes are untouched; draft Quotes get the existing "priced before a change" notice.
 1. **Shop Drawings**: done. A PDF from the Project editor (saved Project, in the Member's language and the Shop's units): a plan view with Walls, Openings, Appliances and every Cabinet labelled (wall Cabinets dashed); an Elevation per Wall with Fronts, widths chained along the floor and over the wall Cabinets, the Wall's height and the wall Cabinets' height from the floor; a sheet per Cabinet with its front (height of each front row), its side and its own Parts. Each sheet at the largest standard scale that fits (architectural for imperial Shops), with a title block.
 2. **Quote PDF with pictures**: done. Each new Quote captures pictures of the design with its price (V12, a column of their own so the app never loads them): the Room in 3D under the Client and Project, then an Elevation of each Wall with Cabinets after the totals, with only the Wall's length and height and no labels. They are vector drawings made on the server from the same data as the Shop Drawings (an axonometric view from the side most Cabinets face), so a sent Quote keeps them unchanged. Quotes created before print as before; recreate a draft to add them.
-3. **Printable and exportable outputs**: Cut List, Nesting layouts and Bill of Materials as PDF and CSV.
+3. **Printable and exportable outputs**: done. PDF and CSV buttons on the Cut List, Nesting and Materials tabs, for the saved Project in the Member's language. PDFs on landscape pages with the Shop Drawings' title block: the Cut List then the Fronts to order; a page per nested sheet at a standard scale, Parts labelled; the priced Bill of Materials with its total. CSVs like the Material Catalog export (commas, decimal points, fixed column names, lengths in mm), the Cut List also with lengths as the Shop measures them, and a byte order mark so spreadsheets read accents.
 4. **Better Nesting**: fill partly used sheets before opening new ones, compare layouts, keep grain and saw constraints.
 
 Follow-ups found while building it:
 - An Elevation shows only its own Wall's Cabinets: a corner Cabinet from the neighbouring Wall is not drawn in section, and dimensions of very narrow items (a 1" filler) crowd their text.
 - Shelves and drawer boxes are not drawn in the Cabinet sheets; the shelf count is in the notes.
+- Bill of Materials quantities have no unit (sheets, metres, m², pieces), in the app and in its exports.
 - The 3D view in the Quote draws boxes farthest first, which can misdraw Cabinets that cross in depth (deep Appliances beside a corner); counters are not drawn.
 
 ## 5. Template Designer: planned

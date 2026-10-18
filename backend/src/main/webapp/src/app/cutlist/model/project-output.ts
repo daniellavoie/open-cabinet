@@ -90,3 +90,6 @@ export class ProjectOutput {
   materialsTotal!: number;
   operations!: OperationCounts;
 }
+
+/** What can be printed or exported from a Project's output, as named in the API. */
+export type OutputDocument = "cut-list" | "nesting" | "bill-of-materials";

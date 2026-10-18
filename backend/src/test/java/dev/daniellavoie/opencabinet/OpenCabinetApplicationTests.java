@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
@@ -172,6 +174,19 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/shop-drawings/pdf?language=en")))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Type", startsWith("application/pdf")));
+
+		for (var document : List.of("cut-list", "nesting", "bill-of-materials")) {
+			mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/" + document + "/pdf")))
+					.andExpect(status().isOk())
+					.andExpect(header().string("Content-Type", startsWith("application/pdf")));
+		}
+		var cutListCsv = mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/cut-list/csv")))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Content-Type", startsWith("text/csv")))
+				.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+		assertThat(cutListCsv.lines().findFirst()).hasValueSatisfying(line -> assertThat(line).contains("part,material"));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/unknown/csv")))
+				.andExpect(status().isBadRequest());
 
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())

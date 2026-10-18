@@ -16,6 +16,7 @@ import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Outline;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape.Point;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Stroke;
 import dev.daniellavoie.opencabinet.drawing.domain.model.View;
+import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
 /**
  * Draws Views on a PDF canvas at a given scale: outlines and lines by stroke, dimension lines with
@@ -28,7 +29,39 @@ public class PdfViewPainter {
 	 */
 	static final float DIMENSION_STEP = 14;
 	static final float TEXT_SIZE = 7;
+	/**
+	 * Space between Views side by side.
+	 */
+	static final float GAP = 18;
 	public static final float POINTS_PER_MM = 72 / 25.4f;
+
+	/**
+	 * Standard scales, largest first: {@code ratio} is model length over paper length.
+	 */
+	public record Scale(double ratio, String imperial, String metric) {
+	}
+
+	static final List<Scale> IMPERIAL_SCALES = List.of(
+			new Scale(4, "3\" = 1'-0\"", null),
+			new Scale(8, "1 1/2\" = 1'-0\"", null),
+			new Scale(12, "1\" = 1'-0\"", null),
+			new Scale(16, "3/4\" = 1'-0\"", null),
+			new Scale(24, "1/2\" = 1'-0\"", null),
+			new Scale(32, "3/8\" = 1'-0\"", null),
+			new Scale(48, "1/4\" = 1'-0\"", null),
+			new Scale(64, "3/16\" = 1'-0\"", null),
+			new Scale(96, "1/8\" = 1'-0\"", null));
+	static final List<Scale> METRIC_SCALES = List.of(
+			new Scale(5, null, "1:5"),
+			new Scale(10, null, "1:10"),
+			new Scale(15, null, "1:15"),
+			new Scale(20, null, "1:20"),
+			new Scale(25, null, "1:25"),
+			new Scale(30, null, "1:30"),
+			new Scale(40, null, "1:40"),
+			new Scale(50, null, "1:50"),
+			new Scale(75, null, "1:75"),
+			new Scale(100, null, "1:100"));
 
 	static final Color INK = Color.BLACK;
 	static final Color MUTED = new Color(0x49, 0x50, 0x57);
@@ -55,6 +88,63 @@ public class PdfViewPainter {
 
 	public BaseFont bold() {
 		return bold;
+	}
+
+	/**
+	 * Draws the Views side by side, centred in the area, at the largest standard scale that fits
+	 * (architectural for imperial Shops, 1:N for metric ones); returns the scale's name, or null when
+	 * none fits and the Views are drawn just to fit.
+	 */
+	public String drawAtScale(PdfContentByte canvas, List<View> views, Units units, float left, float bottom, float right,
+			float top) {
+		var boxes = views.stream().map(ViewBox::of).toList();
+		var titled = views.stream().anyMatch(view -> view.getTitle() != null && !view.getTitle().isBlank());
+		var availableWidth = right - left - GAP * (views.size() - 1);
+		var availableHeight = top - bottom - (titled ? 14 : 0);
+
+		var scales = units == Units.METRIC ? METRIC_SCALES : IMPERIAL_SCALES;
+		var chosen = scales.stream()
+				.filter(scale -> fits(boxes, POINTS_PER_MM / scale.ratio(), availableWidth, availableHeight))
+				.findFirst();
+		double pointsPerMm = chosen.map(scale -> POINTS_PER_MM / scale.ratio())
+				.orElseGet(() -> fit(boxes, availableWidth, availableHeight));
+
+		var totalWidth = boxes.stream().mapToDouble(box -> box.width(pointsPerMm)).sum() + GAP * (views.size() - 1);
+		var x = left + (right - left - totalWidth) / 2;
+		for (int index = 0; index < views.size(); index++) {
+			var box = boxes.get(index);
+			var height = box.height(pointsPerMm);
+			var y = bottom + (availableHeight - height) / 2;
+			var view = views.get(index);
+			if (view.getTitle() != null && !view.getTitle().isBlank()) {
+				text(canvas, bold, 8, INK, view.getTitle(), (float) (x + box.width(pointsPerMm) / 2),
+						(float) (bottom + availableHeight + 4), 0, Element.ALIGN_CENTER);
+			}
+			draw(canvas, view, box, pointsPerMm, (float) x, (float) y);
+			x += box.width(pointsPerMm) + GAP;
+		}
+
+		return chosen.map(scale -> units == Units.METRIC ? scale.metric() : scale.imperial()).orElse(null);
+	}
+
+	/**
+	 * A rule across the page at {@code top}, the Shop and a line of details on the left, the page's
+	 * title and a line of details on the right.
+	 */
+	public void titleBlock(PdfContentByte canvas, float left, float right, float top, String shopName,
+			String details, String title, String meta) {
+		canvas.saveState();
+		canvas.setLineWidth(0.75f);
+		canvas.setColorStroke(INK);
+		canvas.moveTo(left, top);
+		canvas.lineTo(right, top);
+		canvas.stroke();
+		canvas.restoreState();
+
+		text(canvas, bold, 11, INK, shopName, left, top - 16, 0, Element.ALIGN_LEFT);
+		text(canvas, regular, 8, MUTED, details, left, top - 30, 0, Element.ALIGN_LEFT);
+		text(canvas, bold, 11, INK, title, right, top - 16, 0, Element.ALIGN_RIGHT);
+		text(canvas, regular, 8, MUTED, meta, right, top - 30, 0, Element.ALIGN_RIGHT);
 	}
 
 	static boolean fits(List<ViewBox> boxes, double pointsPerMm, double width, double height) {

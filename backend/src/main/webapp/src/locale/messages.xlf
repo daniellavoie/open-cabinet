@@ -1406,11 +1406,39 @@
           <context context-type="linenumber">66,67</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="editor.printHint" datatype="html">
+        <source>Document à imprimer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.pdf" datatype="html">
+        <source>PDF</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">69,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.csvHint" datatype="html">
+        <source>Pour un tableur</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.csv" datatype="html">
+        <source>CSV</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
+          <context context-type="linenumber">71,73</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="editor.computing" datatype="html">
         <source>Calcul en cours…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.html</context>
-          <context context-type="linenumber">67,68</context>
+          <context context-type="linenumber">73,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.design" datatype="html">
@@ -1452,56 +1480,84 @@
         <source>Modèle « <x id="name" equiv-text="template.name"/> » enregistré.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">262</context>
+          <context context-type="linenumber">263</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.templateError" datatype="html">
         <source>Impossible d&apos;enregistrer le modèle.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">265</context>
+          <context context-type="linenumber">266</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.shopDrawingsFile" datatype="html">
         <source><x id="name" equiv-text="project.name"/> - dessins d&apos;atelier</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">280</context>
+          <context context-type="linenumber">277</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.shopDrawingsError" datatype="html">
         <source>Impossible de produire les dessins d&apos;atelier.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">285</context>
+          <context context-type="linenumber">279</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.outputDownloadError" datatype="html">
+        <source>Impossible de produire le document.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">293</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.rulesBroken" datatype="html">
         <source>Le serveur a refusé la conception : corrigez les règles de construction.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">330</context>
+          <context context-type="linenumber">342</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.lockLost" datatype="html">
         <source>Quelqu&apos;un d&apos;autre modifie ce projet : vos changements n&apos;ont pas été enregistrés.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">332</context>
+          <context context-type="linenumber">344</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.saveError" datatype="html">
         <source>Impossible d&apos;enregistrer le projet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">335</context>
+          <context context-type="linenumber">347</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editor.outputError" datatype="html">
         <source>Impossible de calculer la liste de coupe.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
-          <context context-type="linenumber">349</context>
+          <context context-type="linenumber">361</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.cutListFile" datatype="html">
+        <source>liste de coupe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">369</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.nestingFile" datatype="html">
+        <source>optimisation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">370</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="editor.materialsFile" datatype="html">
+        <source>liste des matériaux</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/project/project-editor/project-editor.component.ts</context>
+          <context context-type="linenumber">371</context>
         </context-group>
       </trans-unit>
       <trans-unit id="projects.title" datatype="html">
