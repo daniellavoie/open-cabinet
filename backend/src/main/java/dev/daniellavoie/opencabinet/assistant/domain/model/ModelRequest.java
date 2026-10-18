@@ -24,21 +24,32 @@ public class ModelRequest {
 	int maxTokens;
 
 	/**
-	 * A message from the Member, the model's answer (with the tool calls it asked for), or the
-	 * result of a tool call.
+	 * A message from the Member (with the photos, sketches and PDFs attached to it), the model's
+	 * answer (with the tool calls it asked for), or the result of a tool call.
 	 */
-	public record ModelMessage(Speaker speaker, String text, List<ToolCall> toolCalls, ToolResult toolResult) {
+	public record ModelMessage(Speaker speaker, String text, List<ModelAttachment> attachments, List<ToolCall> toolCalls,
+			ToolResult toolResult) {
 		public ModelMessage(Speaker speaker, String text) {
-			this(speaker, text, List.of(), null);
+			this(speaker, text, List.of(), List.of(), null);
+		}
+
+		public static ModelMessage member(String text, List<ModelAttachment> attachments) {
+			return new ModelMessage(Speaker.MEMBER, text, attachments, List.of(), null);
 		}
 
 		public static ModelMessage assistant(String text, List<ToolCall> toolCalls) {
-			return new ModelMessage(Speaker.ASSISTANT, text, toolCalls, null);
+			return new ModelMessage(Speaker.ASSISTANT, text, List.of(), toolCalls, null);
 		}
 
 		public static ModelMessage tool(ToolResult result) {
-			return new ModelMessage(Speaker.TOOL, null, List.of(), result);
+			return new ModelMessage(Speaker.TOOL, null, List.of(), List.of(), result);
 		}
+	}
+
+	/**
+	 * A photo, sketch or PDF sent with a Member's message.
+	 */
+	public record ModelAttachment(String mediaType, byte[] bytes) {
 	}
 
 	public enum Speaker {

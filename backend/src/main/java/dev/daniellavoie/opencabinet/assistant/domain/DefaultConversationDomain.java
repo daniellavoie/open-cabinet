@@ -22,6 +22,8 @@ import tools.jackson.databind.node.ObjectNode;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.AcceptResult;
 import dev.daniellavoie.opencabinet.assistant.domain.model.AnswerError;
+import dev.daniellavoie.opencabinet.assistant.domain.model.Attachment;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AttachmentContent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Author;
 import dev.daniellavoie.opencabinet.assistant.domain.model.BudgetSpentException;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Conversation;
@@ -39,9 +41,13 @@ import dev.daniellavoie.opencabinet.assistant.domain.model.ModelTier;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ProgressEvent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ProposalStatus;
 import dev.daniellavoie.opencabinet.assistant.domain.model.SendMessageRequest;
+import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelAttachment;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.AssistantDomain;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.ConversationDomain;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantJobs;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AttachmentStore;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.PdfInspector;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.ConversationRepository;
 import dev.daniellavoie.opencabinet.assistant.domain.tool.DesignToolContext;
 import dev.daniellavoie.opencabinet.assistant.domain.tool.DesignTools;
@@ -105,6 +111,8 @@ public class DefaultConversationDomain implements ConversationDomain {
 	AssistantDomain assistantDomain;
 	ConversationRepository repository;
 	ConversationProgress progress;
+	AttachmentStore attachments;
+	PdfInspector pdfs;
 	AssistantJobs jobs;
 	JsonMapper jsonMapper;
 
@@ -116,7 +124,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 	}
 
 	@Override
-	public ConversationView send(UUID projectId, SendMessageRequest request, Principal principal) {
+	public ConversationView send(UUID projectId, SendMessageRequest request, List<UploadedFile> files, Principal principal) {
 		var member = memberDomain.current(principal);
 		var shopId = member.getShopId();
 		projectDomain.findById(projectId, shopId);
@@ -125,6 +133,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 		if (text.length() > MAX_MESSAGE_LENGTH) {
 			throw new IllegalArgumentException("a message is at most " + MAX_MESSAGE_LENGTH + " characters");
 		}
+		var checked = Attachments.check(Optional.ofNullable(files).orElse(List.of()), pdfs);
 		if (!assistantDomain.isAvailable(shopId)) {
 			throw new IllegalStateException("the design assistant is off for this shop");
 		}
@@ -139,7 +148,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 		if (!repository.startRunning(conversation.getId())) {
 			throw new IllegalStateException("the assistant is still answering the last message");
 		}
-		repository.addMessage(ConversationMessage.builder()
+		var message = repository.addMessage(ConversationMessage.builder()
 				.id(UUID.randomUUID())
 				.conversationId(conversation.getId())
 				.author(Author.MEMBER)
@@ -147,6 +156,17 @@ public class DefaultConversationDomain implements ConversationDomain {
 				.text(text)
 				.creationTimestamp(LocalDateTime.now())
 				.build());
+		for (var file : checked) {
+			attachments.save(Attachment.builder()
+					.id(UUID.randomUUID())
+					.shopId(shopId)
+					.conversationId(conversation.getId())
+					.messageId(message.getId())
+					.fileName(file.fileName())
+					.mediaType(file.mediaType())
+					.creationTimestamp(LocalDateTime.now())
+					.build(), file.bytes());
+		}
 		progress.start(conversation.getId());
 
 		var language = "en".equals(request.getLanguage()) ? "en" : "fr";
@@ -247,9 +267,17 @@ public class DefaultConversationDomain implements ConversationDomain {
 		var history = repository.findMessages(conversation.getId()).stream()
 				.filter(message -> message.getText() != null)
 				.toList();
-		session.messages = new ArrayList<>(history.subList(Math.max(0, history.size() - HISTORY), history.size()).stream()
-				.map(message -> new ModelMessage(message.getAuthor() == Author.MEMBER ? Speaker.MEMBER : Speaker.ASSISTANT,
-						message.getText()))
+		var recent = history.subList(Math.max(0, history.size() - HISTORY), history.size());
+		var files = attachments.contents(recent.stream()
+				.filter(message -> message.getAuthor() == Author.MEMBER)
+				.map(ConversationMessage::getId)
+				.toList());
+		session.messages = new ArrayList<>(recent.stream()
+				.map(message -> message.getAuthor() == Author.MEMBER
+						? ModelMessage.member(message.getText(), files.getOrDefault(message.getId(), List.of()).stream()
+								.map(file -> new ModelAttachment(file.mediaType(), file.bytes()))
+								.toList())
+						: new ModelMessage(Speaker.ASSISTANT, message.getText()))
 				.toList());
 		return session;
 	}
@@ -393,6 +421,14 @@ public class DefaultConversationDomain implements ConversationDomain {
 	}
 
 	@Override
+	public AttachmentContent attachment(UUID projectId, UUID attachmentId, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		projectDomain.findById(projectId, shopId);
+		return attachments.content(attachmentId, shopId)
+				.orElseThrow(() -> new java.util.NoSuchElementException("attachment " + attachmentId + " not found"));
+	}
+
+	@Override
 	public AcceptResult accept(UUID projectId, UUID proposalId, Principal principal) {
 		var member = memberDomain.current(principal);
 		var shopId = member.getShopId();
@@ -514,17 +550,20 @@ public class DefaultConversationDomain implements ConversationDomain {
 	private ConversationView view(UUID projectId, UUID shopId, int afterProgress) {
 		var conversation = repository.findByProject(projectId, shopId);
 		var names = new HashMap<UUID, String>();
-		var messages = conversation.map(found -> repository.findMessages(found.getId())).orElse(List.of()).stream()
-				.map(message -> message.getMemberId() == null ? message : message.toBuilder()
-						.memberName(names.computeIfAbsent(message.getMemberId(),
-								id -> memberRepository.findById(id, shopId).getName()))
+		var found = conversation.map(existing -> repository.findMessages(existing.getId())).orElse(List.of());
+		var files = attachments.findByMessages(found.stream().map(ConversationMessage::getId).toList());
+		var messages = found.stream()
+				.map(message -> message.toBuilder()
+						.memberName(message.getMemberId() == null ? null
+								: names.computeIfAbsent(message.getMemberId(), id -> memberRepository.findById(id, shopId).getName()))
+						.attachments(files.getOrDefault(message.getId(), List.of()))
 						.build())
 				.toList();
 		return ConversationView.builder()
 				.conversationId(conversation.map(Conversation::getId).orElse(null))
 				.running(conversation.map(Conversation::isRunning).orElse(false))
 				.messages(messages)
-				.progress(conversation.map(found -> progress.since(found.getId(), afterProgress)).orElse(List.of()))
+				.progress(conversation.map(existing -> progress.since(existing.getId(), afterProgress)).orElse(List.of()))
 				.proposal(repository.findCurrentProposal(projectId, shopId).orElse(null))
 				.build();
 	}

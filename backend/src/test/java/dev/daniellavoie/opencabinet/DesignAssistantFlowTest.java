@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,10 +22,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -141,6 +143,82 @@ class DesignAssistantFlowTest {
 				.andExpect(jsonPath("$.messages", org.hamcrest.Matchers.hasSize(2)));
 	}
 
+	@Test
+	void photosAndPlansTravelWithTheirMessage() throws Exception {
+		var owner = "attachment-owner-" + System.nanoTime();
+		var sent = new java.util.ArrayList<ModelRequest>();
+		when(model.isConfigured()).thenReturn(true);
+		when(model.modelFor(any(ModelTier.class))).thenReturn("fake");
+		when(model.complete(any(ModelRequest.class))).thenAnswer(invocation -> {
+			sent.add(invocation.getArgument(0));
+			return reply("Le plan indique un mur de 12 pi.");
+		});
+		mockMvc.perform(as(owner, post("/api/shop"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"shopName\":\"Atelier Sillery\",\"memberName\":\"Marie\"}"))
+				.andExpect(status().isOk());
+		var client = read(mockMvc.perform(as(owner, post("/api/client"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\":\"Jean Tremblay\"}")));
+		var projectId = read(mockMvc.perform(as(owner, post("/api/project"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"clientId\":\"" + client.get("id").asString() + "\",\"name\":\"Cuisine\"}"))).get("id").asString();
+		mockMvc.perform(as(owner, put("/api/assistant"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"enabled\": true, \"monthlyBudgetUsd\": 20}"))
+				.andExpect(status().isOk());
+		var conversation = "/api/project/" + projectId + "/conversation";
+		var png = new byte[] { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3 };
+		var plan = pdf();
+
+		mockMvc.perform(as(owner, multipart(conversation + "/message")
+				.file(new MockMultipartFile("files", "notes.txt", "text/plain", "hello".getBytes())))
+				.param("text", "Voici"))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(as(owner, multipart(conversation + "/message")
+				.file(new MockMultipartFile("files", "cuisine.png", "image/png", png))
+				.file(new MockMultipartFile("files", "plan.pdf", "application/pdf", plan)))
+				.param("text", "Voici la cuisine et le plan")
+				.param("language", "fr"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.messages[0].attachments[0].fileName").value("cuisine.png"))
+				.andExpect(jsonPath("$.messages[0].attachments[1].mediaType").value("application/pdf"));
+
+		var view = waitForAnswer(owner, conversation);
+		assertThat(sent.get(0).getMessages().get(0).attachments()).extracting(ModelRequest.ModelAttachment::mediaType)
+				.containsExactly("image/png", "application/pdf");
+		var attachmentId = view.at("/messages/0/attachments/0/id").asString();
+		var served = mockMvc.perform(as(owner, get(conversation + "/attachment/" + attachmentId)))
+				.andExpect(status().isOk())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+						.string("Content-Type", "image/png"))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+						.string("X-Content-Type-Options", "nosniff"))
+				.andReturn().getResponse().getContentAsByteArray();
+		assertThat(served).isEqualTo(png);
+		// Another Shop's Member cannot read it.
+		var other = "other-shop-" + System.nanoTime();
+		mockMvc.perform(as(other, post("/api/shop"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"shopName\":\"Autre atelier\",\"memberName\":\"Luc\"}"))
+				.andExpect(status().isOk());
+		mockMvc.perform(as(other, get(conversation + "/attachment/" + attachmentId)))
+				.andExpect(status().isNotFound());
+	}
+
+	/**
+	 * A one-page PDF, as a dimensioned plan would come.
+	 */
+	private static byte[] pdf() throws Exception {
+		var output = new java.io.ByteArrayOutputStream();
+		var document = new com.lowagie.text.Document();
+		com.lowagie.text.pdf.PdfWriter.getInstance(document, output);
+		document.open();
+		document.add(new com.lowagie.text.Paragraph("Mur A : 144 po"));
+		document.close();
+		return output.toByteArray();
+	}
+
 	private JsonNode waitForAnswer(String subject, String conversation) throws Exception {
 		for (var attempt = 0; attempt < 100; attempt++) {
 			var view = read(mockMvc.perform(as(subject, get(conversation))));
@@ -157,7 +235,7 @@ class DesignAssistantFlowTest {
 				.costUsd(new BigDecimal("0.01")).build();
 	}
 
-	private static MockHttpServletRequestBuilder as(String subject, MockHttpServletRequestBuilder request) {
+	private static <B extends AbstractMockHttpServletRequestBuilder<B>> B as(String subject, B request) {
 		return request.with(jwt().jwt(token -> token.subject(subject)));
 	}
 

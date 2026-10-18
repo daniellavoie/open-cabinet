@@ -31,7 +31,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="assistant.sentModel" datatype="html">
-        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation sont envoyés à Anthropic, le fournisseur du modèle.</source>
+        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/assistant-settings/assistant-settings.component.html</context>
           <context context-type="linenumber">9,10</context>
@@ -149,6 +149,41 @@
           <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="attachments.type" datatype="html">
+        <source><x id="name" equiv-text="refused.name"/> n&apos;est ni une photo (JPEG, PNG, WebP, GIF) ni un PDF.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/attachment-files.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="attachments.count" datatype="html">
+        <source>Au plus <x id="max" equiv-text="MAX_FILES"/> fichiers par message.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/attachment-files.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="attachments.size" datatype="html">
+        <source>Au plus 25 Mo de fichiers par message.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/attachment-files.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="attachments.kilobytes" datatype="html">
+        <source><x id="size" equiv-text="format(Math.max(1, Math.round(bytes / 1024)))"/> Ko</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/attachment-files.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="attachments.megabytes" datatype="html">
+        <source><x id="size" equiv-text="format(bytes / 1024 / 1024)"/> Mo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/attachment-files.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="conversation.off" datatype="html">
         <source>L&apos;assistant est désactivé. Un propriétaire peut l&apos;activer dans les paramètres de l&apos;atelier.</source>
         <context-group purpose="location">
@@ -174,154 +209,182 @@
         <source>L&apos;assistant prépare la proposition…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">16,18</context>
+          <context context-type="linenumber">24,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.proposal" datatype="html">
         <source>Proposition</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">27,28</context>
+          <context context-type="linenumber">35,36</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.acceptedBadge" datatype="html">
         <source>Acceptée</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">28,29</context>
+          <context context-type="linenumber">36,37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.steps" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ proposal.steps.length }}"/> étape(s)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">29,30</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.openQuestions" datatype="html">
         <source>Questions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">33,34</context>
+          <context context-type="linenumber">41,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.assumptions" datatype="html">
         <source>Hypothèses</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">37,38</context>
+          <context context-type="linenumber">45,46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.accept" datatype="html">
         <source>Accepter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">43,44</context>
+          <context context-type="linenumber">51,52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.discard" datatype="html">
         <source>Rejeter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">45,47</context>
+          <context context-type="linenumber">53,55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.undo" datatype="html">
         <source>Annuler l&apos;acceptation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">49,51</context>
+          <context context-type="linenumber">57,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="conversation.removeFile" datatype="html">
+        <source>Retirer le fichier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
+          <context context-type="linenumber">69,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.placeholder" datatype="html">
         <source>Ex. : Ajoute un caisson-évier de 36 po sous la fenêtre</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">59,60</context>
+          <context context-type="linenumber">75,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="conversation.attachHint" datatype="html">
+        <source>Photos, croquis ou plans en PDF, jusqu&apos;à 25 Mo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
+          <context context-type="linenumber">79,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="conversation.attach" datatype="html">
+        <source>Joindre…</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
+          <context context-type="linenumber">80,81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.send" datatype="html">
         <source>Envoyer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
-          <context context-type="linenumber">60,63</context>
+          <context context-type="linenumber">81,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="conversation.measureHint" datatype="html">
+        <source>Les mesures lues sur une photo restent des hypothèses ; tapez celles qui sont sûres.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.html</context>
+          <context context-type="linenumber">83,86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.blockedLock" datatype="html">
         <source>Quelqu&apos;un d&apos;autre modifie le projet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.blockedDirty" datatype="html">
         <source>Enregistrez ou annulez vos modifications d&apos;abord.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.blockedRunning" datatype="html">
         <source>L&apos;assistant travaille encore sur la proposition.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">90</context>
+          <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.thinking" datatype="html">
         <source>Réflexion…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.refused" datatype="html">
         <source>Refusé : <x id="tool" equiv-text="tool"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">105</context>
+          <context context-type="linenumber">143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.sendError" datatype="html">
         <source>Impossible d&apos;envoyer le message.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.accepted" datatype="html">
         <source>Proposition acceptée et projet enregistré.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.partlyAccepted" datatype="html">
         <source><x id="applied" equiv-text="result.appliedSteps"/> étape(s) sur <x id="total" equiv-text="result.totalSteps"/> appliquée(s) : la suivante ne respecterait plus les règles du projet tel qu&apos;il est maintenant.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">179</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.undone" datatype="html">
         <source>Acceptation annulée : le projet est revenu à son état d&apos;avant.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.discardError" datatype="html">
         <source>Impossible de rejeter la proposition.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">159</context>
+          <context context-type="linenumber">199</context>
         </context-group>
       </trans-unit>
       <trans-unit id="conversation.acceptError" datatype="html">
         <source>Impossible de modifier le projet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/assistant/conversation-panel/conversation-panel.component.ts</context>
-          <context context-type="linenumber">173</context>
+          <context context-type="linenumber">213</context>
         </context-group>
       </trans-unit>
       <trans-unit id="catalog.title" datatype="html">

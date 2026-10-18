@@ -4,14 +4,15 @@ import {
   ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, Output, SimpleChanges,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { finalize, Subscription, switchMap, takeWhile, tap, timer } from "rxjs";
+import { finalize, from, Subscription, switchMap, takeWhile, tap, timer } from "rxjs";
 
 import { Project } from "../../project/model/project";
 import { ANSWER_ERROR_LABELS, ASSISTANT_TOOL_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { ErrorResponse } from "../../util/model/error-response";
 import { AssistantService } from "../assistant-service";
 import { AssistantStatus } from "../model/assistant";
-import { AcceptResult, ConversationView, DesignProposal, ProgressEvent } from "../model/conversation";
+import { ACCEPTED_TYPES, filesProblem, prepare, sizeLabel } from "../attachment-files";
+import { AcceptResult, Attachment, ConversationView, DesignProposal, ProgressEvent } from "../model/conversation";
 
 const POLL_MS = 1000;
 
@@ -47,6 +48,12 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
   view?: ConversationView;
   progress: ProgressEvent[] = [];
   text = "";
+  /** Files chosen for the next message. */
+  files: File[] = [];
+  filesError = "";
+  /** Image attachments shown as thumbnails, by attachment id. */
+  thumbnails = new Map<string, string>();
+  readonly acceptedTypes = ACCEPTED_TYPES.join(",");
   sending = false;
   acting = false;
   outcome = "";
@@ -68,6 +75,37 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.polling?.unsubscribe();
+    this.thumbnails.forEach(url => URL.revokeObjectURL(url));
+  }
+
+  choose(input: HTMLInputElement) {
+    this.files = [...this.files, ...Array.from(input.files ?? [])];
+    input.value = "";
+    this.filesError = filesProblem(this.files) ?? "";
+  }
+
+  removeFile(index: number) {
+    this.files = this.files.filter((_, at) => at !== index);
+    this.filesError = filesProblem(this.files) ?? "";
+  }
+
+  size(bytes: number): string {
+    return sizeLabel(bytes, this.locale);
+  }
+
+  isImage(attachment: Attachment): boolean {
+    return attachment.mediaType.startsWith("image/");
+  }
+
+  /** Opens a PDF, or a photo full size, in a new tab. */
+  open(attachment: Attachment) {
+    this.assistantService.attachment(this.projectId, attachment.id)
+      .pipe(tap(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank", "noopener");
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      }))
+      .subscribe();
   }
 
   get proposal(): DesignProposal | null {
@@ -75,7 +113,7 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
   }
 
   get canSend(): boolean {
-    return !!this.status?.enabled && !this.view?.running && !this.sending && !!this.text.trim();
+    return !!this.status?.enabled && !this.view?.running && !this.sending && !!this.text.trim() && !this.filesError;
   }
 
   /** Why the open Proposal cannot be accepted now, if it cannot. */
@@ -121,9 +159,11 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
     this.error = "";
     this.outcome = "";
     const language = this.locale.startsWith("en") ? "en" : "fr";
-    this.assistantService.send(this.projectId, this.text.trim(), language)
+    from(Promise.all(this.files.map(prepare)))
+      .pipe(switchMap(files => this.assistantService.send(this.projectId, this.text.trim(), language, files)))
       .pipe(tap(view => {
         this.text = "";
+        this.files = [];
         this.progress = [];
         this.show(view);
       }))
@@ -188,6 +228,7 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
     const proposalBefore = JSON.stringify(this.view?.proposal ?? null);
     this.view = view;
     this.progress = [...this.progress, ...view.progress];
+    this.loadThumbnails(view);
     if (JSON.stringify(view.proposal) !== proposalBefore) {
       this.proposalChange.emit(view.proposal);
     }
@@ -198,6 +239,17 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
         .pipe(finalize(() => this.polling = undefined))
         .subscribe(next => this.show(next));
     }
+  }
+
+  private loadThumbnails(view: ConversationView) {
+    view.messages.flatMap(message => message.attachments ?? [])
+      .filter(attachment => this.isImage(attachment) && !this.thumbnails.has(attachment.id))
+      .forEach(attachment => {
+        this.thumbnails.set(attachment.id, "");
+        this.assistantService.attachment(this.projectId, attachment.id)
+          .pipe(tap(blob => this.thumbnails.set(attachment.id, URL.createObjectURL(blob))))
+          .subscribe();
+      });
   }
 
   private lastSequence(): number {

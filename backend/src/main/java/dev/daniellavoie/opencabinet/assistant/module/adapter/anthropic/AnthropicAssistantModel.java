@@ -14,9 +14,12 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.content.Media;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MimeType;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelReply;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
@@ -109,7 +112,13 @@ public class AnthropicAssistantModel implements AssistantModel {
 				results.clear();
 			}
 			switch (message.speaker()) {
-			case MEMBER -> messages.add(new UserMessage(message.text()));
+			case MEMBER -> messages.add(UserMessage.builder()
+					.text(message.text())
+					.media(message.attachments().stream()
+							.map(attachment -> new Media(MimeType.valueOf(attachment.mediaType()),
+									new ByteArrayResource(attachment.bytes())))
+							.toList())
+					.build());
 			case ASSISTANT -> messages.add(AssistantMessage.builder()
 					.content(Optional.ofNullable(message.text()).orElse(""))
 					.toolCalls(message.toolCalls().stream()

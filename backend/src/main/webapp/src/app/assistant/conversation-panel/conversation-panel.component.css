@@ -123,3 +123,72 @@
   flex-direction: column;
   align-items: flex-end;
 }
+
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--oc-space-2);
+  margin-top: var(--oc-space-2);
+}
+
+.attachment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--oc-space-1);
+  width: 88px;
+  padding: var(--oc-space-1);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-sm);
+  background-color: var(--oc-bg-default);
+}
+
+.attachment img {
+  width: 76px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--oc-radius-sm);
+}
+
+.document {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 56px;
+  color: var(--oc-text-secondary);
+  font-weight: 600;
+}
+
+.file-name {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--oc-font-size-xs);
+  color: var(--oc-text-secondary);
+}
+
+.chosen {
+  align-self: stretch;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--oc-font-size-sm);
+}
+
+.chosen li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compose-actions {
+  display: flex;
+  gap: var(--oc-space-2);
+}
+
+.compose .hint {
+  align-self: stretch;
+  margin: 0;
+}

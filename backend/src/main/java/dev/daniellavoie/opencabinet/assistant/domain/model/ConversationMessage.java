@@ -1,6 +1,7 @@
 package dev.daniellavoie.opencabinet.assistant.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -26,5 +27,9 @@ public class ConversationMessage {
 	String text;
 	AnswerError error;
 	UUID proposalId;
+	/**
+	 * Set when read.
+	 */
+	List<Attachment> attachments;
 	LocalDateTime creationTimestamp;
 }

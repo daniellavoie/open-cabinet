@@ -1,12 +1,15 @@
 package dev.daniellavoie.opencabinet.assistant.domain.port.api;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.AcceptResult;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AttachmentContent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ConversationView;
 import dev.daniellavoie.opencabinet.assistant.domain.model.DesignProposal;
 import dev.daniellavoie.opencabinet.assistant.domain.model.SendMessageRequest;
+import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
 
 /**
  * A Project's Conversation with the Design Assistant and its Design Proposals (ADR 0004). Chatting
@@ -22,7 +25,12 @@ public interface ConversationDomain {
 	 * Adds the Member's message and starts the assistant's answer in the background; refused while
 	 * it still answers the last one.
 	 */
-	ConversationView send(UUID projectId, SendMessageRequest request, Principal principal);
+	ConversationView send(UUID projectId, SendMessageRequest request, List<UploadedFile> files, Principal principal);
+
+	/**
+	 * An attachment's content, for the Members of the Shop.
+	 */
+	AttachmentContent attachment(UUID projectId, UUID attachmentId, Principal principal);
 
 	/**
 	 * Replays the open Proposal's steps onto the Project's current design under the editing lock,

@@ -32,6 +32,8 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.AnswerError;
+import dev.daniellavoie.opencabinet.assistant.domain.model.Attachment;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AttachmentContent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Author;
 import dev.daniellavoie.opencabinet.assistant.domain.model.BudgetSpentException;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Conversation;
@@ -44,7 +46,9 @@ import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolCall
 import dev.daniellavoie.opencabinet.assistant.domain.model.ProgressEvent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ProposalStatus;
 import dev.daniellavoie.opencabinet.assistant.domain.model.SendMessageRequest;
+import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.AssistantDomain;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AttachmentStore;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.ConversationRepository;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.client.domain.model.Client;
@@ -80,8 +84,10 @@ class DefaultConversationDomainTest {
 	private final AssistantDomain assistantDomain = mock(AssistantDomain.class);
 	private final InMemoryConversations repository = new InMemoryConversations();
 	private final ConversationProgress progress = new ConversationProgress();
+	private final InMemoryAttachments attachments = new InMemoryAttachments();
 	private final DefaultConversationDomain domain = new DefaultConversationDomain(memberDomain, memberRepository, projectDomain,
-			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, Runnable::run, JSON);
+			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, attachments, pdf -> 2, Runnable::run,
+			JSON);
 
 	private final Principal principal = () -> "marie";
 	private final Member member = Member.builder().id(UUID.randomUUID()).shopId(UUID.randomUUID()).name("Marie")
@@ -137,7 +143,7 @@ class DefaultConversationDomainTest {
 				"{\"summary\": \"Un caisson bas\", \"openQuestions\": [\"Quelle poignée ?\"], \"assumptions\": [\"Largeur par défaut\"]}")));
 		replies.add(() -> text("Voici un caisson bas contre le mur."));
 
-		domain.send(projectId, SendMessageRequest.builder().text("Ajoute un caisson bas").language("fr").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Ajoute un caisson bas").language("fr").build(), List.of(), principal);
 
 		var view = domain.view(projectId, 0, principal);
 		var proposal = view.getProposal();
@@ -171,11 +177,11 @@ class DefaultConversationDomainTest {
 	void theNextRequestContinuesTheOpenProposal() {
 		replies.add(() -> calls(call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\"}")));
 		replies.add(() -> text("Un caisson."));
-		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), List.of(), principal);
 		replies.add(() -> calls(call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\"}")));
 		replies.add(() -> text("Un deuxième."));
 
-		domain.send(projectId, SendMessageRequest.builder().text("Un autre").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Un autre").build(), List.of(), principal);
 
 		var proposal = domain.view(projectId, 0, principal).getProposal();
 		assertThat(proposal.getSteps()).hasSize(2);
@@ -192,7 +198,7 @@ class DefaultConversationDomainTest {
 			throw new BudgetSpentException();
 		});
 
-		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), List.of(), principal);
 
 		var view = domain.view(projectId, 0, principal);
 		assertThat(view.getProposal().getSteps()).hasSize(1);
@@ -201,12 +207,40 @@ class DefaultConversationDomainTest {
 	}
 
 	@Test
+	void sendsAttachmentsWithTheirMessage() {
+		var png = new byte[] { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3 };
+		replies.add(() -> text("Je vois un mur de 10 pi, à confirmer."));
+
+		domain.send(projectId, SendMessageRequest.builder().text("Voici la cuisine").build(),
+				List.of(new UploadedFile("photos/cuisine.png", png)), principal);
+
+		var member = requests.get(0).getMessages().get(0);
+		assertThat(member.attachments()).hasSize(1);
+		assertThat(member.attachments().get(0).mediaType()).isEqualTo("image/png");
+		assertThat(member.attachments().get(0).bytes()).isEqualTo(png);
+		assertThat(requests.get(0).getInstructions()).contains("photo or an undimensioned sketch is always an");
+		var listed = domain.view(projectId, 0, principal).getMessages().get(0).getAttachments();
+		assertThat(listed).extracting(Attachment::getFileName, Attachment::getMediaType, Attachment::getSizeBytes)
+				.containsExactly(org.assertj.core.groups.Tuple.tuple("cuisine.png", "image/png", (long) png.length));
+		assertThat(domain.attachment(projectId, listed.get(0).getId(), principal).bytes()).isEqualTo(png);
+	}
+
+	@Test
+	void refusesFilesTheModelCannotTake() {
+		assertThatThrownBy(() -> domain.send(projectId, SendMessageRequest.builder().text("Voici").build(),
+				List.of(new UploadedFile("notes.txt", "hello".getBytes())), principal))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("notes.txt");
+		assertThat(domain.view(projectId, 0, principal).getMessages()).isEmpty();
+	}
+
+	@Test
 	void answersOneRequestAtATime() {
 		repository.create(Conversation.builder().id(UUID.randomUUID()).shopId(member.getShopId()).projectId(projectId)
 				.creationTimestamp(LocalDateTime.now()).build());
 		repository.startRunning(repository.findByProject(projectId, member.getShopId()).orElseThrow().getId());
 
-		assertThatThrownBy(() -> domain.send(projectId, SendMessageRequest.builder().text("Encore").build(), principal))
+		assertThatThrownBy(() -> domain.send(projectId, SendMessageRequest.builder().text("Encore").build(), List.of(), principal))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("still answering");
 	}
@@ -215,7 +249,7 @@ class DefaultConversationDomainTest {
 	void refusesMessagesWhileTheAssistantIsOff() {
 		when(assistantDomain.isAvailable(member.getShopId())).thenReturn(false);
 
-		assertThatThrownBy(() -> domain.send(projectId, SendMessageRequest.builder().text("Bonjour").build(), principal))
+		assertThatThrownBy(() -> domain.send(projectId, SendMessageRequest.builder().text("Bonjour").build(), List.of(), principal))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("off");
 	}
@@ -224,7 +258,7 @@ class DefaultConversationDomainTest {
 	void acceptingReplaysTheStepsOntoTheCurrentDesign() {
 		replies.add(() -> calls(call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\"}")));
 		replies.add(() -> text("Un caisson."));
-		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), List.of(), principal);
 		var proposal = domain.view(projectId, 0, principal).getProposal();
 		// A colleague placed a cabinet at the wall's start since: the new one goes past it.
 		project = project.toBuilder().design(project.getDesign().toBuilder().cabinets(List.of(cabinet("c0", 0))).build()).build();
@@ -246,7 +280,7 @@ class DefaultConversationDomainTest {
 				call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 1000}"),
 				call("2", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 0}")));
 		replies.add(() -> text("Deux caissons."));
-		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), List.of(), principal);
 		var proposal = domain.view(projectId, 0, principal).getProposal();
 		project = project.toBuilder().design(project.getDesign().toBuilder().cabinets(List.of(cabinet("c0", 0))).build()).build();
 
@@ -263,7 +297,7 @@ class DefaultConversationDomainTest {
 	void undoingRestoresTheDesignUnlessTheProjectWasSavedSince() {
 		replies.add(() -> calls(call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\"}")));
 		replies.add(() -> text("Un caisson."));
-		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), List.of(), principal);
 		var proposal = domain.view(projectId, 0, principal).getProposal();
 		var before = project.getDesign();
 		domain.accept(projectId, proposal.getId(), principal);
@@ -284,7 +318,7 @@ class DefaultConversationDomainTest {
 	void anotherMembersLockStopsAccepting() {
 		replies.add(() -> calls(call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\"}")));
 		replies.add(() -> text("Un caisson."));
-		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), principal);
+		domain.send(projectId, SendMessageRequest.builder().text("Un caisson").build(), List.of(), principal);
 		var proposal = domain.view(projectId, 0, principal).getProposal();
 		when(projectDomain.lock(projectId, principal)).thenReturn(ProjectLock.builder().mine(false).holderName("Luc").build());
 
@@ -330,6 +364,43 @@ class DefaultConversationDomainTest {
 			});
 		} catch (IOException exception) {
 			throw new IllegalStateException(exception);
+		}
+	}
+
+	/**
+	 * Attachments kept in memory.
+	 */
+	private static final class InMemoryAttachments implements AttachmentStore {
+		private final Map<UUID, Attachment> attachments = new java.util.LinkedHashMap<>();
+		private final Map<UUID, byte[]> contents = new HashMap<>();
+
+		@Override
+		public Attachment save(Attachment attachment, byte[] content) {
+			var saved = attachment.toBuilder().sizeBytes(content.length).build();
+			attachments.put(saved.getId(), saved);
+			contents.put(saved.getId(), content);
+			return saved;
+		}
+
+		@Override
+		public Map<UUID, List<Attachment>> findByMessages(java.util.Collection<UUID> messageIds) {
+			return attachments.values().stream().filter(attachment -> messageIds.contains(attachment.getMessageId()))
+					.collect(java.util.stream.Collectors.groupingBy(Attachment::getMessageId));
+		}
+
+		@Override
+		public Optional<AttachmentContent> content(UUID attachmentId, UUID shopId) {
+			return Optional.ofNullable(attachments.get(attachmentId))
+					.map(attachment -> new AttachmentContent(attachment.getFileName(), attachment.getMediaType(),
+							contents.get(attachmentId)));
+		}
+
+		@Override
+		public Map<UUID, List<AttachmentContent>> contents(java.util.Collection<UUID> messageIds) {
+			return attachments.values().stream().filter(attachment -> messageIds.contains(attachment.getMessageId()))
+					.collect(java.util.stream.Collectors.groupingBy(Attachment::getMessageId,
+							java.util.stream.Collectors.mapping(attachment -> content(attachment.getId(), null).orElseThrow(),
+									java.util.stream.Collectors.toList())));
 		}
 	}
 

@@ -7,6 +7,14 @@
       <span class="author" *ngIf="message.author === 'MEMBER'">{{ message.memberName }}</span>
       <span class="author" *ngIf="message.author === 'ASSISTANT'" i18n="@@conversation.assistant">Assistant</span>
       <p *ngIf="message.text">{{ message.text }}</p>
+      <div class="attachments" *ngIf="message.attachments?.length">
+        <button type="button" *ngFor="let attachment of message.attachments" class="attachment" (click)="open(attachment)"
+          [title]="attachment.fileName">
+          <img *ngIf="isImage(attachment) && thumbnails.get(attachment.id)" [src]="thumbnails.get(attachment.id)" [alt]="attachment.fileName" />
+          <span *ngIf="!isImage(attachment)" class="document">PDF</span>
+          <span class="file-name">{{ attachment.fileName }}</span>
+        </button>
+      </div>
       <p class="problem" *ngIf="message.error">{{ errorLabels[message.error] }}</p>
     </div>
   </div>
@@ -54,9 +62,24 @@
   <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
 
   <form class="compose" (ngSubmit)="send()">
+    <ul class="chosen" *ngIf="files.length > 0">
+      <li *ngFor="let file of files; let index = index">
+        <span>{{ file.name }} · {{ size(file.size) }}</span>
+        <button type="button" class="btn btn-sm btn-link" (click)="removeFile(index)" i18n-aria-label="@@conversation.removeFile"
+          aria-label="Retirer le fichier">×</button>
+      </li>
+    </ul>
+    <div class="alert alert-danger" *ngIf="filesError">{{ filesError }}</div>
     <textarea class="form-control" name="text" rows="3" [(ngModel)]="text" [disabled]="!status?.enabled"
       (keydown.control.enter)="send()" i18n-placeholder="@@conversation.placeholder"
       placeholder="Ex. : Ajoute un caisson-évier de 36 po sous la fenêtre"></textarea>
-    <button class="btn btn-primary" type="submit" [disabled]="!canSend" i18n="@@conversation.send">Envoyer</button>
+    <div class="compose-actions">
+      <input #picker type="file" multiple hidden [accept]="acceptedTypes" (change)="choose(picker)" />
+      <button class="btn btn-outline-secondary" type="button" (click)="picker.click()" [disabled]="!status?.enabled"
+        i18n-title="@@conversation.attachHint" title="Photos, croquis ou plans en PDF, jusqu'à 25 Mo"
+        i18n="@@conversation.attach">Joindre…</button>
+      <button class="btn btn-primary" type="submit" [disabled]="!canSend" i18n="@@conversation.send">Envoyer</button>
+    </div>
+    <p class="hint" i18n="@@conversation.measureHint">Les mesures lues sur une photo restent des hypothèses ; tapez celles qui sont sûres.</p>
   </form>
 </section>

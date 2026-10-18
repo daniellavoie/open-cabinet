@@ -4181,8 +4181,8 @@
         <target>What is sent</target>
       </trans-unit>
       <trans-unit id="assistant.sentModel" datatype="html">
-        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation sont envoyés à Anthropic, le fournisseur du modèle.</source>
-        <target>When a member uses the assistant, the project&apos;s design, published cabinet templates, the construction standard, material and front style names, the client&apos;s name and the conversation&apos;s messages are sent to Anthropic, the model provider.</target>
+        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</source>
+        <target>When a member uses the assistant, the project&apos;s design, published cabinet templates, the construction standard, material and front style names, the client&apos;s name and the conversation&apos;s messages, with their photos, sketches and PDFs, are sent to Anthropic, the model provider. Attached files are kept with the project.</target>
       </trans-unit>
       <trans-unit id="assistant.sentNever" datatype="html">
         <source>Jamais les prix, les soumissions ni les autres projets.</source>
@@ -4455,6 +4455,42 @@
       <trans-unit id="answerError.interrupted" datatype="html">
         <source>L&apos;assistant a été interrompu par un redémarrage. Renvoyez votre message.</source>
         <target>The assistant was interrupted by a restart. Send your message again.</target>
+      </trans-unit>
+      <trans-unit id="attachments.type" datatype="html">
+        <source><x id="name" equiv-text="refused.name"/> n&apos;est ni une photo (JPEG, PNG, WebP, GIF) ni un PDF.</source>
+        <target><x id="name" equiv-text="refused.name"/> is neither a photo (JPEG, PNG, WebP, GIF) nor a PDF.</target>
+      </trans-unit>
+      <trans-unit id="attachments.count" datatype="html">
+        <source>Au plus <x id="max" equiv-text="MAX_FILES"/> fichiers par message.</source>
+        <target>At most <x id="max" equiv-text="MAX_FILES"/> files per message.</target>
+      </trans-unit>
+      <trans-unit id="attachments.size" datatype="html">
+        <source>Au plus 25 Mo de fichiers par message.</source>
+        <target>At most 25 MB of files per message.</target>
+      </trans-unit>
+      <trans-unit id="attachments.kilobytes" datatype="html">
+        <source><x id="size" equiv-text="format(Math.max(1, Math.round(bytes / 1024)))"/> Ko</source>
+        <target><x id="size" equiv-text="format(Math.max(1, Math.round(bytes / 1024)))"/> KB</target>
+      </trans-unit>
+      <trans-unit id="attachments.megabytes" datatype="html">
+        <source><x id="size" equiv-text="format(bytes / 1024 / 1024)"/> Mo</source>
+        <target><x id="size" equiv-text="format(bytes / 1024 / 1024)"/> MB</target>
+      </trans-unit>
+      <trans-unit id="conversation.removeFile" datatype="html">
+        <source>Retirer le fichier</source>
+        <target>Remove the file</target>
+      </trans-unit>
+      <trans-unit id="conversation.attachHint" datatype="html">
+        <source>Photos, croquis ou plans en PDF, jusqu&apos;à 25 Mo</source>
+        <target>Photos, sketches or PDF plans, up to 25 MB</target>
+      </trans-unit>
+      <trans-unit id="conversation.attach" datatype="html">
+        <source>Joindre…</source>
+        <target>Attach…</target>
+      </trans-unit>
+      <trans-unit id="conversation.measureHint" datatype="html">
+        <source>Les mesures lues sur une photo restent des hypothèses ; tapez celles qui sont sûres.</source>
+        <target>Measurements read from a photo stay assumptions; type the ones you are sure of.</target>
       </trans-unit>
     </body>
   </file>

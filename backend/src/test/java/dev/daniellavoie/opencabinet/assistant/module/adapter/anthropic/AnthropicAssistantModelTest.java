@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.sun.net.httpserver.HttpServer;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelAttachment;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelMessage;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.Speaker;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolCall;
@@ -131,6 +132,47 @@ class AnthropicAssistantModelTest {
 			assertThat(second.getText()).isEqualTo("C'est fait.");
 			assertThat(second.getToolCalls()).isEmpty();
 			assertThat(requests.get(1)).contains("\"tool_use\"", "\"tool_result\"", "\"tool_use_id\":\"call_1\"");
+		} finally {
+			server.stop(0);
+		}
+	}
+
+	@Test
+	void sendsPhotosAsImagesAndPdfsAsDocuments() throws Exception {
+		var requests = new ArrayList<String>();
+		var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+		server.createContext("/", exchange -> {
+			requests.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+			var reply = """
+					{"id": "msg_1", "type": "message", "role": "assistant", "model": "builder",
+					 "content": [{"type": "text", "text": "Je vois le plan."}], "stop_reason": "end_turn", "stop_sequence": null,
+					 "usage": {"input_tokens": 1500, "output_tokens": 5}}
+					""".getBytes(StandardCharsets.UTF_8);
+			exchange.getResponseHeaders().add("Content-Type", "application/json");
+			exchange.sendResponseHeaders(200, reply.length);
+			exchange.getResponseBody().write(reply);
+			exchange.close();
+		});
+		server.start();
+		try {
+			var configuration = configuration("test-key");
+			configuration.setBaseUrl("http://localhost:" + server.getAddress().getPort());
+			var png = new byte[] { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A };
+			var pdf = "%PDF-1.7".getBytes(StandardCharsets.US_ASCII);
+
+			new AnthropicAssistantModel(configuration).complete(ModelRequest.builder()
+					.tier(ModelTier.BUILDER)
+					.purpose("PROPOSAL")
+					.instructions("Edit the design.")
+					.messages(List.of(ModelMessage.member("Voici la cuisine et le plan.",
+							List.of(new ModelAttachment("image/png", png), new ModelAttachment("application/pdf", pdf)))))
+					.maxTokens(100)
+					.build());
+
+			var base64 = java.util.Base64.getEncoder();
+			assertThat(requests.get(0)).contains("\"type\":\"image\"", "\"media_type\":\"image/png\"",
+					base64.encodeToString(png), "\"type\":\"document\"", "\"media_type\":\"application/pdf\"",
+					base64.encodeToString(pdf), "Voici la cuisine et le plan.");
 		} finally {
 			server.stop(0);
 		}

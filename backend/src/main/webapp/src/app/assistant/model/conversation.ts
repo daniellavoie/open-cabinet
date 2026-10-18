@@ -6,6 +6,14 @@ export type Author = "MEMBER" | "ASSISTANT";
 /** Why the assistant stopped without a full answer. */
 export type AnswerError = "OFF" | "BUDGET_SPENT" | "MODEL_ERROR" | "TOO_MANY_STEPS" | "INTERRUPTED";
 
+/** A photo, sketch or PDF added to a message. */
+export class Attachment {
+  id!: string;
+  fileName!: string;
+  mediaType!: string;
+  sizeBytes!: number;
+}
+
 export class ConversationMessage {
   id!: string;
   author!: Author;
@@ -14,6 +22,7 @@ export class ConversationMessage {
   text!: string | null;
   error!: AnswerError | null;
   proposalId!: string | null;
+  attachments!: Attachment[];
   creationTimestamp!: string;
 }
 

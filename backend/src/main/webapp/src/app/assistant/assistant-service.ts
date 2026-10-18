@@ -28,9 +28,22 @@ export class AssistantService {
     return this.httpClient.get<ConversationView>(`/api/project/${projectId}/conversation?afterProgress=${afterProgress}`);
   }
 
-  /** Sends a message; the assistant answers in the background. */
-  send(projectId: string, text: string, language: string): Observable<ConversationView> {
-    return this.httpClient.post<ConversationView>(`/api/project/${projectId}/conversation/message`, { text, language });
+  /** Sends a message, with its attachments; the assistant answers in the background. */
+  send(projectId: string, text: string, language: string, files: File[] = []): Observable<ConversationView> {
+    const url = `/api/project/${projectId}/conversation/message`;
+    if (files.length === 0) {
+      return this.httpClient.post<ConversationView>(url, { text, language });
+    }
+    const form = new FormData();
+    form.append("text", text);
+    form.append("language", language);
+    files.forEach(file => form.append("files", file, file.name));
+    return this.httpClient.post<ConversationView>(url, form);
+  }
+
+  /** An attachment's content, fetched with the Member's token. */
+  attachment(projectId: string, attachmentId: string): Observable<Blob> {
+    return this.httpClient.get(`/api/project/${projectId}/conversation/attachment/${attachmentId}`, { responseType: "blob" });
   }
 
   /** Replays the Proposal onto the Project's current design and saves it, under the editing lock. */
