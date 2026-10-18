@@ -2350,5 +2350,65 @@
         "size": null
       }
     ]
+  },
+  {
+    "name": "a template with no parts yet",
+    "template": {
+      "code": "TEST_BASE",
+      "version": 1,
+      "type": "BASE",
+      "defaultWidthMm": 457.2,
+      "minWidthMm": 304.8,
+      "maxWidthMm": 914.4,
+      "defaultHeightMm": 876.3,
+      "minHeightMm": 762.0,
+      "maxHeightMm": 965.2,
+      "defaultDepthMm": 609.6,
+      "minDepthMm": 304.8,
+      "maxDepthMm": 762.0,
+      "defaultElevationMm": 0.0,
+      "defaultShelfCount": 1,
+      "maxShelfCount": 4,
+      "assembly": {
+        "parts": [],
+        "hardware": []
+      }
+    },
+    "shop": {
+      "standard": {
+        "DOOR_GAP": 3,
+        "TOE_KICK_HEIGHT": 101.6
+      },
+      "thicknesses": {
+        "CARCASS": 15.9,
+        "BACK": 6.4,
+        "FRONT": 15.9
+      },
+      "sheets": {
+        "CARCASS": {
+          "lengthMm": 2463.8,
+          "widthMm": 1244.6,
+          "grain": false
+        },
+        "BACK": {
+          "lengthMm": 2438.4,
+          "widthMm": 1219.2,
+          "grain": false
+        },
+        "FRONT": {
+          "lengthMm": 2463.8,
+          "widthMm": 1244.6,
+          "grain": true
+        }
+      },
+      "trimMm": 10
+    },
+    "violations": [
+      {
+        "code": "NO_PARTS",
+        "partId": null,
+        "size": null
+      }
+    ]
   }
 ]

@@ -46,8 +46,14 @@
       <div class="mb-3">
         <label class="form-label" for="librarySource" i18n="@@library.startFrom">À partir de</label>
         <select class="form-select" id="librarySource" name="source" [(ngModel)]="sourceCode">
-          <option *ngFor="let source of sources" [value]="source.code">{{ sourceName(source) }}</option>
+          <optgroup i18n-label="@@library.fromScratch" label="À partir de zéro">
+            <option *ngFor="let type of types" [value]="'blank:' + type">{{ blankLabels[type] }}</option>
+          </optgroup>
+          <optgroup i18n-label="@@library.copy" label="Copier un modèle">
+            <option *ngFor="let source of sources" [value]="source.code">{{ sourceName(source) }}</option>
+          </optgroup>
         </select>
+        <p class="hint" *ngIf="sourceCode.startsWith('blank:')" i18n="@@library.blankHint">Un caisson vide aux dimensions habituelles, où vous ajoutez les pièces une à une.</p>
       </div>
       <button class="btn btn-primary" type="submit" [disabled]="saving || !name.trim()" i18n="@@library.design">Concevoir</button>
     </form>

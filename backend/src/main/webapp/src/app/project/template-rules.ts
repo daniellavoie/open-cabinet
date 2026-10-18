@@ -11,7 +11,7 @@ import { Axis, CabinetTemplate, MaterialRef, StandardValue } from "./model/desig
 export type TemplateSize = "MINIMUM" | "DEFAULT" | "MAXIMUM";
 
 export type TemplateRuleCode = "DUPLICATE_NAME" | "UNKNOWN_TARGET" | "WRONG_ATTACHMENTS" | "UNRESOLVED" | "NON_POSITIVE_SIZE"
-  | "PARTS_OVERLAP" | "TOO_BIG_FOR_SHEET" | "NOT_TOUCHING";
+  | "PARTS_OVERLAP" | "TOO_BIG_FOR_SHEET" | "NOT_TOUCHING" | "NO_PARTS";
 
 export interface TemplateViolation {
   code: TemplateRuleCode;
@@ -40,6 +40,9 @@ export function checkTemplate(template: CabinetTemplate, shop: TemplateShop): Te
   const assembly = template.assembly;
   if (!assembly) {
     return [];
+  }
+  if (!assembly.parts?.length && !assembly.frontStacks?.length) {
+    return [{ code: "NO_PARTS", partId: null, size: null }];
   }
   const names = [...(assembly.parts ?? []).map(part => part.id), ...(assembly.frontStacks ?? []).map(stack => stack.id),
     ...(assembly.divider ? [assembly.divider.id] : [])];

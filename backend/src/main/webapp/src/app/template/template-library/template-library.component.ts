@@ -5,7 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { finalize, tap } from "rxjs";
 
-import { CabinetTemplate } from "../../project/model/design";
+import { CabinetTemplate, CabinetType } from "../../project/model/design";
 import { ProjectService } from "../../project/project-service";
 import { latestVersions, templateName } from "../../project/template-versions";
 import { ErrorResponse } from "../../util/model/error-response";
@@ -29,7 +29,14 @@ export class TemplateLibraryComponent {
   sources: CabinetTemplate[] = [];
   private starters: CabinetTemplate[] = [];
   name = "";
-  sourceCode = "BASE_DOOR";
+  /** A source template's code, or `blank:` and a type to start from scratch. */
+  sourceCode = "blank:BASE";
+  readonly types: CabinetType[] = ["BASE", "WALL", "TALL"];
+  readonly blankLabels: Record<CabinetType, string> = {
+    BASE: $localize`:@@library.blankBase:Caisson bas vide`,
+    WALL: $localize`:@@library.blankWall:Caisson haut vide`,
+    TALL: $localize`:@@library.blankTall:Colonne vide`,
+  };
   saving = false;
   error = "";
 
@@ -61,13 +68,16 @@ export class TemplateLibraryComponent {
   }
 
   create() {
+    const blank = this.sourceCode.startsWith("blank:") ? this.sourceCode.slice("blank:".length) as CabinetType : null;
     const source = this.sources.find(template => template.code === this.sourceCode);
-    if (!source || !this.name.trim()) {
+    if ((!blank && !source) || !this.name.trim()) {
       return;
     }
     this.saving = true;
     this.error = "";
-    this.templateService.createInLibrary({ name: this.name.trim(), templateCode: source.code, templateVersion: source.version })
+    this.templateService.createInLibrary(blank
+      ? { name: this.name.trim(), type: blank }
+      : { name: this.name.trim(), templateCode: source!.code, templateVersion: source!.version })
       .pipe(finalize(() => this.saving = false))
       .subscribe({
         next: template => this.router.navigate(["/templates", template.id]),

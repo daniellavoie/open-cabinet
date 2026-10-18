@@ -21,6 +21,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Standa
  * {@code template-rules.ts}, kept in step by {@code template-assembly/rules.json}.
  */
 public final class TemplateRules {
+	public static final String NO_PARTS = "NO_PARTS";
 	public static final String DUPLICATE_NAME = "DUPLICATE_NAME";
 	public static final String NON_POSITIVE_SIZE = "NON_POSITIVE_SIZE";
 	public static final String PARTS_OVERLAP = "PARTS_OVERLAP";
@@ -55,6 +56,9 @@ public final class TemplateRules {
 		var assembly = template.getAssembly();
 		if (assembly == null) {
 			return List.of();
+		}
+		if (assembly.partsOrEmpty().isEmpty() && assembly.frontStacksOrEmpty().isEmpty()) {
+			return List.of(new Violation(NO_PARTS, null, null));
 		}
 		if (!Assembly.unique(Assembly.names(assembly))) {
 			return List.of(new Violation(DUPLICATE_NAME, null, null));

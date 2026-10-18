@@ -19,6 +19,8 @@ import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.CabinetAssemblies;
 import dev.daniellavoie.opencabinet.project.domain.TemplateRules;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
+import dev.daniellavoie.opencabinet.project.domain.model.CabinetType;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRef;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
 import dev.daniellavoie.opencabinet.shop.domain.port.backend.ShopRepository;
@@ -37,6 +39,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
+	/** The starter template whose sizes a template started from scratch takes, by type. */
+	static final Map<CabinetType, String> BLANK_SIZES = Map.of(
+			CabinetType.BASE, "BASE_DOOR",
+			CabinetType.WALL, "WALL_DOOR",
+			CabinetType.TALL, "TALL_PANTRY");
+
 	MemberDomain memberDomain;
 	ProjectDomain projectDomain;
 	CatalogDomain catalogDomain;
@@ -147,9 +155,11 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 		var name = requireUniqueName(request.getName(), null, null, true, shopId);
 		var templates = Stream.concat(projectDomain.templates().stream(),
 				repository.findShared(shopId).stream().flatMap(template -> template.getVersions().stream())).toList();
-		var source = assembled(templates, Optional.ofNullable(request.getTemplateCode())
-				.orElseThrow(() -> new IllegalArgumentException("a template to start from is required")),
-				request.getTemplateVersion());
+		var source = request.getTemplateCode() == null && request.getType() != null
+				? blank(templates, request.getType())
+				: assembled(templates, Optional.ofNullable(request.getTemplateCode())
+						.orElseThrow(() -> new IllegalArgumentException("a template to start from is required")),
+						request.getTemplateVersion());
 
 		return repository.save(ProjectTemplate.builder()
 				.id(UUID.randomUUID())
@@ -192,6 +202,18 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 	 * The template to start from, or the newest version of the same template drawn as an assembly
 	 * when that one is still built by the fixed recipe.
 	 */
+	/**
+	 * An empty assembly, with the sizes, shelves and elevation of the type's plainest starter template.
+	 */
+	private static CabinetTemplate blank(List<CabinetTemplate> templates, CabinetType type) {
+		return assembled(templates, BLANK_SIZES.get(type), null).toBuilder()
+				.type(type)
+				.blindWidthMm(0)
+				.frontRows(null)
+				.assembly(new TemplateAssembly(List.of(), List.of(), null, List.of()))
+				.build();
+	}
+
 	private static CabinetTemplate assembled(List<CabinetTemplate> templates, String code, Integer version) {
 		var versions = templates.stream().filter(template -> template.getCode().equals(code)).toList();
 		return versions.stream()

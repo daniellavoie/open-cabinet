@@ -101,6 +101,7 @@
 
       <section class="block">
         <h2 i18n="@@designer.parts">Pièces</h2>
+        <p class="hint" *ngIf="items.length === 0" i18n="@@designer.emptyHint">Aucune pièce pour l'instant. Commencez par « Panneau du caisson » : il couvre le bas du caisson, et vous le placez ensuite en fixant ses faces.</p>
         <ul class="items">
           <li *ngFor="let item of items" [class.selected]="item.id === selected" [class.invalid]="problemsOf(item.id) > 0"
             (click)="select(item.id)">

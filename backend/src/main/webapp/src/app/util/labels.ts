@@ -181,4 +181,5 @@ export const TEMPLATE_RULE_LABELS: Record<TemplateRuleCode, string> = {
   PARTS_OVERLAP: $localize`:@@templateRule.partsOverlap:La pièce chevauche une autre pièce.`,
   TOO_BIG_FOR_SHEET: $localize`:@@templateRule.tooBig:La pièce est plus grande que son panneau.`,
   NOT_TOUCHING: $localize`:@@templateRule.notTouching:La pièce ne touche aucune autre pièce.`,
+  NO_PARTS: $localize`:@@templateRule.noParts:Le modèle n'a encore aucune pièce.`,
 };

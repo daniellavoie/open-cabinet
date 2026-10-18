@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 
-import { CabinetTemplate } from "../project/model/design";
+import { CabinetTemplate, CabinetType } from "../project/model/design";
 
 /**
  * A Cabinet Template a Member designed (ADR 0006): its editable draft and its
@@ -23,12 +23,16 @@ export class ProjectTemplate {
   archived!: boolean;
 }
 
-/** Start from a Template Version, or from one of the Project's Cabinets. */
+/**
+ * Start from a Template Version, or from one of the Project's Cabinets. In the
+ * Shop library, a type alone starts from scratch.
+ */
 export interface CreateProjectTemplateRequest {
   name: string;
   templateCode?: string;
   templateVersion?: number;
   cabinetId?: string;
+  type?: CabinetType;
 }
 
 @Injectable({ providedIn: "root" })

@@ -1,6 +1,7 @@
 package dev.daniellavoie.opencabinet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -253,6 +254,16 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.shared").value(true))
 				.andExpect(jsonPath("$.projectId").doesNotExist()));
 		mockMvc.perform(as(owner, delete("/api/project-template/" + libraryDraft.get("id").asText())))
+				.andExpect(status().isNoContent());
+		var fromScratch = read(mockMvc.perform(as(owner, post("/api/template"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\": \"Caisson mural maison\", \"type\": \"WALL\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.draft.type").value("WALL"))
+				.andExpect(jsonPath("$.draft.defaultElevationMm").value(greaterThan(0.0)))
+				.andExpect(jsonPath("$.draft.assembly.parts").isEmpty())
+				.andExpect(jsonPath("$.draft.assembly.hardware").isEmpty()));
+		mockMvc.perform(as(owner, delete("/api/project-template/" + fromScratch.get("id").asText())))
 				.andExpect(status().isNoContent());
 		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
 				.contentType(MediaType.APPLICATION_JSON)

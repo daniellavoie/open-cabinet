@@ -4132,6 +4132,38 @@
         <source>Impossible de supprimer le modèle.</source>
         <target>Could not delete the template.</target>
       </trans-unit>
+      <trans-unit id="designer.emptyHint" datatype="html">
+        <source>Aucune pièce pour l&apos;instant. Commencez par « Panneau du caisson » : il couvre le bas du caisson, et vous le placez ensuite en fixant ses faces.</source>
+        <target>No parts yet. Start with “Carcass panel”: it covers the bottom of the cabinet, then you place it by attaching its faces.</target>
+      </trans-unit>
+      <trans-unit id="library.fromScratch" datatype="html">
+        <source>À partir de zéro</source>
+        <target>From scratch</target>
+      </trans-unit>
+      <trans-unit id="library.copy" datatype="html">
+        <source>Copier un modèle</source>
+        <target>Copy a template</target>
+      </trans-unit>
+      <trans-unit id="library.blankHint" datatype="html">
+        <source>Un caisson vide aux dimensions habituelles, où vous ajoutez les pièces une à une.</source>
+        <target>An empty cabinet at the usual sizes, where you add the parts one by one.</target>
+      </trans-unit>
+      <trans-unit id="library.blankBase" datatype="html">
+        <source>Caisson bas vide</source>
+        <target>Empty base cabinet</target>
+      </trans-unit>
+      <trans-unit id="library.blankWall" datatype="html">
+        <source>Caisson haut vide</source>
+        <target>Empty wall cabinet</target>
+      </trans-unit>
+      <trans-unit id="library.blankTall" datatype="html">
+        <source>Colonne vide</source>
+        <target>Empty tall cabinet</target>
+      </trans-unit>
+      <trans-unit id="templateRule.noParts" datatype="html">
+        <source>Le modèle n&apos;a encore aucune pièce.</source>
+        <target>The template has no parts yet.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
