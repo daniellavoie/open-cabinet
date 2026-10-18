@@ -21,6 +21,11 @@ public class AnthropicConfiguration {
 	String apiKey;
 
 	/**
+	 * The provider's address when not the default, such as a proxy.
+	 */
+	String baseUrl;
+
+	/**
 	 * Builds Design Proposals.
 	 */
 	String builderModel;

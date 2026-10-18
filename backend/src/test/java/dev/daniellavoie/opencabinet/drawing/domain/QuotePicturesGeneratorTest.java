@@ -6,8 +6,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.cutlist.domain.SampleKitchen;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape;
@@ -66,7 +68,7 @@ class QuotePicturesGeneratorTest {
 
 	@Test
 	void picturesAreStoredAndReadBackUnchanged() throws Exception {
-		var mapper = new ObjectMapper();
+		var mapper = JsonConfiguration.configure(JsonMapper.builder()).build();
 		var json = mapper.writeValueAsString(PICTURES);
 
 		List<View> read = mapper.readValue(json,

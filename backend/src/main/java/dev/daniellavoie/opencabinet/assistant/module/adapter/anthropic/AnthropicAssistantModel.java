@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.anthropic.AnthropicChatOptions;
-import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -41,7 +40,7 @@ public class AnthropicAssistantModel implements AssistantModel {
 		this.chatModel = Optional.ofNullable(configuration.getApiKey())
 				.filter(key -> !key.isBlank())
 				.map(key -> AnthropicChatModel.builder()
-						.anthropicApi(AnthropicApi.builder().apiKey(key).build())
+						.options(AnthropicChatOptions.builder().apiKey(key).baseUrl(configuration.getBaseUrl()).build())
 						.build());
 		for (var tier : ModelTier.values()) {
 			prices(modelFor(tier));

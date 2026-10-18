@@ -37,12 +37,12 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(TemplateRuleException.class)
 	public ResponseEntity<ErrorResponse> templateRules(TemplateRuleException exception) {
-		return error(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), exception.getViolations());
+		return error(HttpStatus.UNPROCESSABLE_CONTENT, exception.getMessage(), exception.getViolations());
 	}
 
 	@ExceptionHandler(ConstructionRuleException.class)
 	public ResponseEntity<ErrorResponse> constructionRules(ConstructionRuleException exception) {
-		return error(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), exception.getViolations());
+		return error(HttpStatus.UNPROCESSABLE_CONTENT, exception.getMessage(), exception.getViolations());
 	}
 
 	private ResponseEntity<ErrorResponse> error(HttpStatus status, String message, List<?> details) {

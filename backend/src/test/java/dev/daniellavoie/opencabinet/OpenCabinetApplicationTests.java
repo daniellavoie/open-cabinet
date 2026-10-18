@@ -20,19 +20,20 @@ import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 
@@ -54,13 +55,16 @@ import dev.daniellavoie.opencabinet.template.domain.port.backend.ShopCabinetTemp
 class OpenCabinetApplicationTests {
 	@Container
 	@ServiceConnection
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+	static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
 	@Autowired
 	MockMvc mockMvc;
 
 	@Autowired
 	ObjectMapper objectMapper;
+
+	@Autowired
+	JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	ShopCabinetTemplateRepository presets;
@@ -137,7 +141,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$", hasSize(14)));
 
 		// A Milestone 3 preset becomes a Shop library template, its size kept as the default.
-		var shopId = UUID.fromString(read(mockMvc.perform(as(owner, get("/api/shop")))).get("id").asText());
+		var shopId = UUID.fromString(read(mockMvc.perform(as(owner, get("/api/shop")))).get("id").asString());
 		presets.save(ShopCabinetTemplate.builder().id(UUID.randomUUID()).name("Vanité 30").baseCode("BASE_DOOR")
 				.preset(Cabinet.builder().templateCode("BASE_DOOR").templateVersion(1).widthMm(762).heightMm(876.3)
 						.depthMm(533.4).shelfCount(1).build())
@@ -158,13 +162,13 @@ class OpenCabinetApplicationTests {
 
 		var project = read(mockMvc.perform(as(owner, post("/api/project"))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"clientId\":\"" + client.get("id").asText() + "\",\"name\":\"Cuisine\"}"))
+				.content("{\"clientId\":\"" + client.get("id").asString() + "\",\"name\":\"Cuisine\"}"))
 				.andExpect(status().isOk()));
-		var projectId = project.get("id").asText();
-		var wallId = project.at("/design/walls/0/id").asText();
+		var projectId = project.get("id").asString();
+		var wallId = project.at("/design/walls/0/id").asString();
 
 		var update = objectMapper.createObjectNode();
-		update.put("clientId", client.get("id").asText());
+		update.put("clientId", client.get("id").asString());
 		update.put("name", "Cuisine");
 		var design = (ObjectNode) project.get("design").deepCopy();
 		var cabinets = design.putArray("cabinets");
@@ -187,7 +191,7 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, put("/api/project/" + projectId))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(overlapping.toString()))
-				.andExpect(status().isUnprocessableEntity())
+				.andExpect(status().isUnprocessableContent())
 				.andExpect(jsonPath("$.details[0].code").value("OVERLAP"));
 
 		update.put("nestingLayout", "CROSSCUT_FIRST");
@@ -197,6 +201,18 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.design.cabinets", hasSize(3)))
 				.andExpect(jsonPath("$.nestingLayout").value("CROSSCUT_FIRST"));
+
+		// A design saved before a field existed still loads, the field at its default.
+		jdbcTemplate.update("UPDATE project SET design = jsonb_set(design, '{cabinets,0}', (design #> '{cabinets,0}') - 'mirrored' - 'shelfCount') WHERE id = ?::uuid",
+				projectId);
+		mockMvc.perform(as(owner, get("/api/project/" + projectId)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.design.cabinets[0].mirrored").value(false))
+				.andExpect(jsonPath("$.design.cabinets[0].shelfCount").value(0));
+		mockMvc.perform(as(owner, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(update.toString()))
+				.andExpect(status().isOk());
 
 		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output")))
 				.andExpect(status().isOk())
@@ -233,7 +249,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.draft.assembly.parts").isNotEmpty())
 				.andExpect(jsonPath("$.sourceCabinetId").value("c1"))
 				.andExpect(jsonPath("$.versions", hasSize(0))));
-		var templateId = template.get("id").asText();
+		var templateId = template.get("id").asString();
 		var draft = (ObjectNode) template.get("draft");
 		mockMvc.perform(as(owner, put("/api/project-template/" + templateId))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -272,7 +288,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.shared").value(true))
 				.andExpect(jsonPath("$.projectId").doesNotExist()));
-		mockMvc.perform(as(owner, delete("/api/project-template/" + libraryDraft.get("id").asText())))
+		mockMvc.perform(as(owner, delete("/api/project-template/" + libraryDraft.get("id").asString())))
 				.andExpect(status().isNoContent());
 		var fromScratch = read(mockMvc.perform(as(owner, post("/api/template"))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -282,7 +298,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.draft.defaultElevationMm").value(greaterThan(0.0)))
 				.andExpect(jsonPath("$.draft.assembly.parts").isEmpty())
 				.andExpect(jsonPath("$.draft.assembly.hardware").isEmpty()));
-		mockMvc.perform(as(owner, delete("/api/project-template/" + fromScratch.get("id").asText())))
+		mockMvc.perform(as(owner, delete("/api/project-template/" + fromScratch.get("id").asString())))
 				.andExpect(status().isNoContent());
 		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -296,7 +312,7 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"changeNote\": \"Plus large\"}"))
-				.andExpect(status().isUnprocessableEntity())
+				.andExpect(status().isUnprocessableContent())
 				.andExpect(jsonPath("$.details[0].code").value("TOO_BIG_FOR_SHEET"));
 		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/cabinet-template")))
 				.andExpect(status().isOk())
@@ -319,7 +335,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.pictures").doesNotExist())
 				.andExpect(jsonPath("$.displayNumber").value("S-0001"))
 				.andExpect(jsonPath("$.content.lines", hasSize(2))));
-		var quoteId = quote.get("id").asText();
+		var quoteId = quote.get("id").asString();
 
 		mockMvc.perform(as(owner, get("/api/quote/draft")))
 				.andExpect(jsonPath("$", hasSize(1)))
@@ -338,7 +354,7 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.displayNumber").value("S-0001-R1")));
 		mockMvc.perform(as(owner, post("/api/quote/" + quoteId + "/revise")))
 				.andExpect(status().isConflict());
-		mockMvc.perform(as(owner, post("/api/quote/" + revision.get("id").asText() + "/send")))
+		mockMvc.perform(as(owner, post("/api/quote/" + revision.get("id").asString() + "/send")))
 				.andExpect(status().isOk());
 		mockMvc.perform(as(owner, get("/api/quote/" + quoteId)))
 				.andExpect(jsonPath("$.status").value("SUPERSEDED"));
@@ -373,7 +389,7 @@ class OpenCabinetApplicationTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"email\":\"sophie@example.ca\",\"role\":\"DESIGNER\"}"))
 				.andExpect(status().isOk()));
-		var token = created.get("token").asText();
+		var token = created.get("token").asString();
 
 		mockMvc.perform(as(owner, get("/api/invitation")))
 				.andExpect(jsonPath("$", hasSize(1)));
@@ -420,8 +436,8 @@ class OpenCabinetApplicationTests {
 
 		var members = read(mockMvc.perform(as(owner, get("/api/member"))));
 		var ownerId = StreamSupport.stream(members.spliterator(), false)
-				.filter(member -> member.get("role").asText().equals("OWNER"))
-				.map(member -> member.get("id").asText())
+				.filter(member -> member.get("role").asString().equals("OWNER"))
+				.map(member -> member.get("id").asString())
 				.findFirst()
 				.orElseThrow();
 
@@ -430,10 +446,10 @@ class OpenCabinetApplicationTests {
 				.content("{\"name\":\"Nadia\"}")));
 		var project = read(mockMvc.perform(as(owner, post("/api/project"))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"clientId\":\"" + client.get("id").asText() + "\",\"name\":\"Vanité\"}")));
-		var projectId = project.get("id").asText();
+				.content("{\"clientId\":\"" + client.get("id").asString() + "\",\"name\":\"Vanité\"}")));
+		var projectId = project.get("id").asString();
 		var update = objectMapper.createObjectNode()
-				.put("clientId", client.get("id").asText())
+				.put("clientId", client.get("id").asString())
 				.put("name", "Vanité")
 				.set("design", project.get("design"));
 

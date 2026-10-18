@@ -11,11 +11,13 @@ import java.util.UUID;
 
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.ProjectOutput;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.model.Appliance;
@@ -118,7 +120,7 @@ public final class SampleKitchen {
 
 	private static List<CabinetTemplate> readTemplates() {
 		try (var input = new ClassPathResource("cabinet-templates.json").getInputStream()) {
-			return new ObjectMapper().readValue(input, new TypeReference<List<CabinetTemplate>>() {
+			return JsonConfiguration.configure(JsonMapper.builder()).build().readValue(input, new TypeReference<List<CabinetTemplate>>() {
 			});
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);

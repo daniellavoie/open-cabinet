@@ -17,9 +17,10 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Published Template Versions never change (docs/adr/0005-cabinet-keeps-its-template-version.md).
@@ -27,8 +28,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * content: editing a published version fails here, and a new version must be added to that list.
  */
 class CabinetTemplateVersionsTest {
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-			.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+	private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+			.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+			.build();
 
 	@Test
 	void publishedVersionsNeverChange() throws IOException {
@@ -110,7 +112,7 @@ class CabinetTemplateVersionsTest {
 			var canonical = OBJECT_MAPPER.writeValueAsString(version);
 			return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
 					.digest(canonical.getBytes(StandardCharsets.UTF_8)));
-		} catch (IOException | NoSuchAlgorithmException exception) {
+		} catch (NoSuchAlgorithmException exception) {
 			throw new IllegalStateException(exception);
 		}
 	}

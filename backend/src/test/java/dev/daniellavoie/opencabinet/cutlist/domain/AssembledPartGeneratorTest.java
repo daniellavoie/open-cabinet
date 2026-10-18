@@ -18,9 +18,11 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.cutlist.domain.model.Part;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
@@ -76,8 +78,8 @@ class AssembledPartGeneratorTest {
 
 	private static CabinetTemplate template() throws IOException {
 		try (var input = new ClassPathResource("template-assembly/cases.json").getInputStream()) {
-			var cases = new ObjectMapper().readTree(input);
-			var assembly = new ObjectMapper().treeToValue(cases.get(0).get("assembly"), TemplateAssembly.class);
+			var cases = JsonConfiguration.configure(JsonMapper.builder()).build().readTree(input);
+			var assembly = JsonConfiguration.configure(JsonMapper.builder()).build().treeToValue(cases.get(0).get("assembly"), TemplateAssembly.class);
 			return CabinetTemplate.builder().code("TEST_BASE").version(1).type(CabinetType.BASE).maxShelfCount(4)
 					.frontRows(List.of()).assembly(assembly).build();
 		}

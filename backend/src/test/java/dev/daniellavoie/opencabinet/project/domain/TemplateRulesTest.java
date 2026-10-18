@@ -11,9 +11,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRole;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.StandardValue;
@@ -23,7 +25,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Standa
  * {@code template-rules.ts}.
  */
 class TemplateRulesTest {
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final ObjectMapper OBJECT_MAPPER = JsonConfiguration.configure(JsonMapper.builder()).build();
 
 	record CaseShop(Map<StandardValue, Double> standard, Map<MaterialRole, Double> thicknesses,
 			Map<MaterialRole, TemplateRules.Sheet> sheets, double trimMm) {

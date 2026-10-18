@@ -7,8 +7,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.cutlist.domain.SampleKitchen;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
 import dev.daniellavoie.opencabinet.drawing.domain.model.Shape;
@@ -108,7 +110,7 @@ class ShopDrawingsGeneratorTest {
 	@Test
 	void assembledCabinetsAreDrawnFromTheirParts() throws Exception {
 		var source = ShopDrawingsSamples.source(DrawingLanguage.FR, Units.IMPERIAL);
-		var mapper = new ObjectMapper();
+		var mapper = JsonConfiguration.configure(JsonMapper.builder()).build();
 		var assembly = mapper.treeToValue(mapper.readTree(new ClassPathResource("template-assembly/cases.json")
 				.getInputStream()).get(0).get("assembly"), TemplateAssembly.class);
 		var template = CabinetTemplate.builder().code("TEST_BASE").version(1).type(CabinetType.BASE).assembly(assembly)

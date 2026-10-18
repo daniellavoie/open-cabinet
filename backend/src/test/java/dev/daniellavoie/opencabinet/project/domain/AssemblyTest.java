@@ -11,9 +11,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import dev.daniellavoie.opencabinet.common.config.JsonConfiguration;
 import dev.daniellavoie.opencabinet.project.domain.model.PartRole;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRole;
@@ -24,7 +26,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Standa
  * {@code assembly.ts} (docs/adr/0006-template-is-an-assembly-of-parts.md).
  */
 class AssemblyTest {
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final ObjectMapper OBJECT_MAPPER = JsonConfiguration.configure(JsonMapper.builder()).build();
 
 	record CaseContext(double width, double height, double depth, int shelfCount, List<Double> dividers,
 			Map<StandardValue, Double> standard, Map<MaterialRole, Double> thicknesses, boolean mirrored) {
