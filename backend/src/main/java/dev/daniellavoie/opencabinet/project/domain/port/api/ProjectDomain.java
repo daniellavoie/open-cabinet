@@ -34,6 +34,14 @@ public interface ProjectDomain {
 	List<CabinetTemplate> templates();
 
 	/**
+	 * Every Template Version a Project's Cabinets can use: the starter library's and those of the
+	 * templates designed for it.
+	 */
+	List<CabinetTemplate> templates(Project project);
+
+	List<CabinetTemplate> templates(UUID projectId, Principal principal);
+
+	/**
 	 * Takes or renews the editing lock when it is free, lapsed or already ours; otherwise reports
 	 * who holds it.
 	 */

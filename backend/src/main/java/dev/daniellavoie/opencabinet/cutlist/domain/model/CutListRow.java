@@ -16,6 +16,10 @@ import lombok.extern.jackson.Jacksonized;
 @Builder(toBuilder = true)
 public class CutListRow {
 	PartRole role;
+	/**
+	 * The template's name for an OTHER Part.
+	 */
+	String name;
 	UUID materialId;
 	String materialName;
 	double lengthMm;

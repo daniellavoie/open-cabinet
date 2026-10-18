@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import dev.daniellavoie.opencabinet.project.domain.model.ConstructionRuleException;
+import dev.daniellavoie.opencabinet.template.domain.model.TemplateRuleException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -32,6 +33,11 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<ErrorResponse> forbidden(AccessDeniedException exception) {
 		return error(HttpStatus.FORBIDDEN, exception.getMessage(), List.of());
+	}
+
+	@ExceptionHandler(TemplateRuleException.class)
+	public ResponseEntity<ErrorResponse> templateRules(TemplateRuleException exception) {
+		return error(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), exception.getViolations());
 	}
 
 	@ExceptionHandler(ConstructionRuleException.class)

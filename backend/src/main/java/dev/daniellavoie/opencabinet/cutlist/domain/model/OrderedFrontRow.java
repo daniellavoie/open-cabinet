@@ -16,6 +16,10 @@ import lombok.extern.jackson.Jacksonized;
 @Builder(toBuilder = true)
 public class OrderedFrontRow {
 	PartRole role;
+	/**
+	 * The template's name for an OTHER Part.
+	 */
+	String name;
 	UUID materialId;
 	String materialName;
 	double heightMm;

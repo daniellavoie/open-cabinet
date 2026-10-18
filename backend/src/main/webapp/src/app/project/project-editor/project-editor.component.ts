@@ -2,12 +2,13 @@ import { NgFor, NgIf } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, Inject, LOCALE_ID, OnDestroy } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute, ParamMap, Router, RouterLink } from "@angular/router";
 import { finalize, forkJoin, interval, map, Subscription, switchMap, tap } from "rxjs";
 
 import { CatalogService } from "../../catalog/catalog-service";
 import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
+import { ProjectTemplateService } from "../../template/project-template-service";
 import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
@@ -16,7 +17,7 @@ import { OutputDocument, ProjectOutput } from "../../cutlist/model/project-outpu
 import { NestingComponent } from "../../cutlist/nesting/nesting.component";
 import { MemberService } from "../../member/member-service";
 import { QuotesComponent } from "../../quote/quotes/quotes.component";
-import { TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
+import { VIOLATION_LABELS } from "../../util/labels";
 import { ErrorResponse } from "../../util/model/error-response";
 import { MM_PER_INCH } from "../../util/units/units";
 import { checkConstructionRules } from "../construction-rules";
@@ -28,7 +29,7 @@ import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
 import { OnWall, snapOffset } from "../room-layout";
 import { ItemMove, RoomViewComponent } from "../room-view/room-view.component";
-import { newerVersions, outdatedCabinets, RefusedChange, updateToLatest } from "../template-versions";
+import { newerVersions, outdatedCabinets, RefusedChange, templateName, updateToLatest } from "../template-versions";
 
 type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
 
@@ -62,7 +63,7 @@ const LOCK_RENEWAL_MS = 45_000;
   templateUrl: "./project-editor.component.html",
 })
 export class ProjectEditorComponent implements OnDestroy {
-  readonly templateLabels = TEMPLATE_LABELS;
+  readonly templateName = (code: string) => templateName(this.templates, code);
   readonly violationLabels = VIOLATION_LABELS;
 
   readonly tabs: { id: Tab; label: string }[] = [
@@ -114,13 +115,15 @@ export class ProjectEditorComponent implements OnDestroy {
     clientService: ClientService,
     catalogService: CatalogService,
     private shopTemplateService: ShopTemplateService,
+    private projectTemplateService: ProjectTemplateService,
+    private router: Router,
     @Inject(LOCALE_ID) private locale: string,
   ) {
     route.paramMap
       .pipe(map(paramMap => paramMap.get("projectId")!))
       .pipe(switchMap(projectId => forkJoin([
         this.projectService.findById(projectId),
-        this.projectService.templates(),
+        this.projectService.projectTemplates(projectId),
         clientService.findAll(),
         catalogService.findAll(),
         shopTemplateService.findAll(),
@@ -134,8 +137,39 @@ export class ProjectEditorComponent implements OnDestroy {
         this.saved = project;
         this.setDraft(structuredClone(project));
         this.takeLock();
+        this.switchFromQuery(route.snapshot.queryParamMap);
       }))
       .subscribe();
+  }
+
+  /**
+   * After a template's first version is published, the designer comes back
+   * here offering it to the Cabinet it was made from: the switch is made in
+   * the draft, for the Member to save.
+   */
+  private switchFromQuery(query: ParamMap) {
+    const cabinetId = query.get("switchCabinet");
+    const code = query.get("template");
+    const version = Number(query.get("version"));
+    if (!cabinetId || !code || !version || !this.draft!.design.cabinets.some(cabinet => cabinet.id === cabinetId)) {
+      return;
+    }
+    this.setDesign(updateCabinet(this.draft!.design, cabinetId, { templateCode: code, templateVersion: version }));
+    this.message = $localize`:@@editor.switchedToTemplate:${this.cabinetLabels.get(cabinetId) ?? ""}:label: utilise maintenant « ${templateName(this.templates, code)}:name: ». Enregistrez pour le garder.`;
+    this.router.navigate([], { queryParams: {}, replaceUrl: true });
+  }
+
+  /**
+   * Starts a template from the chosen one or from a saved Cabinet, then opens
+   * the designer.
+   */
+  designTemplate(request: { name: string; templateCode?: string; cabinetId?: string }) {
+    const project = this.saved!;
+    this.error = "";
+    this.projectTemplateService.create(project.id, request)
+      .pipe(tap(template => this.router.navigate(["/projects", project.id, "templates", template.id])))
+      .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
+        ?? $localize`:@@editor.designError:Impossible de créer le modèle.` });
   }
 
   ngOnDestroy() {

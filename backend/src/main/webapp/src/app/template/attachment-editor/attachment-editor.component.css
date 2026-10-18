@@ -1,0 +1,20 @@
+.attachment {
+  display: grid;
+  grid-template-columns: 64px 1fr 1fr auto;
+  gap: var(--oc-space-1);
+  align-items: center;
+}
+
+.attachment.picking {
+  outline: 2px solid var(--oc-accent-default);
+  border-radius: var(--oc-radius-sm);
+}
+
+.face {
+  font-size: var(--oc-font-size-sm);
+  color: var(--oc-text-secondary);
+}
+
+.offset {
+  margin: var(--oc-space-1) 0 var(--oc-space-2) 64px;
+}

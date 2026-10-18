@@ -73,7 +73,10 @@
   <div class="add-row">
     <select class="form-select form-select-sm" [(ngModel)]="newTemplateCode" i18n-aria-label="@@design.template" aria-label="Modèle">
       <optgroup i18n-label="@@design.starterTemplates" label="Modèles de départ">
-        <option *ngFor="let template of starterTemplates" [value]="template.code">{{ templateLabels[template.code] ?? template.code }}</option>
+        <option *ngFor="let template of starterTemplates" [value]="template.code">{{ templateName(template.code) }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@design.projectTemplates" label="Modèles du projet" *ngIf="projectTemplates.length > 0">
+        <option *ngFor="let template of projectTemplates" [value]="template.code">{{ template.name }}</option>
       </optgroup>
       <optgroup i18n-label="@@design.shopTemplates" label="Modèles de l'atelier" *ngIf="shopTemplates.length > 0">
         <option *ngFor="let template of shopTemplates" [value]="'shop:' + template.id">{{ template.name }}</option>
@@ -84,6 +87,16 @@
     </select>
     <button class="btn btn-sm btn-primary" (click)="addCabinet()" i18n="@@design.add">Ajouter</button>
   </div>
+  <div class="design-template">
+    <button class="btn btn-sm btn-link" *ngIf="newDesign?.from !== 'template'" (click)="newDesign = { from: 'template', name: '' }"
+      [disabled]="newTemplateCode.startsWith('shop:')" i18n="@@design.designFromTemplate">Concevoir un modèle à partir de celui-ci…</button>
+    <ng-container *ngIf="newDesign?.from === 'template'">
+      <input class="form-control form-control-sm" [(ngModel)]="newDesign!.name" (keydown.enter)="startDesign()"
+        i18n-placeholder="@@design.newTemplateName" placeholder="Nom du nouveau modèle" />
+      <button class="btn btn-sm btn-primary" (click)="startDesign()" [disabled]="!newDesign!.name.trim()" i18n="@@design.design">Concevoir</button>
+      <button class="btn btn-sm btn-link" (click)="newDesign = null" i18n="@@common.cancel">Annuler</button>
+    </ng-container>
+  </div>
 </section>
 
 <section class="block">
@@ -93,7 +106,7 @@
     <li *ngFor="let cabinet of orderedCabinets" [class.selected]="cabinet.id === selectedId"
       [class.invalid]="violationsOf(cabinet.id).length > 0" (click)="selectItem.emit(cabinet.id)">
       <span>
-        {{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateLabels[cabinet.templateCode] ?? cabinet.templateCode }}
+        {{ cabinetLabels.get(cabinet.id) ?? "•" }} — {{ templateName(cabinet.templateCode) }}
         <span class="badge text-bg-warning" *ngIf="outdatedIds.has(cabinet.id)" i18n-title="@@design.updateAvailable"
           title="Une version plus récente de son modèle existe" i18n="@@design.updateBadge">mise à jour</span>
       </span>
@@ -104,7 +117,7 @@
 
 <section class="block selected-cabinet" *ngIf="selected && selectedTemplate">
   <h2>
-    <span>{{ templateLabels[selected.templateCode] ?? selected.templateCode }}</span>
+    <span>{{ templateName(selected.templateCode) }}</span>
     <button class="btn btn-sm btn-link text-danger" (click)="removeSelected()" i18n="@@common.remove">Retirer</button>
   </h2>
   <div class="template-version">
@@ -186,14 +199,25 @@
         [ngModel]="selected.shelfCount" (ngModelChange)="updateSelected({ shelfCount: $event })" />
     </ng-container>
   </div>
+  <div class="save-template">
+    <button class="btn btn-sm btn-outline-secondary" *ngIf="newDesign?.from !== 'cabinet'" (click)="newDesign = { from: 'cabinet', name: '' }"
+      [disabled]="!saved" i18n-title="@@design.saveFirst" title="Enregistrez le projet d'abord"
+      i18n="@@design.designFromCabinet">Créer un modèle à partir de ce caisson…</button>
+    <ng-container *ngIf="newDesign?.from === 'cabinet'">
+      <input class="form-control form-control-sm" [(ngModel)]="newDesign!.name" (keydown.enter)="startDesign()"
+        i18n-placeholder="@@design.newTemplateName" placeholder="Nom du nouveau modèle" />
+      <button class="btn btn-sm btn-primary" (click)="startDesign()" [disabled]="!newDesign!.name.trim()" i18n="@@design.design">Concevoir</button>
+      <button class="btn btn-sm btn-link" (click)="newDesign = null" i18n="@@common.cancel">Annuler</button>
+    </ng-container>
+  </div>
   <div class="save-template" *ngIf="canSaveTemplates">
-    <button class="btn btn-sm btn-outline-secondary" *ngIf="templateName === null" (click)="templateName = ''"
+    <button class="btn btn-sm btn-outline-secondary" *ngIf="presetName === null" (click)="presetName = ''"
       i18n="@@design.saveAsTemplate">Enregistrer comme modèle de l'atelier</button>
-    <ng-container *ngIf="templateName !== null">
-      <input class="form-control form-control-sm" id="templateName" [(ngModel)]="templateName" (keydown.enter)="saveSelectedAsTemplate()"
+    <ng-container *ngIf="presetName !== null">
+      <input class="form-control form-control-sm" id="templateName" [(ngModel)]="presetName" (keydown.enter)="saveSelectedAsTemplate()"
         i18n-placeholder="@@design.templateName" placeholder="Nom du modèle" />
-      <button class="btn btn-sm btn-primary" (click)="saveSelectedAsTemplate()" [disabled]="!templateName.trim()" i18n="@@common.save">Enregistrer</button>
-      <button class="btn btn-sm btn-link" (click)="templateName = null" i18n="@@common.cancel">Annuler</button>
+      <button class="btn btn-sm btn-primary" (click)="saveSelectedAsTemplate()" [disabled]="!presetName.trim()" i18n="@@common.save">Enregistrer</button>
+      <button class="btn btn-sm btn-link" (click)="presetName = null" i18n="@@common.cancel">Annuler</button>
     </ng-container>
   </div>
   <div class="dividers" *ngIf="allowsDividers(selectedTemplate)">

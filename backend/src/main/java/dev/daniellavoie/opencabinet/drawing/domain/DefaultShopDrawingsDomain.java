@@ -51,7 +51,7 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 		var catalog = catalogDomain.findByShop(shopId);
 		var output = cutListDomain.output(project, standard, catalog);
 
-		var templates = templates();
+		var templates = templates(project);
 		Map<UUID, Material> materials = catalog.stream()
 				.collect(Collectors.toMap(Material::getId, Function.identity()));
 
@@ -70,7 +70,7 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 	@Override
 	public List<View> quotePictures(Project project, ConstructionStandard standard, Units units,
 			List<Material> catalog) {
-		return QuotePicturesGenerator.generate(new ShopDrawingsGenerator.Source(project.getDesign(), templates(),
+		return QuotePicturesGenerator.generate(new ShopDrawingsGenerator.Source(project.getDesign(), templates(project),
 				Map.of(), List.of(), catalog.stream().collect(Collectors.toMap(Material::getId, Function.identity())),
 				standard, units, DrawingLanguage.FR));
 	}
@@ -80,8 +80,8 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 		return renderer.pdf(drawings(projectId, language, principal));
 	}
 
-	private Map<String, CabinetTemplate> templates() {
-		return projectDomain.templates().stream()
+	private Map<String, CabinetTemplate> templates(Project project) {
+		return projectDomain.templates(project).stream()
 				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 	}
 }

@@ -185,8 +185,10 @@ final class PartGenerator {
 			var grain = part.grain();
 			var other = Assembly.otherAxis(part.thickness(), grain);
 			var builder = new Builder(cabinet, label, parts, part.front() ? orderedStyle : null);
+			var added = parts.size();
 			if (part.front() && orderedStyle != null) {
 				builder.front(part.role(), null, box.size(Axis.Y), box.size(Axis.X), true, null, 1);
+				named(parts, added, part.name());
 				continue;
 			}
 			var banding = part.banding();
@@ -198,6 +200,7 @@ final class PartGenerator {
 			var acrossGrain = (int) faces.stream().filter(face -> face.axis() == grain).count();
 			builder.add(part.role(), resolve.apply(part.material()), box.size(grain), box.size(other), alongGrain,
 					acrossGrain, bandingId, 1);
+			named(parts, added, part.name());
 		}
 
 		addFinishedEnds(new Builder(cabinet, label, parts, null), cabinet,
@@ -207,6 +210,17 @@ final class PartGenerator {
 		result.hardware().forEach(item -> add(hardware, CabinetAssemblies.materialId(item.material(), standard),
 				item.quantity()));
 		return new PartSet(parts, hardware, mouldings);
+	}
+
+	/**
+	 * Gives the Parts added since {@code from} the template's name for them, if any.
+	 */
+	private static void named(List<Part> parts, int from, String name) {
+		if (name != null && !name.isBlank()) {
+			for (int index = from; index < parts.size(); index++) {
+				parts.set(index, parts.get(index).toBuilder().name(name.trim()).build());
+			}
+		}
 	}
 
 	/**

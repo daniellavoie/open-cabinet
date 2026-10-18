@@ -1,0 +1,142 @@
+<div class="designer" *ngIf="draft && template">
+  <header class="designer-header">
+    <a class="back" [routerLink]="['/projects', template.projectId]" i18n="@@designer.back">← Projet</a>
+    <input class="form-control name" [(ngModel)]="name" i18n-aria-label="@@designer.name" aria-label="Nom du modèle" />
+    <span class="status" *ngIf="latestVersion > 0" i18n="@@designer.versions">Version {{ latestVersion }} publiée</span>
+    <span class="status" *ngIf="latestVersion === 0" i18n="@@designer.unpublished">Jamais publié</span>
+    <span class="status invalid" *ngIf="violations.length > 0" i18n="@@designer.problems">{{ violations.length }} problème(s)</span>
+    <button class="btn btn-outline-secondary" (click)="save()" [disabled]="!dirty || saving" i18n="@@common.save">Enregistrer</button>
+    <button class="btn btn-primary" (click)="publishing = true" [disabled]="saving || violations.length > 0" i18n="@@designer.publish">Publier…</button>
+  </header>
+
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-info" *ngIf="message">{{ message }}</div>
+  <div class="alert alert-success offer" *ngIf="offerSwitch">
+    <span i18n="@@designer.offerSwitch">Utiliser ce modèle pour le caisson d'où il vient ?</span>
+    <button class="btn btn-sm btn-primary" (click)="switchCabinet()" i18n="@@designer.useIt">Oui, l'utiliser</button>
+    <button class="btn btn-sm btn-link" (click)="offerSwitch = false" i18n="@@designer.notNow">Non</button>
+  </div>
+  <div class="publish block" *ngIf="publishing">
+    <label for="changeNote" i18n="@@designer.changeNote">Ce qui change pour les caissons qui passeront à la version {{ latestVersion + 1 }}</label>
+    <textarea class="form-control" id="changeNote" rows="2" [(ngModel)]="changeNote"></textarea>
+    <p class="hint" *ngIf="latestVersion === 0" i18n="@@designer.firstVersion">Facultatif pour une première version.</p>
+    <div class="actions">
+      <button class="btn btn-primary" (click)="publish()" [disabled]="saving || (latestVersion > 0 && !changeNote.trim())"
+        i18n="@@designer.publishVersion">Publier la version {{ latestVersion + 1 }}</button>
+      <button class="btn btn-link" (click)="publishing = false" i18n="@@common.cancel">Annuler</button>
+    </div>
+  </div>
+
+  <div class="columns">
+    <aside class="left">
+      <section class="block">
+        <h2 i18n="@@designer.cabinet">Caisson</h2>
+        <div class="fields">
+          <label for="templateType" i18n="@@designer.type">Type</label>
+          <select class="form-select form-select-sm" id="templateType" [ngModel]="draft.type" (ngModelChange)="set({ type: $event })">
+            <option *ngFor="let type of types" [value]="type">{{ typeLabels[type] }}</option>
+          </select>
+        </div>
+        <table class="ranges">
+          <thead>
+            <tr>
+              <th></th>
+              <th *ngFor="let size of sizes">{{ sizeLabels[size] }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dimension of dimensions">
+              <th>{{ dimension.label }}</th>
+              <td *ngFor="let size of sizes">
+                <length-input [inputId]="'range-' + dimension.key + size" [units]="units" [valueMm]="range(dimension.key, size)"
+                  (valueMmChange)="setRange(dimension.key, size, $event)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="fields">
+          <label for="shelves" i18n="@@designer.shelves">Tablettes (défaut, max.)</label>
+          <div class="pair">
+            <input class="form-control form-control-sm" id="shelves" type="number" min="0" [ngModel]="draft.defaultShelfCount"
+              (ngModelChange)="set({ defaultShelfCount: $event })" />
+            <input class="form-control form-control-sm" type="number" min="0" [ngModel]="draft.maxShelfCount"
+              (ngModelChange)="set({ maxShelfCount: $event })" i18n-aria-label="@@designer.maxShelves" aria-label="Tablettes au plus" />
+          </div>
+          <ng-container *ngIf="draft.type === 'WALL'">
+            <label for="elevation" i18n="@@designer.elevation">Hauteur du bas</label>
+            <length-input inputId="elevation" [units]="units" [valueMm]="draft.defaultElevationMm"
+              (valueMmChange)="set({ defaultElevationMm: $event })" />
+          </ng-container>
+          <label for="blind" i18n="@@designer.blind">Côté aveugle</label>
+          <length-input inputId="blind" [units]="units" [valueMm]="draft.blindWidthMm ?? 0" (valueMmChange)="set({ blindWidthMm: $event })" />
+        </div>
+      </section>
+
+      <section class="block">
+        <h2 i18n="@@designer.add">Ajouter</h2>
+        <div class="palette">
+          <button class="btn btn-sm btn-outline-secondary" (click)="add('carcass')" i18n="@@designer.addCarcass">Panneau du caisson</button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="add('back')" i18n="@@designer.addBack">Panneau du dos</button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="add('frontPanel')" i18n="@@designer.addFrontPanel">Panneau des façades</button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="add('stack')" i18n="@@designer.addStack">Pile de façades</button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="add('moulding')" i18n="@@designer.addMoulding">Moulure</button>
+        </div>
+        <label class="form-check divider">
+          <input class="form-check-input" type="checkbox" [ngModel]="!!assembly.divider" (ngModelChange)="setDivider($event)" />
+          <span i18n="@@designer.dividers">Accepte des séparateurs</span>
+        </label>
+      </section>
+
+      <section class="block">
+        <h2 i18n="@@designer.parts">Pièces</h2>
+        <ul class="items">
+          <li *ngFor="let item of items" [class.selected]="item.id === selected" [class.invalid]="problemsOf(item.id) > 0"
+            (click)="select(item.id)">
+            <span>{{ item.label }}</span>
+            <span class="meta" *ngIf="item.kind === 'stack'" i18n="@@designer.stack">façades</span>
+            <span class="meta" *ngIf="item.kind === 'divider'" i18n="@@designer.divider">séparateur</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="block" *ngIf="violations.length > 0">
+        <h2 class="text-danger" i18n="@@designer.rules">Règles du modèle</h2>
+        <ul class="violations">
+          <li *ngFor="let violation of violations" (click)="violation.partId && select(violation.partId)">
+            <strong *ngIf="violation.partId">{{ violation.partId }}</strong>
+            {{ ruleLabels[violation.code] ?? violation.code }}
+            <span class="meta" *ngIf="violation.size">({{ sizeLabels[violation.size] }})</span>
+          </li>
+        </ul>
+      </section>
+    </aside>
+
+    <section class="middle">
+      <div class="size-switch" role="tablist">
+        <button *ngFor="let option of sizes" role="tab" [class.active]="size === option" (click)="setSize(option)">{{ sizeLabels[option] }}</button>
+      </div>
+      <p class="hint picking" *ngIf="pending" i18n="@@designer.pickHint">Cliquez la face où la fixer : sur une autre pièce, ou sur le contour du caisson.</p>
+      <template-view class="view" [parts]="result.parts" [width]="range('Width', size)" [height]="range('Height', size)"
+        [depth]="range('Depth', size)" [selected]="selected" [attaching]="!!pending" (select)="select($event)" (pick)="onPick($event)" />
+      <section class="block">
+        <h2 i18n="@@designer.hardware">Quincaillerie</h2>
+        <hardware-panel [hardware]="hardware" [parts]="partNames" [stacks]="stackNames" [materials]="materials"
+          [units]="units" (itemChange)="changeHardware($event)" (add)="addHardware()" (remove)="removeHardware($event)" />
+      </section>
+    </section>
+
+    <aside class="right">
+      <section class="block" *ngIf="selected && partOf(selected) as part">
+        <part-panel [part]="part" [targets]="targetsFor(part.id)" [materials]="materials" [units]="units" [pendingFace]="pending"
+          [divider]="selectedIsDivider" (partChange)="setAssembly(selectedIsDivider ? setDividerPart(assembly, $event) : updatePartIn($event))"
+          (rename)="renameSelected($event)" (remove)="removeSelected()" (pick)="startPick($event)" />
+      </section>
+      <section class="block" *ngIf="selectedStack as stack">
+        <stack-panel [stack]="stack" [targets]="targetsFor(stack.id)" [materials]="materials" [units]="units" [pendingFace]="pending"
+          (stackChange)="setAssembly(updateStackIn($event))" (rename)="renameSelected($event)" (remove)="removeSelected()"
+          (pick)="startPick($event)" />
+      </section>
+      <p class="hint" *ngIf="!selected" i18n="@@designer.selectHint">Choisissez une pièce dans la liste ou dans la vue 3D.</p>
+    </aside>
+  </div>
+</div>

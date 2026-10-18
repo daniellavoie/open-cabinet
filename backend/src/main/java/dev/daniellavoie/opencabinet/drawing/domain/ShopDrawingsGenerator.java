@@ -429,7 +429,7 @@ final class ShopDrawingsGenerator {
 				.filter(part -> cabinet.getId().equals(part.getCabinetId())
 						|| part.getCabinetId() == null && label.equals(part.getCabinetLabel()))
 				.forEach(part -> rows.merge(List.of(
-						language.partRole(part.getRole()),
+						language.part(part.getRole(), part.getName()),
 						Optional.ofNullable(source.materials().get(part.getMaterialId())).map(Material::getName).orElse("")
 								+ (part.isOrdered() ? language.pick(" (commandée)", " (ordered)") : ""),
 						source.length(part.getLengthMm()),

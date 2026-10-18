@@ -9,7 +9,7 @@ import { LengthInputComponent } from "../../util/length-input/length-input.compo
 import { Units } from "../../util/units/units";
 import { addAppliance, addCabinet, addDivider, addFiller, addOpening, addWall, ItemChanges, moveDivider, removeCabinet, removeDivider, removeItem, removeWall, updateCabinet, updateItem, updateWall } from "../design-edits";
 import { allowsDividers, Appliance, ApplianceKind, Cabinet, CabinetTemplate, Design, Filler, Opening, OpeningKind, Violation, Wall } from "../model/design";
-import { changeVersions, latestVersions, newerVersions, RefusedChange, templateOf, versionsOf } from "../template-versions";
+import { changeVersions, isStarter, latestVersions, newerVersions, RefusedChange, templateName, templateOf, versionsOf } from "../template-versions";
 
 const OPENING_KINDS: OpeningKind[] = ["WINDOW", "DOORWAY"];
 const APPLIANCE_KINDS: ApplianceKind[] = ["FRIDGE", "RANGE", "DISHWASHER", "HOOD"];
@@ -58,10 +58,16 @@ export class DesignPanelComponent implements OnChanges {
   @Output() designChange = new EventEmitter<Design>();
   @Output() selectItem = new EventEmitter<string | null>();
   @Output() saveTemplate = new EventEmitter<{ name: string; cabinet: Cabinet }>();
+  /** Start designing a template from the chosen one, or from a saved Cabinet. */
+  @Output() designTemplate = new EventEmitter<{ name: string; templateCode?: string; cabinetId?: string }>();
+  /** Cabinets can only be made into templates once saved. */
+  @Input() saved = true;
 
   /** A starter template's code, or "shop:" and a Shop template's id. */
   newTemplateCode = "BASE_DOOR";
-  templateName: string | null = null;
+  presetName: string | null = null;
+  /** The name being typed for a new template: from the chosen template, or from the selected Cabinet. */
+  newDesign: { from: "template" | "cabinet"; name: string } | null = null;
   newWallId = "";
   newItemKind: ItemKind = "WINDOW";
   newItemWallId = "";
@@ -129,7 +135,16 @@ export class DesignPanelComponent implements OnChanges {
    * What new Cabinets are added from: each template's newest version.
    */
   get starterTemplates(): CabinetTemplate[] {
-    return latestVersions(this.templates);
+    return latestVersions(this.templates).filter(template => isStarter(template.code));
+  }
+
+  /** The newest version of each template designed for this Project. */
+  get projectTemplates(): CabinetTemplate[] {
+    return latestVersions(this.templates).filter(template => !isStarter(template.code));
+  }
+
+  templateName(code: string): string {
+    return templateName(this.templates, code);
   }
 
   /** Every version of the selected Cabinet's template, oldest first. */
@@ -170,7 +185,7 @@ export class DesignPanelComponent implements OnChanges {
   addCabinet() {
     const shopTemplate = this.shopTemplates.find(item => `shop:${item.id}` === this.newTemplateCode);
     const code = shopTemplate?.baseCode ?? this.newTemplateCode;
-    const template = this.starterTemplates.find(item => item.code === code);
+    const template = latestVersions(this.templates).find(item => item.code === code);
     if (!template || !this.newWallId) {
       return;
     }
@@ -207,11 +222,28 @@ export class DesignPanelComponent implements OnChanges {
     this.designChange.emit(removeDivider(this.design, this.selectedId!, index));
   }
 
+  /**
+   * Starts a new template, named as typed: from the template chosen to add, or
+   * from the selected Cabinet.
+   */
+  startDesign() {
+    const name = this.newDesign?.name.trim();
+    if (!name || !this.newDesign) {
+      return;
+    }
+    if (this.newDesign.from === "cabinet" && this.selected) {
+      this.designTemplate.emit({ name, cabinetId: this.selected.id });
+    } else if (!this.newTemplateCode.startsWith("shop:")) {
+      this.designTemplate.emit({ name, templateCode: this.newTemplateCode });
+    }
+    this.newDesign = null;
+  }
+
   saveSelectedAsTemplate() {
-    const name = this.templateName?.trim();
+    const name = this.presetName?.trim();
     if (name && this.selected) {
       this.saveTemplate.emit({ name, cabinet: this.selected });
-      this.templateName = null;
+      this.presetName = null;
     }
   }
 

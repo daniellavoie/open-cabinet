@@ -15,7 +15,7 @@
   <tbody>
     <tr *ngFor="let row of rows">
       <td>{{ row.materialName }}</td>
-      <td>{{ roleLabels[row.role] }}</td>
+      <td>{{ row.role === "OTHER" && row.name ? row.name : roleLabels[row.role] }}</td>
       <td class="text-end">{{ row.quantity }}</td>
       <td class="text-end number">{{ formatLength(row.lengthMm, units) }}</td>
       <td class="text-end number">{{ formatLength(row.widthMm, units) }}</td>
@@ -42,7 +42,7 @@
     <tbody>
       <tr *ngFor="let row of orderedFronts">
         <td>{{ row.materialName }}</td>
-        <td>{{ roleLabels[row.role] }}</td>
+        <td>{{ row.role === "OTHER" && row.name ? row.name : roleLabels[row.role] }}</td>
         <td class="text-end">{{ row.quantity }}</td>
         <td class="text-end number">{{ formatLength(row.heightMm, units) }}</td>
         <td class="text-end number">{{ formatLength(row.widthMm, units) }}</td>

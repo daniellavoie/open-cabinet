@@ -62,7 +62,15 @@ public enum DrawingLanguage {
 		case FINISHED_END -> pick("Panneau de finition", "Finished end");
 		case FILLER -> pick("Remplissage", "Filler");
 		case TOE_KICK -> pick("Plinthe", "Toe kick");
+		case OTHER -> pick("Autre", "Other");
 		};
+	}
+
+	/**
+	 * A Part's name: the template's own name for an OTHER Part, else its role's.
+	 */
+	public String part(PartRole role, String name) {
+		return role == PartRole.OTHER && name != null && !name.isBlank() ? name : partRole(role);
 	}
 
 	public String opening(OpeningKind kind) {

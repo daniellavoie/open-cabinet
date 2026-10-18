@@ -19,6 +19,10 @@ public class Part {
 	String cabinetId;
 	String cabinetLabel;
 	PartRole role;
+	/**
+	 * The template's name for an OTHER Part.
+	 */
+	String name;
 	UUID materialId;
 	double lengthMm;
 	double widthMm;

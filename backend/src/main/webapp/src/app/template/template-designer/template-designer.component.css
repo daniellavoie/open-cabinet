@@ -1,0 +1,177 @@
+.designer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-space-3);
+}
+
+.designer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--oc-space-3);
+  flex-wrap: wrap;
+}
+
+.back {
+  color: var(--oc-text-secondary);
+  text-decoration: none;
+}
+
+.name {
+  max-width: 320px;
+  font-weight: 600;
+}
+
+.status {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.status:first-of-type {
+  margin-left: auto;
+}
+
+.status.invalid {
+  color: var(--oc-destructive);
+}
+
+.offer,
+.publish .actions {
+  display: flex;
+  gap: var(--oc-space-3);
+  align-items: center;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 360px 1fr 380px;
+  gap: var(--oc-space-4);
+  align-items: start;
+}
+
+.left,
+.middle,
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-space-3);
+  min-width: 0;
+}
+
+.block {
+  background-color: var(--oc-bg-raise);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-lg);
+  padding: var(--oc-space-3);
+}
+
+h2 {
+  font-size: var(--oc-font-size-md);
+  font-weight: 600;
+  margin-bottom: var(--oc-space-2);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-top: var(--oc-space-2);
+}
+
+.fields label,
+.hint,
+.meta {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--oc-space-1);
+}
+
+.ranges {
+  width: 100%;
+  margin-top: var(--oc-space-2);
+  font-size: var(--oc-font-size-sm);
+}
+
+.ranges th {
+  font-weight: 500;
+  color: var(--oc-text-secondary);
+  padding: var(--oc-space-1);
+}
+
+.ranges td {
+  padding: var(--oc-space-1);
+}
+
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--oc-space-1);
+}
+
+.divider {
+  margin-top: var(--oc-space-2);
+  font-size: var(--oc-font-size-sm);
+}
+
+.items,
+.violations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--oc-font-size-sm);
+}
+
+.items li,
+.violations li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--oc-space-2);
+  padding: var(--oc-space-1) var(--oc-space-2);
+  border-radius: var(--oc-radius-md);
+  cursor: pointer;
+}
+
+.items li.selected {
+  background-color: var(--oc-bg-default);
+  outline: 1px solid var(--oc-accent-default);
+}
+
+.items li.invalid {
+  color: var(--oc-destructive);
+}
+
+.violations li {
+  display: block;
+}
+
+.view {
+  height: 520px;
+}
+
+.size-switch {
+  display: flex;
+  gap: var(--oc-space-1);
+}
+
+.size-switch button {
+  border: 1px solid var(--oc-border-default);
+  background-color: var(--oc-bg-raise);
+  border-radius: var(--oc-radius-md);
+  padding: var(--oc-space-1) var(--oc-space-3);
+  font-size: var(--oc-font-size-sm);
+}
+
+.size-switch button.active {
+  border-color: var(--oc-accent-default);
+  color: var(--oc-accent-default);
+}
+
+.picking {
+  color: var(--oc-accent-default);
+  margin: 0;
+}

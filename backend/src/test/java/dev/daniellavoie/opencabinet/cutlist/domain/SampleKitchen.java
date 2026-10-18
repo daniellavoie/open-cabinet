@@ -1,5 +1,6 @@
 package dev.daniellavoie.opencabinet.cutlist.domain;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -103,7 +104,7 @@ public final class SampleKitchen {
 	 */
 	public static ProjectOutput output() {
 		var projectDomain = mock(ProjectDomain.class);
-		when(projectDomain.templates()).thenReturn(TEMPLATES);
+		when(projectDomain.templates(any(Project.class))).thenReturn(TEMPLATES);
 		return new DefaultCutListDomain(mock(MemberDomain.class), projectDomain, mock(CatalogDomain.class),
 				mock(ShopRepository.class)).output(project(), standard(), catalog());
 	}

@@ -18,6 +18,11 @@ import lombok.extern.jackson.Jacksonized;
 @Builder(toBuilder = true)
 public class CabinetTemplate {
 	String code;
+	/**
+	 * A template a Member designed has a name, typed once and not translated; the starter library's
+	 * are named by the app in each language.
+	 */
+	String name;
 	int version;
 	String changeNote;
 	CabinetType type;

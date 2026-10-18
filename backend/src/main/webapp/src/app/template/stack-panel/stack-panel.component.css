@@ -1,0 +1,52 @@
+.panel {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+h2 {
+  display: flex;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-bottom: var(--oc-space-3);
+}
+
+h3 {
+  font-size: var(--oc-font-size-sm);
+  font-weight: 600;
+  margin: var(--oc-space-3) 0 var(--oc-space-2);
+}
+
+.name {
+  font-weight: 600;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: var(--oc-space-2);
+  align-items: center;
+}
+
+.fields label {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.row-edit {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: var(--oc-space-1);
+  align-items: center;
+  margin-bottom: var(--oc-space-1);
+}
+
+.row-actions {
+  display: flex;
+}
+
+.split {
+  margin-top: var(--oc-space-2);
+  font-size: var(--oc-font-size-sm);
+}

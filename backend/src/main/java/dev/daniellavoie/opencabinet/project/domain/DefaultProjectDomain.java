@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.UpdateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
 import dev.daniellavoie.opencabinet.project.domain.port.backend.CabinetTemplateRepository;
+import dev.daniellavoie.opencabinet.project.domain.port.backend.PublishedTemplateRepository;
 import dev.daniellavoie.opencabinet.project.domain.port.backend.ProjectRepository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -41,6 +43,7 @@ public class DefaultProjectDomain implements ProjectDomain {
 
 	ProjectRepository repository;
 	CabinetTemplateRepository templateRepository;
+	PublishedTemplateRepository publishedTemplates;
 	MemberDomain memberDomain;
 	MemberRepository memberRepository;
 	ClientDomain clientDomain;
@@ -108,7 +111,7 @@ public class DefaultProjectDomain implements ProjectDomain {
 				.orElseThrow(() -> new IllegalArgumentException("a design is required"));
 		requireIds(design);
 
-		var violations = ConstructionRules.check(design, templateRepository.findAll());
+		var violations = ConstructionRules.check(design, templates(project));
 		if (!violations.isEmpty()) {
 			throw new ConstructionRuleException(violations);
 		}
@@ -141,6 +144,17 @@ public class DefaultProjectDomain implements ProjectDomain {
 	@Override
 	public List<CabinetTemplate> templates() {
 		return templateRepository.findAll();
+	}
+
+	@Override
+	public List<CabinetTemplate> templates(Project project) {
+		return Stream.concat(templateRepository.findAll().stream(), publishedTemplates.findPublished(project.getId()).stream())
+				.toList();
+	}
+
+	@Override
+	public List<CabinetTemplate> templates(UUID projectId, Principal principal) {
+		return templates(repository.findById(projectId, memberDomain.current(principal).getShopId()));
 	}
 
 	@Override

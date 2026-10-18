@@ -1,0 +1,25 @@
+<div class="term" *ngFor="let term of terms; let index = index">
+  <select class="form-select form-select-sm factor" [ngModel]="term.factor ?? 1" (ngModelChange)="setFactor(index, +$event)"
+    i18n-aria-label="@@terms.factor" aria-label="Sens">
+    <option *ngFor="let factor of factors" [ngValue]="factor">{{ factorLabel(factor) }}</option>
+  </select>
+  <select class="form-select form-select-sm kind" [ngModel]="kindOf(term)" (ngModelChange)="setKind(index, $event)"
+    i18n-aria-label="@@terms.kind" aria-label="Genre">
+    <option value="mm" i18n="@@terms.length">Longueur</option>
+    <option value="standard" i18n="@@terms.standard">Valeur de l'atelier</option>
+    <option value="thickness" i18n="@@terms.thickness">Épaisseur de</option>
+  </select>
+  <length-input *ngIf="kindOf(term) === 'mm'" [inputId]="inputId + '-' + index" [units]="units" [valueMm]="term.mm ?? 0"
+    (valueMmChange)="set(index, { mm: $event })" />
+  <select *ngIf="kindOf(term) === 'standard'" class="form-select form-select-sm" [ngModel]="term.standard"
+    (ngModelChange)="set(index, { standard: $event })" i18n-aria-label="@@terms.standard" aria-label="Valeur de l'atelier">
+    <option *ngFor="let value of standardValues" [value]="value">{{ standardLabels[value] }}</option>
+  </select>
+  <select *ngIf="kindOf(term) === 'thickness'" class="form-select form-select-sm" [ngModel]="choiceValue(term.thickness)"
+    (ngModelChange)="setThickness(index, $event)" i18n-aria-label="@@terms.thicknessOf" aria-label="Épaisseur de">
+    <option *ngFor="let choice of thicknesses.roles" [value]="choice.value">{{ choice.label }}</option>
+    <option *ngFor="let choice of thicknesses.catalog" [value]="choice.value">{{ choice.label }}</option>
+  </select>
+  <button class="btn btn-sm btn-link text-danger" (click)="remove(index)" i18n-aria-label="@@common.remove" aria-label="Retirer">×</button>
+</div>
+<button class="btn btn-sm btn-link add" (click)="add()" i18n="@@terms.add">+ décalage</button>

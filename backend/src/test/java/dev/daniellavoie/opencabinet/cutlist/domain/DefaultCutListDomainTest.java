@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.cutlist.domain;
 
 import static dev.daniellavoie.opencabinet.cutlist.domain.CutListFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +32,7 @@ class DefaultCutListDomainTest {
 
 	@Test
 	void outputLabelsCabinetsInReadingOrderAndPricesMaterials() {
-		when(projectDomain.templates()).thenReturn(List.of(BASE_DOOR, BASE_DRAWERS, WALL_DOOR));
+		when(projectDomain.templates(any(Project.class))).thenReturn(List.of(BASE_DOOR, BASE_DRAWERS, WALL_DOOR));
 
 		var project = Project.builder()
 				.id(UUID.randomUUID())
@@ -71,7 +72,7 @@ class DefaultCutListDomainTest {
 
 	@Test
 	void orderedFrontsLeaveTheCutListForTheBillOfMaterials() {
-		when(projectDomain.templates()).thenReturn(List.of(BASE_DOOR, BASE_DRAWERS));
+		when(projectDomain.templates(any(Project.class))).thenReturn(List.of(BASE_DOOR, BASE_DRAWERS));
 
 		var project = Project.builder()
 				.id(UUID.randomUUID())

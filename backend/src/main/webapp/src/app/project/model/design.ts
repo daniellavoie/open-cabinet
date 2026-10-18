@@ -117,6 +117,8 @@ export class Design {
  */
 export class CabinetTemplate {
   code!: string;
+  /** Typed once by the Member for a template they designed; the starter library's come from the app. */
+  name?: string | null;
   version!: number;
   changeNote?: string | null;
   type!: CabinetType;

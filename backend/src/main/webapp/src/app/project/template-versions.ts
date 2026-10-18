@@ -1,3 +1,4 @@
+import { TEMPLATE_LABELS } from "../util/labels";
 import { checkConstructionRules } from "./construction-rules";
 import { updateCabinet } from "./design-edits";
 import { Cabinet, CabinetTemplate, Design, templateKey, Violation } from "./model/design";
@@ -7,6 +8,19 @@ import { Cabinet, CabinetTemplate, Design, templateKey, Violation } from "./mode
  * a Cabinet keeps the version it was placed with until a Member updates or
  * reverts it.
  */
+
+/**
+ * A template's name: the app's for the starter library, the one typed for a
+ * template a Member designed.
+ */
+export function templateName(templates: CabinetTemplate[], code: string): string {
+  return TEMPLATE_LABELS[code] ?? templates.find(template => template.code === code && template.name)?.name ?? code;
+}
+
+/** Whether a template comes with the app rather than being designed by a Member. */
+export function isStarter(code: string): boolean {
+  return code in TEMPLATE_LABELS;
+}
 
 /**
  * The newest version of each template, in library order: what new Cabinets

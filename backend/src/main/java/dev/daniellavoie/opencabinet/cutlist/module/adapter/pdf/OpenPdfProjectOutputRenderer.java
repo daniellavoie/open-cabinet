@@ -86,7 +86,7 @@ public class OpenPdfProjectOutputRenderer implements ProjectOutputRenderer {
 					language.pick("Bande de chant", "Edge banding"), language.pick("Qté", "Qty"),
 					language.pick("Caissons", "Cabinets"));
 			for (var row : rows) {
-				cells(table, language.partRole(row.getRole()), row.getMaterialName(),
+				cells(table, language.part(row.getRole(), row.getName()), row.getMaterialName(),
 						LengthFormat.format(row.getLengthMm(), units), LengthFormat.format(row.getWidthMm(), units),
 						LengthFormat.format(row.getThicknessMm(), units), row.isGrain() ? language.pick("oui", "yes") : "",
 						row.getBandedLengthEdges() + " / " + row.getBandedWidthEdges(),
@@ -107,7 +107,7 @@ public class OpenPdfProjectOutputRenderer implements ProjectOutputRenderer {
 					language.pick("Largeur", "Width"), language.pick("Qté", "Qty"),
 					language.pick("Caissons", "Cabinets"));
 			for (var row : ordered) {
-				cells(table, language.partRole(row.getRole()), row.getMaterialName(),
+				cells(table, language.part(row.getRole(), row.getName()), row.getMaterialName(),
 						LengthFormat.format(row.getHeightMm(), units), LengthFormat.format(row.getWidthMm(), units),
 						Integer.toString(row.getQuantity()), String.join(", ", row.getCabinetLabels()));
 			}

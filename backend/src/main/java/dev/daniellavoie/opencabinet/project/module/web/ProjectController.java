@@ -73,4 +73,12 @@ public class ProjectController {
 	public List<CabinetTemplate> templates() {
 		return domain.templates();
 	}
+
+	/**
+	 * Every Template Version the Project's Cabinets can use: the starter library's and its own.
+	 */
+	@GetMapping("/project/{projectId}/cabinet-template")
+	public List<CabinetTemplate> templates(@PathVariable UUID projectId, Principal principal) {
+		return domain.templates(projectId, principal);
+	}
 }

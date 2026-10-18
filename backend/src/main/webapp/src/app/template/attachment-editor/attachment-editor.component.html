@@ -1,0 +1,21 @@
+<div class="attachment" [class.picking]="picking">
+  <span class="face">{{ faceLabels[face] }}</span>
+  <select class="form-select form-select-sm" [disabled]="readOnly" [ngModel]="attachment?.to ?? ''" (ngModelChange)="setTarget($event)"
+    i18n-aria-label="@@attachment.target" aria-label="Fixée à">
+    <option value="" *ngIf="optional" i18n="@@attachment.free">Libre</option>
+    <option [value]="cabinet" i18n="@@attachment.cabinet">Caisson</option>
+    <option *ngFor="let target of targets" [value]="target">{{ target }}</option>
+  </select>
+  <select class="form-select form-select-sm" *ngIf="attachment" [disabled]="readOnly" [ngModel]="attachment.face"
+    (ngModelChange)="setFace($event)" i18n-aria-label="@@attachment.targetFace" aria-label="Face">
+    <option *ngFor="let targetFace of targetFaces" [value]="targetFace">{{ faceLabels[targetFace] }}</option>
+  </select>
+  <span *ngIf="!attachment"></span>
+  <button class="btn btn-sm" [class.btn-primary]="picking" [class.btn-outline-secondary]="!picking" [disabled]="readOnly"
+    (click)="pick.emit()" i18n-title="@@attachment.pickHint" title="Cliquez ensuite la face où la fixer, dans la vue 3D"
+    i18n="@@attachment.pick">3D</button>
+</div>
+<div class="offset" *ngIf="attachment">
+  <terms-editor [terms]="attachment.offset ?? []" [units]="units" [thicknesses]="thicknesses" [inputId]="'offset-' + face"
+    (termsChange)="setOffset($event)" />
+</div>

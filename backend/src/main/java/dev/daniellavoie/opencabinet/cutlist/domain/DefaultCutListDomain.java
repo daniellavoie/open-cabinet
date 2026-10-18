@@ -68,7 +68,7 @@ public class DefaultCutListDomain implements CutListDomain {
 	public ProjectOutput output(Project project, ConstructionStandard standard, List<Material> catalog) {
 		Map<UUID, Material> materials = catalog.stream()
 				.collect(Collectors.toMap(Material::getId, Function.identity()));
-		Map<String, CabinetTemplate> templates = projectDomain.templates().stream()
+		Map<String, CabinetTemplate> templates = projectDomain.templates(project).stream()
 				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 
 		var cabinets = readingOrder(project);
@@ -186,7 +186,8 @@ public class DefaultCutListDomain implements CutListDomain {
 
 	private static List<OrderedFrontRow> orderedFronts(List<Part> orderedParts, Map<UUID, Material> materials) {
 		var rows = new LinkedHashMap<List<Object>, List<Part>>();
-		orderedParts.forEach(part -> rows.computeIfAbsent(List.of(part.getRole(), part.getMaterialId(),
+		orderedParts.forEach(part -> rows.computeIfAbsent(List.of(part.getRole(), Optional.ofNullable(part.getName()).orElse(""),
+				part.getMaterialId(),
 				part.getLengthMm(), part.getWidthMm()), key -> new ArrayList<>()).add(part));
 
 		return rows.values()
@@ -195,6 +196,7 @@ public class DefaultCutListDomain implements CutListDomain {
 					var part = group.get(0);
 					return OrderedFrontRow.builder()
 							.role(part.getRole())
+							.name(part.getName())
 							.materialId(part.getMaterialId())
 							.materialName(materials.get(part.getMaterialId()).getName())
 							.heightMm(part.getLengthMm())
@@ -212,7 +214,8 @@ public class DefaultCutListDomain implements CutListDomain {
 
 	private static List<CutListRow> cutList(List<Part> parts, Map<UUID, Material> materials) {
 		var rows = new LinkedHashMap<List<Object>, List<Part>>();
-		parts.forEach(part -> rows.computeIfAbsent(List.of(part.getRole(), part.getMaterialId(), part.getLengthMm(),
+		parts.forEach(part -> rows.computeIfAbsent(List.of(part.getRole(), Optional.ofNullable(part.getName()).orElse(""),
+				part.getMaterialId(), part.getLengthMm(),
 				part.getWidthMm(), part.getBandedLengthEdges(), part.getBandedWidthEdges(),
 				Optional.ofNullable(part.getEdgeBandingId()).map(UUID::toString).orElse("")),
 				key -> new ArrayList<>()).add(part));
@@ -223,6 +226,7 @@ public class DefaultCutListDomain implements CutListDomain {
 					var part = group.get(0);
 					return CutListRow.builder()
 							.role(part.getRole())
+							.name(part.getName())
 							.materialId(part.getMaterialId())
 							.materialName(materials.get(part.getMaterialId()).getName())
 							.lengthMm(part.getLengthMm())

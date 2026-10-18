@@ -44,7 +44,7 @@ final class ProjectOutputCsv {
 				"thickness", "grain", "banded_length_edges", "banded_width_edges", "edge_banding", "quantity",
 				"cabinets", "ordered"));
 		for (var row : output.getCutList()) {
-			rows.add(List.of(language.partRole(row.getRole()), row.getMaterialName(), number(row.getLengthMm()),
+			rows.add(List.of(language.part(row.getRole(), row.getName()), row.getMaterialName(), number(row.getLengthMm()),
 					number(row.getWidthMm()), number(row.getThicknessMm()), LengthFormat.format(row.getLengthMm(), units),
 					LengthFormat.format(row.getWidthMm(), units), LengthFormat.format(row.getThicknessMm(), units),
 					Boolean.toString(row.isGrain()), Integer.toString(row.getBandedLengthEdges()),
@@ -52,7 +52,7 @@ final class ProjectOutputCsv {
 					Integer.toString(row.getQuantity()), String.join(" ", row.getCabinetLabels()), "false"));
 		}
 		for (var row : Optional.ofNullable(output.getOrderedFronts()).orElse(List.of())) {
-			rows.add(List.of(language.partRole(row.getRole()), row.getMaterialName(), number(row.getHeightMm()),
+			rows.add(List.of(language.part(row.getRole(), row.getName()), row.getMaterialName(), number(row.getHeightMm()),
 					number(row.getWidthMm()), "", LengthFormat.format(row.getHeightMm(), units),
 					LengthFormat.format(row.getWidthMm(), units), "", "false", "", "", "",
 					Integer.toString(row.getQuantity()), String.join(" ", row.getCabinetLabels()), "true"));

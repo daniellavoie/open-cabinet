@@ -39,7 +39,7 @@
     </div>
     <ul class="pending" *ngIf="showPendingVersions">
       <li *ngFor="let pending of pendingVersions">
-        <strong>{{ templateLabels[pending.code] ?? pending.code }}</strong>
+        <strong>{{ templateName(pending.code) }}</strong>
         <ul>
           <li *ngFor="let version of pending.versions"><span i18n="@@design.versionShort">v{{ version.version }}</span> {{ version.changeNote }}</li>
         </ul>
@@ -60,6 +60,7 @@
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
       [violations]="violations" [outdatedIds]="outdatedIds" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
+      [saved]="!dirty" (designTemplate)="designTemplate($event)"
       (saveTemplate)="saveTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 

@@ -193,6 +193,57 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output/unknown/csv")))
 				.andExpect(status().isBadRequest());
 
+		// A template made from Cabinet c1 starts from its starter template drawn as parts, at its size.
+		var template = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/project-template"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\": \"Vanité\", \"cabinetId\": \"c1\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.draft.assembly.parts").isNotEmpty())
+				.andExpect(jsonPath("$.sourceCabinetId").value("c1"))
+				.andExpect(jsonPath("$.versions", hasSize(0))));
+		var templateId = template.get("id").asText();
+		var draft = (ObjectNode) template.get("draft");
+		mockMvc.perform(as(owner, put("/api/project-template/" + templateId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.createObjectNode().put("name", "Vanité 18").set("draft", draft).toString()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Vanité 18"));
+		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.versions", hasSize(1)))
+				.andExpect(jsonPath("$.versions[0].code").value(templateId))
+				.andExpect(jsonPath("$.versions[0].name").value("Vanité 18"));
+		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isBadRequest());
+		var tooWide = draft.deepCopy().put("maxWidthMm", 2600);
+		mockMvc.perform(as(owner, put("/api/project-template/" + templateId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.createObjectNode().put("name", "Vanité 18").set("draft", tooWide).toString()))
+				.andExpect(status().isOk());
+		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"changeNote\": \"Plus large\"}"))
+				.andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.details[0].code").value("TOO_BIG_FOR_SHEET"));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/cabinet-template")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[?(@.code == '" + templateId + "')].version").value(1));
+
+		var withTemplate = update.deepCopy();
+		((ObjectNode) withTemplate.get("design").get("cabinets").get(0)).put("templateCode", templateId)
+				.put("templateVersion", 1);
+		mockMvc.perform(as(owner, put("/api/project/" + projectId))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(withTemplate.toString()))
+				.andExpect(status().isOk());
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/output")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.operations.cabinets").value(3));
+
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("DRAFT"))

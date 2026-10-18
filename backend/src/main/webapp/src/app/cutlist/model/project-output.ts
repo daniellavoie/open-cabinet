@@ -1,10 +1,12 @@
 import { MaterialKind } from "../../catalog/model/material";
 import { NestingLayout } from "../../project/model/project";
 
-export type PartRole = "SIDE" | "BOTTOM" | "TOP" | "STRETCHER" | "BACK" | "SHELF" | "DOOR" | "DRAWER_FRONT" | "FALSE_FRONT" | "BLIND_PANEL" | "DIVIDER" | "FINISHED_END" | "FILLER" | "TOE_KICK";
+export type PartRole = "SIDE" | "BOTTOM" | "TOP" | "STRETCHER" | "BACK" | "SHELF" | "DOOR" | "DRAWER_FRONT" | "FALSE_FRONT" | "BLIND_PANEL" | "DIVIDER" | "FINISHED_END" | "FILLER" | "TOE_KICK" | "OTHER";
 
 export class CutListRow {
   role!: PartRole;
+  /** The template\'s name for an OTHER Part. */
+  name?: string | null;
   materialId!: string;
   materialName!: string;
   lengthMm!: number;
@@ -96,6 +98,8 @@ export class OperationCounts {
  */
 export class OrderedFrontRow {
   role!: PartRole;
+  /** The template\'s name for an OTHER Part. */
+  name?: string | null;
   materialId!: string;
   materialName!: string;
   heightMm!: number;

@@ -1,0 +1,65 @@
+<fieldset class="panel" [disabled]="readOnly">
+  <div class="item" *ngFor="let item of hardware; let index = index">
+    <div class="line">
+      <select class="form-select form-select-sm" [ngModel]="choiceValue(item.material)" (ngModelChange)="setMaterial(index, $event)"
+        i18n-aria-label="@@hardware.material" aria-label="Quincaillerie">
+        <option *ngFor="let choice of materialChoices.roles" [value]="choice.value">{{ choice.label }}</option>
+        <option *ngFor="let choice of materialChoices.catalog" [value]="choice.value">{{ choice.label }}</option>
+      </select>
+      <select class="form-select form-select-sm" [ngModel]="item.on ?? ''" (ngModelChange)="setOn(index, $event)"
+        i18n-aria-label="@@hardware.on" aria-label="Sur">
+        <option value="" i18n="@@hardware.perCabinet">Par caisson</option>
+        <optgroup i18n-label="@@hardware.onParts" label="Par pièce">
+          <option *ngFor="let part of parts" [value]="part">{{ part }}</option>
+        </optgroup>
+        <optgroup i18n-label="@@hardware.onFronts" label="Par façade">
+          <option *ngFor="let stack of stacks" [value]="stack">{{ stack }}</option>
+        </optgroup>
+      </select>
+      <button class="btn btn-sm btn-link text-danger" (click)="remove.emit(index)" i18n-aria-label="@@common.remove" aria-label="Retirer">×</button>
+    </div>
+    <div class="line" *ngIf="item.on && stacks.includes(item.on)">
+      <select class="form-select form-select-sm" [ngModel]="item.frontKind ?? ''" (ngModelChange)="set(index, { frontKind: $event || null })"
+        i18n-aria-label="@@hardware.frontKind" aria-label="Façades">
+        <option value="" i18n="@@hardware.allFronts">Toutes les façades</option>
+        <option *ngFor="let kind of frontKinds" [value]="kind">{{ frontKindLabels[kind] }}</option>
+      </select>
+    </div>
+    <div class="line">
+      <select class="form-select form-select-sm" [ngModel]="modeOf(item)" (ngModelChange)="setMode(index, $event)"
+        i18n-aria-label="@@hardware.count" aria-label="Nombre">
+        <option value="fixed" i18n="@@hardware.fixed">Nombre fixe</option>
+        <option value="length" i18n="@@hardware.byLength">Un par longueur</option>
+        <option value="steps" i18n="@@hardware.bySteps">Par paliers de taille</option>
+      </select>
+      <input *ngIf="modeOf(item) === 'fixed'" class="form-control form-control-sm" type="number" min="0" [ngModel]="item.quantity.fixed"
+        (ngModelChange)="setQuantity(index, { fixed: $event })" i18n-aria-label="@@hardware.quantity" aria-label="Quantité" />
+      <select *ngIf="modeOf(item) !== 'fixed'" class="form-select form-select-sm" [ngModel]="item.quantity.axis ?? 'Y'"
+        (ngModelChange)="setQuantity(index, { axis: $event })" i18n-aria-label="@@hardware.axis" aria-label="Mesurée en">
+        <option *ngFor="let axis of axes" [value]="axis">{{ axisLabels[axis] }}</option>
+      </select>
+    </div>
+    <div class="line" *ngIf="modeOf(item) === 'length'">
+      <span class="hint" i18n="@@hardware.every">Un par</span>
+      <length-input [inputId]="'per-' + index" [units]="units" [valueMm]="item.quantity.perMm ?? 508"
+        (valueMmChange)="setQuantity(index, { perMm: $event })" />
+      <span class="hint" i18n="@@hardware.atLeast">au moins</span>
+      <input class="form-control form-control-sm minimum" type="number" min="0" [ngModel]="item.quantity.minimum ?? 0"
+        (ngModelChange)="setQuantity(index, { minimum: $event })" i18n-aria-label="@@hardware.minimum" aria-label="Au moins" />
+    </div>
+    <ng-container *ngIf="modeOf(item) === 'steps'">
+      <div class="line" *ngFor="let step of item.quantity.steps ?? []; let stepIndex = index; let last = last">
+        <span class="hint" *ngIf="!last" i18n="@@hardware.upTo">Jusqu'à</span>
+        <length-input *ngIf="!last" [inputId]="'step-' + index + '-' + stepIndex" [units]="units" [valueMm]="step.upToMm ?? 0"
+          (valueMmChange)="setStep(index, stepIndex, { upToMm: $event })" />
+        <span class="hint" *ngIf="last" i18n="@@hardware.beyond">Au-delà</span>
+        <span *ngIf="last"></span>
+        <input class="form-control form-control-sm minimum" type="number" min="0" [ngModel]="step.quantity"
+          (ngModelChange)="setStep(index, stepIndex, { quantity: $event })" i18n-aria-label="@@hardware.quantity" aria-label="Quantité" />
+        <button *ngIf="!last" class="btn btn-sm btn-link text-danger" (click)="removeStep(index, stepIndex)" i18n-aria-label="@@common.remove" aria-label="Retirer">×</button>
+      </div>
+      <button class="btn btn-sm btn-link step" (click)="addStep(index)" i18n="@@hardware.addStep">+ palier</button>
+    </ng-container>
+  </div>
+  <button class="btn btn-sm btn-outline-secondary" (click)="add.emit()" i18n="@@hardware.add">Ajouter de la quincaillerie</button>
+</fieldset>

@@ -165,3 +165,11 @@ h2 {
   margin-bottom: var(--oc-space-2);
   padding-left: var(--oc-space-4);
 }
+
+.design-template {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--oc-space-2);
+  align-items: center;
+  margin-top: var(--oc-space-2);
+}

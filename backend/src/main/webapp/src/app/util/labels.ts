@@ -1,8 +1,9 @@
 import { MaterialKind } from "../catalog/model/material";
 import { Role } from "../member/model/member";
 import { PartRole } from "../cutlist/model/project-output";
-import { ApplianceKind, OpeningKind } from "../project/model/design";
+import { ApplianceKind, Axis, CabinetType, Face, FrontKind, MaterialRole, OpeningKind, StandardValue } from "../project/model/design";
 import { NestingLayout } from "../project/model/project";
+import type { TemplateRuleCode, TemplateSize } from "../project/template-rules";
 import { QuoteStatus } from "../quote/model/quote";
 import { LabourMethod } from "../shop/model/shop";
 
@@ -21,6 +22,7 @@ export const PART_ROLE_LABELS: Record<PartRole, string> = {
   FINISHED_END: $localize`:@@partRole.finishedEnd:Panneau de finition`,
   FILLER: $localize`:@@partRole.filler:Remplissage`,
   TOE_KICK: $localize`:@@partRole.toeKick:Plinthe`,
+  OTHER: $localize`:@@partRole.other:Autre`,
 };
 
 export const TEMPLATE_LABELS: Record<string, string> = {
@@ -100,4 +102,83 @@ export const MATERIAL_KIND_LABELS: Record<MaterialKind, string> = {
 export const ROLE_LABELS: Record<Role, string> = {
   OWNER: $localize`:@@role.owner:Propriétaire`,
   DESIGNER: $localize`:@@role.designer:Concepteur`,
+};
+
+export const CABINET_TYPE_LABELS: Record<CabinetType, string> = {
+  BASE: $localize`:@@cabinetType.base:Bas`,
+  WALL: $localize`:@@cabinetType.wall:Haut`,
+  TALL: $localize`:@@cabinetType.tall:Colonne`,
+};
+
+export const FACE_LABELS: Record<Face, string> = {
+  LEFT: $localize`:@@face.left:Gauche`,
+  RIGHT: $localize`:@@face.right:Droite`,
+  BOTTOM: $localize`:@@face.bottom:Dessous`,
+  TOP: $localize`:@@face.top:Dessus`,
+  BACK: $localize`:@@face.back:Arrière`,
+  FRONT: $localize`:@@face.front:Avant`,
+};
+
+/** How a panel stands, by the axis its thickness runs along. */
+export const THICKNESS_LABELS: Record<Axis, string> = {
+  X: $localize`:@@thickness.x:Debout, de côté`,
+  Y: $localize`:@@thickness.y:À plat`,
+  Z: $localize`:@@thickness.z:Debout, de face`,
+};
+
+/** Which way a panel's grain runs. */
+export const GRAIN_LABELS: Record<Axis, string> = {
+  X: $localize`:@@grain.x:En largeur`,
+  Y: $localize`:@@grain.y:En hauteur`,
+  Z: $localize`:@@grain.z:En profondeur`,
+};
+
+export const AXIS_LABELS: Record<Axis, string> = {
+  X: $localize`:@@axis.x:Largeur`,
+  Y: $localize`:@@axis.y:Hauteur`,
+  Z: $localize`:@@axis.z:Profondeur`,
+};
+
+export const MATERIAL_ROLE_LABELS: Record<MaterialRole, string> = {
+  CARCASS: $localize`:@@materialRole.carcass:Panneau du caisson`,
+  BACK: $localize`:@@materialRole.back:Panneau du dos`,
+  FRONT: $localize`:@@materialRole.front:Panneau des façades`,
+  CARCASS_BANDING: $localize`:@@materialRole.carcassBanding:Bande de chant du caisson`,
+  FRONT_BANDING: $localize`:@@materialRole.frontBanding:Bande de chant des façades`,
+  CROWN_MOULDING: $localize`:@@materialRole.crownMoulding:Moulure couronne`,
+  HINGE: $localize`:@@materialRole.hinge:Charnière`,
+  SHELF_PIN: $localize`:@@materialRole.shelfPin:Taquet`,
+  LEG: $localize`:@@materialRole.leg:Patte`,
+  PULL: $localize`:@@materialRole.pull:Poignée`,
+  DRAWER_SLIDE: $localize`:@@materialRole.drawerSlide:Coulisse`,
+  DRAWER_BOX: $localize`:@@materialRole.drawerBox:Boîte de tiroir`,
+};
+
+export const STANDARD_VALUE_LABELS: Record<StandardValue, string> = {
+  DOOR_GAP: $localize`:@@standardValue.doorGap:Jeu des façades`,
+  TOE_KICK_HEIGHT: $localize`:@@standardValue.toeKick:Hauteur du coup de pied`,
+};
+
+export const FRONT_KIND_LABELS: Record<FrontKind, string> = {
+  DOOR: $localize`:@@frontKind.door:Porte`,
+  DRAWER: $localize`:@@frontKind.drawer:Tiroir`,
+  FALSE_FRONT: $localize`:@@frontKind.falseFront:Fausse façade`,
+  OPENING: $localize`:@@frontKind.opening:Ouverture`,
+};
+
+export const TEMPLATE_SIZE_LABELS: Record<TemplateSize, string> = {
+  MINIMUM: $localize`:@@templateSize.minimum:Minimum`,
+  DEFAULT: $localize`:@@templateSize.default:Par défaut`,
+  MAXIMUM: $localize`:@@templateSize.maximum:Maximum`,
+};
+
+export const TEMPLATE_RULE_LABELS: Record<TemplateRuleCode, string> = {
+  DUPLICATE_NAME: $localize`:@@templateRule.duplicateName:Deux pièces portent le même nom.`,
+  UNKNOWN_TARGET: $localize`:@@templateRule.unknownTarget:Une face est fixée à une pièce qui n'existe pas.`,
+  WRONG_ATTACHMENTS: $localize`:@@templateRule.wrongAttachments:Il faut, sur chaque axe, deux de : la face basse, la face haute, la taille.`,
+  UNRESOLVED: $localize`:@@templateRule.unresolved:La pièce ne peut pas être placée : ses fixations tournent en rond.`,
+  NON_POSITIVE_SIZE: $localize`:@@templateRule.nonPositiveSize:La pièce n'a plus de taille.`,
+  PARTS_OVERLAP: $localize`:@@templateRule.partsOverlap:La pièce chevauche une autre pièce.`,
+  TOO_BIG_FOR_SHEET: $localize`:@@templateRule.tooBig:La pièce est plus grande que son panneau.`,
+  NOT_TOUCHING: $localize`:@@templateRule.notTouching:La pièce ne touche aucune autre pièce.`,
 };

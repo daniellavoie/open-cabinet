@@ -1,0 +1,90 @@
+<fieldset class="panel" [disabled]="readOnly">
+  <h2>
+    <input class="form-control form-control-sm name" [(ngModel)]="name" (blur)="commitName()" (keydown.enter)="commitName()"
+      i18n-aria-label="@@partPanel.name" aria-label="Nom de la pièce" />
+    <button class="btn btn-sm btn-link text-danger" (click)="remove.emit()" i18n="@@common.remove">Retirer</button>
+  </h2>
+
+  <div class="fields">
+    <label for="partRole" i18n="@@partPanel.role">Pièce</label>
+    <select class="form-select form-select-sm" id="partRole" [ngModel]="part.role" (ngModelChange)="set({ role: $event })">
+      <option *ngFor="let role of roles" [value]="role">{{ roleLabels[role] }}</option>
+    </select>
+    <ng-container *ngIf="part.role === 'OTHER'">
+      <label for="partName" i18n="@@partPanel.otherName">Nom sur la liste</label>
+      <input class="form-control form-control-sm" id="partName" [ngModel]="part.name ?? ''" (ngModelChange)="set({ name: $event })" />
+    </ng-container>
+    <ng-container *ngIf="!divider">
+      <label for="partKind" i18n="@@partPanel.kind">Genre</label>
+      <select class="form-select form-select-sm" id="partKind" [ngModel]="part.kind ?? 'PANEL'" (ngModelChange)="setKind($event)">
+        <option value="PANEL" i18n="@@partPanel.panel">Panneau découpé</option>
+        <option value="MOULDING" i18n="@@partPanel.moulding">Moulure au mètre</option>
+      </select>
+    </ng-container>
+    <label for="partMaterial" i18n="@@partPanel.material">Matériau</label>
+    <select class="form-select form-select-sm" id="partMaterial" [ngModel]="choiceValue(part.material)" (ngModelChange)="setMaterial($event)">
+      <optgroup i18n-label="@@partPanel.shopChoice" label="Choix de l'atelier">
+        <option *ngFor="let choice of (panel ? panelChoices : mouldingChoices).roles" [value]="choice.value">{{ choice.label }}</option>
+      </optgroup>
+      <optgroup i18n-label="@@partPanel.catalog" label="Catalogue">
+        <option *ngFor="let choice of (panel ? panelChoices : mouldingChoices).catalog" [value]="choice.value">{{ choice.label }}</option>
+      </optgroup>
+    </select>
+    <ng-container *ngIf="panel && !divider">
+      <label for="partThickness" i18n="@@partPanel.stands">Position</label>
+      <select class="form-select form-select-sm" id="partThickness" [ngModel]="part.thickness" (ngModelChange)="setThickness($event)">
+        <option *ngFor="let axis of axes" [value]="axis">{{ thicknessLabels[axis] }}</option>
+      </select>
+    </ng-container>
+    <ng-container *ngIf="panel">
+      <label for="partGrain" i18n="@@partPanel.grain">Fil</label>
+      <select class="form-select form-select-sm" id="partGrain" [ngModel]="part.grain ?? ''" (ngModelChange)="set({ grain: $event || null })">
+        <option value="" i18n="@@partPanel.grainDefault">Par défaut</option>
+        <option *ngFor="let axis of grainAxes" [value]="axis">{{ grainLabels[axis] }}</option>
+      </select>
+    </ng-container>
+  </div>
+
+  <div class="checks" *ngIf="panel && !divider">
+    <label class="form-check">
+      <input class="form-check-input" type="checkbox" [ngModel]="!!part.front" (ngModelChange)="set({ front: $event || null })" />
+      <span i18n="@@partPanel.front">C'est une façade (commandée avec celles du caisson)</span>
+    </label>
+    <label class="form-check">
+      <input class="form-check-input" type="checkbox" [ngModel]="!!part.repeat" (ngModelChange)="setRepeated($event)" />
+      <span i18n="@@partPanel.repeat">Répétée : une par tablette du caisson, réparties entre ses deux faces</span>
+    </label>
+  </div>
+
+  <div class="banding" *ngIf="panel">
+    <h3 i18n="@@partPanel.banding">Chants</h3>
+    <div class="edges">
+      <label class="form-check form-check-inline" *ngFor="let face of edgeFaces">
+        <input class="form-check-input" type="checkbox" [ngModel]="banded(face)" (ngModelChange)="setBanded(face, $event)" />
+        <span>{{ faceLabels[face] }}</span>
+      </label>
+    </div>
+    <select class="form-select form-select-sm" *ngIf="part.banding?.faces?.length" [ngModel]="choiceValue(part.banding?.material)"
+      (ngModelChange)="setBandingMaterial($event)" i18n-aria-label="@@partPanel.bandingMaterial" aria-label="Bande de chant">
+      <option *ngFor="let choice of bandingChoices.roles" [value]="choice.value">{{ choice.label }}</option>
+      <option *ngFor="let choice of bandingChoices.catalog" [value]="choice.value">{{ choice.label }}</option>
+    </select>
+    <p class="hint" *ngIf="!part.banding && part.thickness !== 'Z'" i18n="@@partPanel.bandingDefault">Par défaut : chant avant, bande du caisson.</p>
+  </div>
+
+  <h3 i18n="@@partPanel.faces">Faces</h3>
+  <p class="hint" i18n="@@partPanel.facesHint">Sur chaque axe, deux de : la face basse, la face haute, la taille. Un panneau prend l'épaisseur de son matériau.</p>
+  <attachment-editor *ngFor="let face of faces" [face]="face" [attachment]="part.faces?.[face] ?? null" [targets]="targets"
+    [units]="units" [thicknesses]="thicknessChoices" [picking]="pendingFace === face" [readOnly]="readOnly"
+    (attachmentChange)="setAttachment(face, $event)" (pick)="pick.emit(face)" />
+
+  <h3 i18n="@@partPanel.sizes">Tailles fixes</h3>
+  <div class="size" *ngFor="let axis of sizeAxes">
+    <label class="form-check">
+      <input class="form-check-input" type="checkbox" [ngModel]="sized(axis)" (ngModelChange)="setSized(axis, $event)" />
+      <span>{{ axisLabels[axis] }}</span>
+    </label>
+    <terms-editor *ngIf="sized(axis)" [terms]="part.sizes?.[axis] ?? []" [units]="units" [thicknesses]="thicknessChoices"
+      [inputId]="'size-' + axis" (termsChange)="setSize(axis, $event)" />
+  </div>
+</fieldset>

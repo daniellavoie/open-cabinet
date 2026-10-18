@@ -24,6 +24,10 @@ export const routes: Routes = [
         path: "projects/:projectId",
         loadComponent: () => import("./project/project-editor/project-editor.component").then(module => module.ProjectEditorComponent),
       },
+      {
+        path: "projects/:projectId/templates/:templateId",
+        loadComponent: () => import("./template/template-designer/template-designer.component").then(module => module.TemplateDesignerComponent),
+      },
       { path: "clients", component: ClientsComponent },
       { path: "settings", component: SettingsComponent, canActivate: [ownerGuardFn] },
       { path: "catalog", component: CatalogComponent, canActivate: [ownerGuardFn] },

@@ -58,6 +58,14 @@ export class ProjectService {
     return this.httpClient.get(`/api/project/${projectId}/output/${document}/${format}?language=${language}`, { responseType: "blob" });
   }
 
+  /**
+   * Every Template Version the Project's Cabinets can use: the starter
+   * library's and the templates designed for it.
+   */
+  projectTemplates(projectId: string): Observable<CabinetTemplate[]> {
+    return this.httpClient.get<CabinetTemplate[]>(`/api/project/${projectId}/cabinet-template`);
+  }
+
   output(projectId: string): Observable<ProjectOutput> {
     return this.httpClient.get<ProjectOutput>(`/api/project/${projectId}/output`);
   }
