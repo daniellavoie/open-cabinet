@@ -7,6 +7,7 @@ import { ConstructionStandard } from "../../shop/model/shop";
 import { assemble, cabinetContext } from "../assembly";
 import { doorLeaves, frontRows, frontWidth } from "../front-layout";
 import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor, templateKey } from "../model/design";
+import { Mark } from "../proposal-marks";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
 
 const MM = 1 / 1000;
@@ -75,6 +76,10 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Cabinets on an older Template Version than their template's newest.
    */
   @Input() outdatedIds = new Set<string>();
+  /**
+   * What a Design Proposal adds, changes or removes, outlined in its colour.
+   */
+  @Input() marks = new Map<string, Mark>();
   @Input() toeKickHeightMm = 101.6;
   /** For assembled templates: the Shop's Standard and catalog give their materials' thicknesses. */
   @Input() standard: ConstructionStandard | null = null;
@@ -195,7 +200,9 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     floor.position.set(floorCentre.x, 0, floorCentre.z);
     this.content.add(floor);
 
-    const highlightOf = (id: string) => this.invalidIds.has(id) ? colors.invalid : id === this.selectedId ? colors.selected : null;
+    const markColors: Record<Mark, string> = { ADDED: colors.added, CHANGED: colors.changed, REMOVED: colors.removed };
+    const highlightOf = (id: string) => this.invalidIds.has(id) ? colors.invalid : id === this.selectedId ? colors.selected
+      : this.marks.has(id) ? markColors[this.marks.get(id)!] : null;
 
     for (const opening of this.design.openings ?? []) {
       const placement = placementsById.get(opening.wallId);
@@ -547,6 +554,9 @@ interface Colors {
   selected: string;
   invalid: string;
   outdated: string;
+  added: string;
+  changed: string;
+  removed: string;
   window: string;
   doorway: string;
   appliance: string;
@@ -568,6 +578,9 @@ function readColors(element: HTMLElement): Colors {
     selected: token("--oc-3d-selected"),
     invalid: token("--oc-3d-invalid"),
     outdated: token("--oc-3d-outdated"),
+    added: token("--oc-3d-added"),
+    changed: token("--oc-3d-changed"),
+    removed: token("--oc-3d-removed"),
     window: token("--oc-3d-window"),
     doorway: token("--oc-3d-doorway"),
     appliance: token("--oc-3d-appliance"),

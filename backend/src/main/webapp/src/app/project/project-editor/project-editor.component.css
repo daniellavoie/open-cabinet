@@ -125,3 +125,48 @@
   gap: var(--oc-space-2);
   margin-bottom: var(--oc-space-3);
 }
+
+.assistant-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-space-2);
+}
+
+.view-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--oc-space-1);
+}
+
+.view-switch button {
+  border: 1px solid var(--oc-border-default);
+  background-color: var(--oc-bg-raise);
+  border-radius: var(--oc-radius-sm);
+  padding: var(--oc-space-1) var(--oc-space-3);
+  font-size: var(--oc-font-size-sm);
+  color: var(--oc-text-secondary);
+}
+
+.view-switch button.active {
+  color: var(--oc-accent-default);
+  border-color: var(--oc-accent-default);
+}
+
+.legend {
+  display: flex;
+  gap: var(--oc-space-3);
+  margin-left: var(--oc-space-3);
+  font-size: var(--oc-font-size-sm);
+}
+
+.legend .added {
+  color: var(--oc-3d-added);
+}
+
+.legend .changed {
+  color: var(--oc-3d-changed);
+}
+
+.legend .removed {
+  color: var(--oc-3d-removed);
+}

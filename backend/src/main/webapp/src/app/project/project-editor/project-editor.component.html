@@ -63,6 +63,28 @@
       [saved]="!dirty" (designTemplate)="designTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
+  <div class="design" *ngIf="tab === 'assistant'">
+    <div class="assistant-view">
+      <div class="view-switch" role="tablist" *ngIf="proposalView">
+        <button role="tab" [class.active]="!showProposal" (click)="showProposal = false" i18n="@@editor.live">Projet</button>
+        <button role="tab" [class.active]="showProposal" (click)="showProposal = true" i18n="@@editor.proposal">Proposition</button>
+        <span class="legend" *ngIf="showProposal">
+          <span class="added" i18n="@@editor.marksAdded">{{ proposalView.counts.ADDED }} ajouté(s)</span>
+          <span class="changed" i18n="@@editor.marksChanged">{{ proposalView.counts.CHANGED }} modifié(s)</span>
+          <span class="removed" i18n="@@editor.marksRemoved">{{ proposalView.counts.REMOVED }} retiré(s)</span>
+        </span>
+      </div>
+      <room-view class="view" *ngIf="!showProposal || !proposalView" [design]="draft.design" [templates]="templates" [selectedId]="selectedId"
+        [invalidIds]="invalidIds" [outdatedIds]="outdatedIds" [readOnly]="true" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+        [standard]="memberService.shop()!.settings.constructionStandard" [materials]="materials" (selectItem)="selectedId = $event" />
+      <room-view class="view" *ngIf="showProposal && proposalView" [design]="proposalView.design" [templates]="templates" [selectedId]="null"
+        [marks]="proposalView.marks" [readOnly]="true" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
+        [standard]="memberService.shop()!.settings.constructionStandard" [materials]="materials" />
+    </div>
+    <conversation-panel class="panel" [projectId]="draft.id" [dirty]="dirty" [readOnly]="readOnly"
+      (proposalChange)="setProposal($event)" (projectChange)="onProjectSaved($event)" />
+  </div>
+
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">
     <p class="hint" *ngIf="dirty" i18n="@@editor.saveForOutput">Enregistrez le projet pour mettre à jour ces résultats.</p>
     <div class="output-actions" *ngIf="output && !loadingOutput && !dirty">

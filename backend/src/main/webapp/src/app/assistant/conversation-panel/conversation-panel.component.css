@@ -1,0 +1,125 @@
+.conversation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-space-3);
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-space-2);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.empty,
+.hint {
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.message {
+  background-color: var(--oc-bg-raise);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-md);
+  padding: var(--oc-space-2) var(--oc-space-3);
+  font-size: var(--oc-font-size-sm);
+}
+
+.message.mine {
+  margin-left: var(--oc-space-6);
+}
+
+.message p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.author {
+  display: block;
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-xs);
+  margin-bottom: var(--oc-space-1);
+}
+
+.problem {
+  color: var(--oc-destructive);
+}
+
+.working {
+  display: flex;
+  align-items: center;
+  gap: var(--oc-space-2);
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-sm);
+}
+
+.progress-lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--oc-font-size-sm);
+}
+
+.progress-lines li.thinking {
+  color: var(--oc-text-tertiary);
+}
+
+.progress-lines li.refused {
+  color: var(--oc-warning);
+}
+
+.reason {
+  display: block;
+  padding-left: var(--oc-space-3);
+  color: var(--oc-text-secondary);
+}
+
+.proposal {
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-md);
+  padding: var(--oc-space-3);
+  font-size: var(--oc-font-size-sm);
+}
+
+.proposal header {
+  display: flex;
+  align-items: center;
+  gap: var(--oc-space-2);
+  margin-bottom: var(--oc-space-2);
+}
+
+.proposal h3 {
+  font-size: var(--oc-font-size-md);
+  margin: 0;
+}
+
+.proposal h4 {
+  font-size: var(--oc-font-size-sm);
+  margin: var(--oc-space-2) 0 var(--oc-space-1);
+}
+
+.proposal ul {
+  padding-left: var(--oc-space-5);
+  margin: 0;
+}
+
+.steps {
+  margin-left: auto;
+  color: var(--oc-text-secondary);
+}
+
+.actions,
+.compose {
+  display: flex;
+  gap: var(--oc-space-2);
+}
+
+.actions {
+  margin-top: var(--oc-space-3);
+}
+
+.compose {
+  flex-direction: column;
+  align-items: flex-end;
+}

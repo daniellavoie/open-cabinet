@@ -6,7 +6,8 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * One request to the model: instructions, then the conversation so far, oldest first.
+ * One request to the model: instructions, the conversation so far, oldest first, and the tools it
+ * may call. The model never runs a tool: it asks for calls, and the domain runs them and answers.
  */
 @Value
 @Builder(toBuilder = true)
@@ -18,12 +19,44 @@ public class ModelRequest {
 	String purpose;
 	String instructions;
 	List<ModelMessage> messages;
+	@Builder.Default
+	List<ToolSpec> tools = List.of();
 	int maxTokens;
 
-	public record ModelMessage(Speaker speaker, String text) {
+	/**
+	 * A message from the Member, the model's answer (with the tool calls it asked for), or the
+	 * result of a tool call.
+	 */
+	public record ModelMessage(Speaker speaker, String text, List<ToolCall> toolCalls, ToolResult toolResult) {
+		public ModelMessage(Speaker speaker, String text) {
+			this(speaker, text, List.of(), null);
+		}
+
+		public static ModelMessage assistant(String text, List<ToolCall> toolCalls) {
+			return new ModelMessage(Speaker.ASSISTANT, text, toolCalls, null);
+		}
+
+		public static ModelMessage tool(ToolResult result) {
+			return new ModelMessage(Speaker.TOOL, null, List.of(), result);
+		}
 	}
 
 	public enum Speaker {
-		MEMBER, ASSISTANT;
+		MEMBER, ASSISTANT, TOOL;
+	}
+
+	/**
+	 * A tool the model may call: its arguments follow the JSON Schema.
+	 */
+	public record ToolSpec(String name, String description, String inputSchema) {
+	}
+
+	/**
+	 * A call the model asks for, with its arguments as JSON.
+	 */
+	public record ToolCall(String id, String name, String arguments) {
+	}
+
+	public record ToolResult(String callId, String name, String content) {
 	}
 }

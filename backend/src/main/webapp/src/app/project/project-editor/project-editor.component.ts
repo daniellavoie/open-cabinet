@@ -10,6 +10,8 @@ import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
 import { ProjectTemplateService } from "../../template/project-template-service";
 import { Client } from "../../client/model/client";
+import { ConversationPanelComponent } from "../../assistant/conversation-panel/conversation-panel.component";
+import { DesignProposal } from "../../assistant/model/conversation";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
 import { OutputDocument, ProjectOutput } from "../../cutlist/model/project-output";
@@ -26,11 +28,12 @@ import { Cabinet, CabinetTemplate, Design, Violation } from "../model/design";
 import { NestingLayout, Project } from "../model/project";
 import { ProjectLock } from "../model/project-lock";
 import { ProjectService } from "../project-service";
+import { countMarks, Mark, proposalMarks } from "../proposal-marks";
 import { OnWall, snapOffset } from "../room-layout";
 import { ItemMove, RoomViewComponent } from "../room-view/room-view.component";
 import { newerVersions, outdatedCabinets, RefusedChange, templateName, updateToLatest } from "../template-versions";
 
-type Tab = "design" | "cutList" | "nesting" | "materials" | "quotes";
+type Tab = "design" | "assistant" | "cutList" | "nesting" | "materials" | "quotes";
 
 const SNAP_DISTANCE_MM = 30;
 const LOCK_RENEWAL_MS = 45_000;
@@ -48,6 +51,7 @@ const LOCK_RENEWAL_MS = 45_000;
   standalone: true,
   imports: [
     BillOfMaterialsComponent,
+    ConversationPanelComponent,
     CutListComponent,
     DesignPanelComponent,
     FormsModule,
@@ -67,6 +71,7 @@ export class ProjectEditorComponent implements OnDestroy {
 
   readonly tabs: { id: Tab; label: string }[] = [
     { id: "design", label: $localize`:@@editor.design:Conception` },
+    { id: "assistant", label: $localize`:@@editor.assistant:Assistant` },
     { id: "cutList", label: $localize`:@@editor.cutList:Liste de coupe` },
     { id: "nesting", label: $localize`:@@editor.nesting:Optimisation` },
     { id: "materials", label: $localize`:@@editor.materials:Matériaux` },
@@ -105,6 +110,12 @@ export class ProjectEditorComponent implements OnDestroy {
   downloadingDrawings = false;
   downloadingOutput = false;
   private renewal?: Subscription;
+  /** The Design Assistant's open Proposal, or the one accepted last. */
+  proposal: DesignProposal | null = null;
+  /** Show the Proposal in 3D rather than the live design. */
+  showProposal = false;
+  /** The Proposal's design with what it adds, changes and removes, against the saved design. */
+  proposalView: { design: Design; marks: Map<string, Mark>; counts: Record<Mark, number> } | null = null;
 
   constructor(
     route: ActivatedRoute,
@@ -331,9 +342,34 @@ export class ProjectEditorComponent implements OnDestroy {
     }
   }
 
+  setProposal(proposal: DesignProposal | null) {
+    this.proposal = proposal;
+    this.showProposal = proposal?.status === "OPEN";
+    this.refreshProposalView();
+  }
+
+  /**
+   * Accepting or undoing saved the Project on the server: the editor starts
+   * again from it.
+   */
+  onProjectSaved(project: Project) {
+    this.saved = project;
+    this.setDraft(structuredClone(project));
+    this.refreshProposalView();
+  }
+
+  private refreshProposalView() {
+    if (!this.proposal || !this.saved) {
+      this.proposalView = null;
+      return;
+    }
+    const { design, marks } = proposalMarks(this.saved.design, this.proposal.design);
+    this.proposalView = { design, marks, counts: countMarks(marks) };
+  }
+
   selectTab(tab: Tab) {
     this.tab = tab;
-    if (tab !== "design" && tab !== "quotes" && !this.dirty) {
+    if (tab !== "design" && tab !== "quotes" && tab !== "assistant" && !this.dirty) {
       this.loadOutput();
     }
   }
@@ -361,8 +397,9 @@ export class ProjectEditorComponent implements OnDestroy {
         this.saved = project;
         this.refusedUpdates = [];
         this.setDraft(structuredClone(project));
+        this.refreshProposalView();
         this.output = undefined;
-        if (this.tab !== "design" && this.tab !== "quotes") {
+        if (this.tab !== "design" && this.tab !== "quotes" && this.tab !== "assistant") {
           this.loadOutput();
         }
       }))

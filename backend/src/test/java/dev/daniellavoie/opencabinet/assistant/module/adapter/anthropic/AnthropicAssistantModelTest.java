@@ -17,6 +17,9 @@ import com.sun.net.httpserver.HttpServer;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelMessage;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.Speaker;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolCall;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolResult;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolSpec;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelTier;
 
 class AnthropicAssistantModelTest {
@@ -71,6 +74,63 @@ class AnthropicAssistantModelTest {
 			assertThat(reply.getInputTokens()).isEqualTo(2000);
 			assertThat(reply.getOutputTokens()).isEqualTo(500);
 			assertThat(reply.getCostUsd()).isEqualByComparingTo("0.0045");
+		} finally {
+			server.stop(0);
+		}
+	}
+
+	@Test
+	void returnsToolCallsWithoutRunningThemAndSendsTheirResultsBack() throws Exception {
+		var requests = new ArrayList<String>();
+		var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+		server.createContext("/", exchange -> {
+			requests.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+			var reply = (requests.size() == 1 ? """
+					{"id": "msg_1", "type": "message", "role": "assistant", "model": "builder",
+					 "content": [{"type": "text", "text": "Je place le caisson."},
+					             {"type": "tool_use", "id": "call_1", "name": "remove_cabinet", "input": {"cabinetId": "c1"}}],
+					 "stop_reason": "tool_use", "stop_sequence": null, "usage": {"input_tokens": 100, "output_tokens": 20}}
+					""" : """
+					{"id": "msg_2", "type": "message", "role": "assistant", "model": "builder",
+					 "content": [{"type": "text", "text": "C'est fait."}], "stop_reason": "end_turn", "stop_sequence": null,
+					 "usage": {"input_tokens": 150, "output_tokens": 5}}
+					""").getBytes(StandardCharsets.UTF_8);
+			exchange.getResponseHeaders().add("Content-Type", "application/json");
+			exchange.sendResponseHeaders(200, reply.length);
+			exchange.getResponseBody().write(reply);
+			exchange.close();
+		});
+		server.start();
+		try {
+			var configuration = configuration("test-key");
+			configuration.setBaseUrl("http://localhost:" + server.getAddress().getPort());
+			var model = new AnthropicAssistantModel(configuration);
+			var tool = new ToolSpec("remove_cabinet", "Removes a Cabinet.",
+					"{\"type\": \"object\", \"properties\": {\"cabinetId\": {\"type\": \"string\"}}, \"required\": [\"cabinetId\"]}");
+			var request = ModelRequest.builder()
+					.tier(ModelTier.BUILDER)
+					.purpose("PROPOSAL")
+					.instructions("Edit the design.")
+					.messages(List.of(new ModelMessage(Speaker.MEMBER, "Enlève le caisson.")))
+					.tools(List.of(tool))
+					.maxTokens(1000)
+					.build();
+
+			var first = model.complete(request);
+
+			assertThat(first.getText()).isEqualTo("Je place le caisson.");
+			assertThat(first.getToolCalls()).containsExactly(new ToolCall("call_1", "remove_cabinet", "{\"cabinetId\":\"c1\"}"));
+			assertThat(requests.get(0)).contains("\"tools\"", "\"name\":\"remove_cabinet\"", "Removes a Cabinet.");
+
+			var second = model.complete(request.toBuilder()
+					.messages(List.of(new ModelMessage(Speaker.MEMBER, "Enlève le caisson."),
+							ModelMessage.assistant(first.getText(), first.getToolCalls()),
+							ModelMessage.tool(new ToolResult("call_1", "remove_cabinet", "{\"ok\": true}"))))
+					.build());
+
+			assertThat(second.getText()).isEqualTo("C'est fait.");
+			assertThat(second.getToolCalls()).isEmpty();
+			assertThat(requests.get(1)).contains("\"tool_use\"", "\"tool_result\"", "\"tool_use_id\":\"call_1\"");
 		} finally {
 			server.stop(0);
 		}

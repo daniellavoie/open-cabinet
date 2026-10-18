@@ -4248,6 +4248,214 @@
         <source>L&apos;assistant n&apos;a pas répondu.</source>
         <target>The assistant did not answer.</target>
       </trans-unit>
+      <trans-unit id="conversation.off" datatype="html">
+        <source>L&apos;assistant est désactivé. Un propriétaire peut l&apos;activer dans les paramètres de l&apos;atelier.</source>
+        <target>The assistant is off. An owner can turn it on in the shop settings.</target>
+      </trans-unit>
+      <trans-unit id="conversation.empty" datatype="html">
+        <source>Décrivez ce que vous voulez changer : l&apos;assistant prépare une proposition à revoir en 3D. Rien ne change tant que vous ne l&apos;acceptez pas.</source>
+        <target>Describe what you want to change: the assistant prepares a proposal to review in 3D. Nothing changes until you accept it.</target>
+      </trans-unit>
+      <trans-unit id="conversation.assistant" datatype="html">
+        <source>Assistant</source>
+        <target>Assistant</target>
+      </trans-unit>
+      <trans-unit id="conversation.working" datatype="html">
+        <source>L&apos;assistant prépare la proposition…</source>
+        <target>The assistant is preparing the proposal…</target>
+      </trans-unit>
+      <trans-unit id="conversation.proposal" datatype="html">
+        <source>Proposition</source>
+        <target>Proposal</target>
+      </trans-unit>
+      <trans-unit id="conversation.acceptedBadge" datatype="html">
+        <source>Acceptée</source>
+        <target>Accepted</target>
+      </trans-unit>
+      <trans-unit id="conversation.steps" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ proposal.steps.length }}"/> étape(s)</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ proposal.steps.length }}"/> step(s)</target>
+      </trans-unit>
+      <trans-unit id="conversation.openQuestions" datatype="html">
+        <source>Questions</source>
+        <target>Questions</target>
+      </trans-unit>
+      <trans-unit id="conversation.assumptions" datatype="html">
+        <source>Hypothèses</source>
+        <target>Assumptions</target>
+      </trans-unit>
+      <trans-unit id="conversation.accept" datatype="html">
+        <source>Accepter</source>
+        <target>Accept</target>
+      </trans-unit>
+      <trans-unit id="conversation.discard" datatype="html">
+        <source>Rejeter</source>
+        <target>Discard</target>
+      </trans-unit>
+      <trans-unit id="conversation.undo" datatype="html">
+        <source>Annuler l&apos;acceptation</source>
+        <target>Undo accept</target>
+      </trans-unit>
+      <trans-unit id="conversation.placeholder" datatype="html">
+        <source>Ex. : Ajoute un caisson-évier de 36 po sous la fenêtre</source>
+        <target>E.g.: Add a 36&quot; sink base under the window</target>
+      </trans-unit>
+      <trans-unit id="conversation.send" datatype="html">
+        <source>Envoyer</source>
+        <target>Send</target>
+      </trans-unit>
+      <trans-unit id="conversation.blockedLock" datatype="html">
+        <source>Quelqu&apos;un d&apos;autre modifie le projet.</source>
+        <target>Someone else is editing the project.</target>
+      </trans-unit>
+      <trans-unit id="conversation.blockedDirty" datatype="html">
+        <source>Enregistrez ou annulez vos modifications d&apos;abord.</source>
+        <target>Save or revert your changes first.</target>
+      </trans-unit>
+      <trans-unit id="conversation.blockedRunning" datatype="html">
+        <source>L&apos;assistant travaille encore sur la proposition.</source>
+        <target>The assistant is still working on the proposal.</target>
+      </trans-unit>
+      <trans-unit id="conversation.thinking" datatype="html">
+        <source>Réflexion…</source>
+        <target>Thinking…</target>
+      </trans-unit>
+      <trans-unit id="conversation.refused" datatype="html">
+        <source>Refusé : <x id="tool" equiv-text="tool"/></source>
+        <target>Refused: <x id="tool" equiv-text="tool"/></target>
+      </trans-unit>
+      <trans-unit id="conversation.sendError" datatype="html">
+        <source>Impossible d&apos;envoyer le message.</source>
+        <target>Could not send the message.</target>
+      </trans-unit>
+      <trans-unit id="conversation.accepted" datatype="html">
+        <source>Proposition acceptée et projet enregistré.</source>
+        <target>Proposal accepted and project saved.</target>
+      </trans-unit>
+      <trans-unit id="conversation.partlyAccepted" datatype="html">
+        <source><x id="applied" equiv-text="result.appliedSteps"/> étape(s) sur <x id="total" equiv-text="result.totalSteps"/> appliquée(s) : la suivante ne respecterait plus les règles du projet tel qu&apos;il est maintenant.</source>
+        <target><x id="applied" equiv-text="result.appliedSteps"/> of <x id="total" equiv-text="result.totalSteps"/> step(s) applied: the next one would break the rules of the project as it is now.</target>
+      </trans-unit>
+      <trans-unit id="conversation.undone" datatype="html">
+        <source>Acceptation annulée : le projet est revenu à son état d&apos;avant.</source>
+        <target>Accept undone: the project is back to how it was.</target>
+      </trans-unit>
+      <trans-unit id="conversation.discardError" datatype="html">
+        <source>Impossible de rejeter la proposition.</source>
+        <target>Could not discard the proposal.</target>
+      </trans-unit>
+      <trans-unit id="conversation.acceptError" datatype="html">
+        <source>Impossible de modifier le projet.</source>
+        <target>Could not change the project.</target>
+      </trans-unit>
+      <trans-unit id="editor.live" datatype="html">
+        <source>Projet</source>
+        <target>Project</target>
+      </trans-unit>
+      <trans-unit id="editor.proposal" datatype="html">
+        <source>Proposition</source>
+        <target>Proposal</target>
+      </trans-unit>
+      <trans-unit id="editor.marksAdded" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.ADDED }}"/> ajouté(s)</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.ADDED }}"/> added</target>
+      </trans-unit>
+      <trans-unit id="editor.marksChanged" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.CHANGED }}"/> modifié(s)</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.CHANGED }}"/> changed</target>
+      </trans-unit>
+      <trans-unit id="editor.marksRemoved" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.REMOVED }}"/> retiré(s)</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ proposalView.counts.REMOVED }}"/> removed</target>
+      </trans-unit>
+      <trans-unit id="editor.assistant" datatype="html">
+        <source>Assistant</source>
+        <target>Assistant</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addWall" datatype="html">
+        <source>Ajouter un mur</source>
+        <target>Add a wall</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.updateWall" datatype="html">
+        <source>Modifier un mur</source>
+        <target>Change a wall</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.removeWall" datatype="html">
+        <source>Retirer un mur</source>
+        <target>Remove a wall</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addOpening" datatype="html">
+        <source>Ajouter une ouverture</source>
+        <target>Add an opening</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addAppliance" datatype="html">
+        <source>Ajouter un électroménager</source>
+        <target>Add an appliance</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addFiller" datatype="html">
+        <source>Ajouter un remplissage</source>
+        <target>Add a filler</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.updateItem" datatype="html">
+        <source>Modifier un élément</source>
+        <target>Change an item</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.removeItem" datatype="html">
+        <source>Retirer un élément</source>
+        <target>Remove an item</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addCabinet" datatype="html">
+        <source>Ajouter un caisson</source>
+        <target>Add a cabinet</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.updateCabinet" datatype="html">
+        <source>Modifier un caisson</source>
+        <target>Change a cabinet</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.addDivider" datatype="html">
+        <source>Ajouter un séparateur</source>
+        <target>Add a divider</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.moveDivider" datatype="html">
+        <source>Déplacer un séparateur</source>
+        <target>Move a divider</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.removeDivider" datatype="html">
+        <source>Retirer un séparateur</source>
+        <target>Remove a divider</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.removeCabinet" datatype="html">
+        <source>Retirer un caisson</source>
+        <target>Remove a cabinet</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.noteProposal" datatype="html">
+        <source>Noter le résumé, les questions et les hypothèses</source>
+        <target>Note the summary, questions and assumptions</target>
+      </trans-unit>
+      <trans-unit id="assistantTool.viewDesign" datatype="html">
+        <source>Relire le plan</source>
+        <target>Review the design</target>
+      </trans-unit>
+      <trans-unit id="answerError.off" datatype="html">
+        <source>L&apos;assistant a été désactivé pour l&apos;atelier.</source>
+        <target>The assistant was turned off for the shop.</target>
+      </trans-unit>
+      <trans-unit id="answerError.budgetSpent" datatype="html">
+        <source>Le budget du mois est dépensé : l&apos;assistant reprendra le 1er du mois prochain.</source>
+        <target>This month&apos;s budget is spent: the assistant resumes on the 1st of next month.</target>
+      </trans-unit>
+      <trans-unit id="answerError.modelError" datatype="html">
+        <source>L&apos;assistant n&apos;a pas pu répondre. Réessayez dans un moment.</source>
+        <target>The assistant could not answer. Try again in a moment.</target>
+      </trans-unit>
+      <trans-unit id="answerError.tooManySteps" datatype="html">
+        <source>L&apos;assistant s&apos;est arrêté : la demande prenait trop d&apos;étapes. Précisez-la ou découpez-la.</source>
+        <target>The assistant stopped: the request took too many steps. Make it more precise or split it.</target>
+      </trans-unit>
+      <trans-unit id="answerError.interrupted" datatype="html">
+        <source>L&apos;assistant a été interrompu par un redémarrage. Renvoyez votre message.</source>
+        <target>The assistant was interrupted by a restart. Send your message again.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

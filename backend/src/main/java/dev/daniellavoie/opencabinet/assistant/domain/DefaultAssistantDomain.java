@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantSettings;
 import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantStatus;
 import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantUsage;
+import dev.daniellavoie.opencabinet.assistant.domain.model.BudgetSpentException;
 import dev.daniellavoie.opencabinet.assistant.domain.model.CheckReply;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelReply;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
@@ -95,21 +96,31 @@ public class DefaultAssistantDomain implements AssistantDomain {
 	@Override
 	public ModelReply complete(ModelRequest request, Principal principal) {
 		var member = memberDomain.current(principal);
-		var settings = repository.findSettings(member.getShopId())
+		return complete(request, member.getShopId(), member.getId());
+	}
+
+	@Override
+	public boolean isAvailable(UUID shopId) {
+		return model.isConfigured() && repository.findSettings(shopId).map(AssistantSettings::isEnabled).orElse(false);
+	}
+
+	@Override
+	public ModelReply complete(ModelRequest request, UUID shopId, UUID memberId) {
+		var settings = repository.findSettings(shopId)
 				.filter(AssistantSettings::isEnabled)
 				.orElseThrow(() -> new IllegalStateException("the design assistant is off for this shop"));
 		if (!model.isConfigured()) {
 			throw new IllegalStateException("the server has no model provider key");
 		}
-		if (spentThisMonth(member.getShopId()).compareTo(settings.getMonthlyBudgetUsd()) >= 0) {
-			throw new IllegalStateException("this month's design assistant budget is spent");
+		if (spentThisMonth(shopId).compareTo(settings.getMonthlyBudgetUsd()) >= 0) {
+			throw new BudgetSpentException();
 		}
 
 		var reply = model.complete(request);
 		repository.recordUsage(AssistantUsage.builder()
 				.id(UUID.randomUUID())
-				.shopId(member.getShopId())
-				.memberId(member.getId())
+				.shopId(shopId)
+				.memberId(memberId)
 				.purpose(request.getPurpose())
 				.model(reply.getModel())
 				.inputTokens(reply.getInputTokens())

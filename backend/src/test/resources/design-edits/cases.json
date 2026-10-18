@@ -1,0 +1,1518 @@
+[
+  {
+    "name": "a new wall copies the last wall's size and turns 90 degrees",
+    "action": "addWall",
+    "args": {
+      "id": "w3"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w3",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a wall changes size, keeping its id",
+    "action": "updateWall",
+    "args": {
+      "wallId": "w1",
+      "changes": {
+        "lengthMm": 3600,
+        "id": "other"
+      }
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3600,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "removing a wall removes what stands on it",
+    "action": "removeWall",
+    "args": {
+      "wallId": "w1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a room keeps at least one wall",
+    "action": "removeWall",
+    "args": {
+      "wallId": "w1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a window starts at the wall's start with its default size",
+    "action": "addOpening",
+    "args": {
+      "kind": "WINDOW",
+      "wallId": "w2",
+      "id": "o1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 1066.8,
+          "elevationMm": 1066.8
+        }
+      ],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a fridge starts at the wall's start with its default size",
+    "action": "addAppliance",
+    "args": {
+      "kind": "FRIDGE",
+      "wallId": "w2",
+      "id": "a1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [
+        {
+          "id": "a1",
+          "kind": "FRIDGE",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 1778.0,
+          "depthMm": 762.0,
+          "elevationMm": 0
+        }
+      ],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a filler is base height, above the toe kick",
+    "action": "addFiller",
+    "args": {
+      "wallId": "w1",
+      "id": "f1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": [
+        {
+          "id": "f1",
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 76.19999999999999,
+          "heightMm": 774.6999999999999,
+          "depthMm": 609.5999999999999,
+          "elevationMm": 101.6
+        }
+      ]
+    }
+  },
+  {
+    "name": "an item moves and resizes, keeping its id and kind",
+    "action": "updateItem",
+    "args": {
+      "itemId": "o1",
+      "changes": {
+        "offsetMm": 500,
+        "widthMm": 1200
+      }
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 1066.8,
+          "elevationMm": 1066.8
+        }
+      ],
+      "appliances": [],
+      "fillers": [
+        {
+          "id": "f1",
+          "wallId": "w1",
+          "offsetMm": 457.2,
+          "widthMm": 76.2,
+          "heightMm": 774.7,
+          "depthMm": 609.6,
+          "elevationMm": 101.6
+        }
+      ]
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w2",
+          "offsetMm": 500,
+          "widthMm": 1200,
+          "heightMm": 1066.8,
+          "elevationMm": 1066.8
+        }
+      ],
+      "appliances": [],
+      "fillers": [
+        {
+          "id": "f1",
+          "wallId": "w1",
+          "offsetMm": 457.2,
+          "widthMm": 76.2,
+          "heightMm": 774.7,
+          "depthMm": 609.6,
+          "elevationMm": 101.6
+        }
+      ]
+    }
+  },
+  {
+    "name": "an item is removed by its id",
+    "action": "removeItem",
+    "args": {
+      "itemId": "f1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 1066.8,
+          "elevationMm": 1066.8
+        }
+      ],
+      "appliances": [],
+      "fillers": [
+        {
+          "id": "f1",
+          "wallId": "w1",
+          "offsetMm": 457.2,
+          "widthMm": 76.2,
+          "heightMm": 774.7,
+          "depthMm": 609.6,
+          "elevationMm": 101.6
+        }
+      ]
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [
+        {
+          "id": "o1",
+          "kind": "WINDOW",
+          "wallId": "w2",
+          "offsetMm": 0,
+          "widthMm": 914.4,
+          "heightMm": 1066.8,
+          "elevationMm": 1066.8
+        }
+      ],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a new cabinet goes just past the one at the wall's start",
+    "action": "addCabinet",
+    "args": {
+      "templateCode": "BASE_DOOR",
+      "templateVersion": 2,
+      "wallId": "w1",
+      "id": "c2"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 457.2,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a wall cabinet hangs above the base cabinets at the wall's start",
+    "action": "addCabinet",
+    "args": {
+      "templateCode": "WALL_DOOR",
+      "templateVersion": 2,
+      "wallId": "w1",
+      "id": "c2"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "WALL_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 609.6,
+          "heightMm": 762.0,
+          "depthMm": 304.8,
+          "elevationMm": 1371.6,
+          "shelfCount": 2
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a new cabinet clears the corner cabinet with room for a filler",
+    "action": "addCabinet",
+    "args": {
+      "templateCode": "BASE_DOOR",
+      "templateVersion": 2,
+      "wallId": "w2",
+      "id": "c2"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 2542.8,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 2542.8,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        },
+        {
+          "id": "c2",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w2",
+          "offsetMm": 635.0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a cabinet changes, keeping its id",
+    "action": "updateCabinet",
+    "args": {
+      "cabinetId": "c1",
+      "changes": {
+        "widthMm": 600,
+        "mirrored": true,
+        "crown": true,
+        "id": "other"
+      }
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 600,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "mirrored": true,
+          "crown": true
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a first divider goes in the middle",
+    "action": "addDivider",
+    "args": {
+      "cabinetId": "c1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            450
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "the next divider splits the widest section",
+    "action": "addDivider",
+    "args": {
+      "cabinetId": "c1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            300
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            300,
+            600
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a divider's position rounds to a tenth of a millimetre",
+    "action": "addDivider",
+    "args": {
+      "cabinetId": "c1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.3,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.3,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            228.7
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a divider moves",
+    "action": "moveDivider",
+    "args": {
+      "cabinetId": "c1",
+      "index": 0,
+      "positionMm": 350
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            300
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            350
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a divider is removed",
+    "action": "removeDivider",
+    "args": {
+      "cabinetId": "c1",
+      "index": 0
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": [
+            300
+          ]
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 900,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1,
+          "dividerPositionsMm": []
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  },
+  {
+    "name": "a cabinet is removed",
+    "action": "removeCabinet",
+    "args": {
+      "cabinetId": "c1"
+    },
+    "design": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [
+        {
+          "id": "c1",
+          "templateCode": "BASE_DOOR",
+          "templateVersion": 2,
+          "wallId": "w1",
+          "offsetMm": 0,
+          "widthMm": 457.2,
+          "heightMm": 876.3,
+          "depthMm": 609.6,
+          "elevationMm": 0,
+          "shelfCount": 1
+        }
+      ],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    },
+    "expected": {
+      "walls": [
+        {
+          "id": "w1",
+          "lengthMm": 3000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        },
+        {
+          "id": "w2",
+          "lengthMm": 2000,
+          "heightMm": 2400,
+          "angleToNextDegrees": 90
+        }
+      ],
+      "cabinets": [],
+      "openings": [],
+      "appliances": [],
+      "fillers": []
+    }
+  }
+]

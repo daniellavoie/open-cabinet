@@ -1,0 +1,62 @@
+<section class="conversation">
+  <div class="alert alert-info" *ngIf="status && !status.enabled" i18n="@@conversation.off">L'assistant est désactivé. Un propriétaire peut l'activer dans les paramètres de l'atelier.</div>
+
+  <div class="messages">
+    <p class="empty" *ngIf="view && view.messages.length === 0" i18n="@@conversation.empty">Décrivez ce que vous voulez changer : l'assistant prépare une proposition à revoir en 3D. Rien ne change tant que vous ne l'acceptez pas.</p>
+    <div *ngFor="let message of view?.messages" class="message" [class.mine]="message.author === 'MEMBER'">
+      <span class="author" *ngIf="message.author === 'MEMBER'">{{ message.memberName }}</span>
+      <span class="author" *ngIf="message.author === 'ASSISTANT'" i18n="@@conversation.assistant">Assistant</span>
+      <p *ngIf="message.text">{{ message.text }}</p>
+      <p class="problem" *ngIf="message.error">{{ errorLabels[message.error] }}</p>
+    </div>
+  </div>
+
+  <div class="working" *ngIf="view?.running">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span i18n="@@conversation.working">L'assistant prépare la proposition…</span>
+  </div>
+  <ul class="progress-lines" *ngIf="progress.length > 0">
+    <li *ngFor="let event of progress" [class.refused]="event.kind === 'REFUSED'" [class.thinking]="event.kind === 'THINKING'">
+      {{ describe(event) }}
+      <span class="reason" *ngFor="let reason of reasons(event)">{{ reason }}</span>
+    </li>
+  </ul>
+
+  <section class="proposal" *ngIf="proposal">
+    <header>
+      <h3 i18n="@@conversation.proposal">Proposition</h3>
+      <span class="badge text-bg-success" *ngIf="proposal.status === 'ACCEPTED'" i18n="@@conversation.acceptedBadge">Acceptée</span>
+      <span class="steps" i18n="@@conversation.steps">{{ proposal.steps.length }} étape(s)</span>
+    </header>
+    <p *ngIf="proposal.summary">{{ proposal.summary }}</p>
+    <ng-container *ngIf="proposal.openQuestions.length > 0">
+      <h4 i18n="@@conversation.openQuestions">Questions</h4>
+      <ul><li *ngFor="let question of proposal.openQuestions">{{ question }}</li></ul>
+    </ng-container>
+    <ng-container *ngIf="proposal.assumptions.length > 0">
+      <h4 i18n="@@conversation.assumptions">Hypothèses</h4>
+      <ul><li *ngFor="let assumption of proposal.assumptions">{{ assumption }}</li></ul>
+    </ng-container>
+    <p class="hint" *ngIf="proposal.status === 'OPEN' && acceptBlocker">{{ acceptBlocker }}</p>
+    <div class="actions" *ngIf="proposal.status === 'OPEN'">
+      <button class="btn btn-sm btn-primary" (click)="accept()" [disabled]="acting || !!acceptBlocker || proposal.steps.length === 0"
+        i18n="@@conversation.accept">Accepter</button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="discard()" [disabled]="acting || view?.running"
+        i18n="@@conversation.discard">Rejeter</button>
+    </div>
+    <div class="actions" *ngIf="proposal.status === 'ACCEPTED'">
+      <button class="btn btn-sm btn-outline-secondary" (click)="undo()" [disabled]="acting || readOnly || dirty"
+        i18n="@@conversation.undo">Annuler l'acceptation</button>
+    </div>
+  </section>
+
+  <div class="alert alert-success" *ngIf="outcome">{{ outcome }}</div>
+  <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+  <form class="compose" (ngSubmit)="send()">
+    <textarea class="form-control" name="text" rows="3" [(ngModel)]="text" [disabled]="!status?.enabled"
+      (keydown.control.enter)="send()" i18n-placeholder="@@conversation.placeholder"
+      placeholder="Ex. : Ajoute un caisson-évier de 36 po sous la fenêtre"></textarea>
+    <button class="btn btn-primary" type="submit" [disabled]="!canSend" i18n="@@conversation.send">Envoyer</button>
+  </form>
+</section>

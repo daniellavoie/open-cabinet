@@ -3,6 +3,7 @@ package dev.daniellavoie.opencabinet.assistant.module.adapter.anthropic;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.ai.anthropic.AnthropicChatModel;
@@ -10,13 +11,18 @@ import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.stereotype.Component;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelReply;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.Speaker;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolCall;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolSpec;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelTier;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantModel;
 import lombok.AccessLevel;
@@ -66,28 +72,80 @@ public class AnthropicAssistantModel implements AssistantModel {
 	@Override
 	public ModelReply complete(ModelRequest request) {
 		var model = modelFor(request.getTier());
-		var messages = new ArrayList<Message>();
-		messages.add(new SystemMessage(request.getInstructions()));
-		request.getMessages().forEach(message -> messages.add(message.speaker() == Speaker.MEMBER
-				? new UserMessage(message.text())
-				: new AssistantMessage(message.text())));
-
 		var response = chatModel.orElseThrow(() -> new IllegalStateException("the server has no model provider key"))
-				.call(new Prompt(messages, AnthropicChatOptions.builder()
+				.call(new Prompt(messages(request), AnthropicChatOptions.builder()
 						.model(model)
 						.maxTokens(request.getMaxTokens())
+						.toolCallbacks(request.getTools().stream().map(AnthropicAssistantModel::declared).toList())
 						.build()));
 
 		var usage = response.getMetadata().getUsage();
 		long input = Optional.ofNullable(usage.getPromptTokens()).orElse(0);
 		long output = Optional.ofNullable(usage.getCompletionTokens()).orElse(0);
+		var answer = response.getResult().getOutput();
 		return ModelReply.builder()
-				.text(response.getResult().getOutput().getText())
+				.text(answer.getText())
+				.toolCalls(answer.getToolCalls().stream()
+						.map(call -> new ToolCall(call.id(), call.name(), call.arguments()))
+						.toList())
 				.model(model)
 				.inputTokens(input)
 				.outputTokens(output)
 				.costUsd(cost(prices(model), input, output))
 				.build();
+	}
+
+	/**
+	 * The instructions, then the conversation; consecutive tool results travel together, answering
+	 * the tool calls of the message before them.
+	 */
+	private static List<Message> messages(ModelRequest request) {
+		var messages = new ArrayList<Message>();
+		messages.add(new SystemMessage(request.getInstructions()));
+		var results = new ArrayList<ToolResponseMessage.ToolResponse>();
+		for (var message : request.getMessages()) {
+			if (message.speaker() != Speaker.TOOL && !results.isEmpty()) {
+				messages.add(ToolResponseMessage.builder().responses(List.copyOf(results)).build());
+				results.clear();
+			}
+			switch (message.speaker()) {
+			case MEMBER -> messages.add(new UserMessage(message.text()));
+			case ASSISTANT -> messages.add(AssistantMessage.builder()
+					.content(Optional.ofNullable(message.text()).orElse(""))
+					.toolCalls(message.toolCalls().stream()
+							.map(call -> new AssistantMessage.ToolCall(call.id(), "function", call.name(), call.arguments()))
+							.toList())
+					.build());
+			case TOOL -> results.add(new ToolResponseMessage.ToolResponse(message.toolResult().callId(),
+					message.toolResult().name(), message.toolResult().content()));
+			}
+		}
+		if (!results.isEmpty()) {
+			messages.add(ToolResponseMessage.builder().responses(List.copyOf(results)).build());
+		}
+		return messages;
+	}
+
+	/**
+	 * A tool the model may ask for. Spring AI never runs it: the domain runs each call itself.
+	 */
+	private static ToolCallback declared(ToolSpec spec) {
+		var definition = ToolDefinition.builder()
+				.name(spec.name())
+				.description(spec.description())
+				.inputSchema(spec.inputSchema())
+				.build();
+		return new ToolCallback() {
+			@Override
+			public ToolDefinition getToolDefinition() {
+				return definition;
+			}
+
+			@Override
+			public String call(String arguments) {
+				throw new IllegalStateException("tool " + spec.name() + " is run by the domain, not by Spring AI");
+			}
+		};
 	}
 
 	/**

@@ -1,3 +1,4 @@
+import type { AnswerError } from "../assistant/model/conversation";
 import { MaterialKind } from "../catalog/model/material";
 import { Role } from "../member/model/member";
 import { PartRole } from "../cutlist/model/project-output";
@@ -182,4 +183,32 @@ export const TEMPLATE_RULE_LABELS: Record<TemplateRuleCode, string> = {
   TOO_BIG_FOR_SHEET: $localize`:@@templateRule.tooBig:La pièce est plus grande que son panneau.`,
   NOT_TOUCHING: $localize`:@@templateRule.notTouching:La pièce ne touche aucune autre pièce.`,
   NO_PARTS: $localize`:@@templateRule.noParts:Le modèle n'a encore aucune pièce.`,
+};
+
+/** What each Design Assistant tool does, for its progress lines. */
+export const ASSISTANT_TOOL_LABELS: Record<string, string> = {
+  add_wall: $localize`:@@assistantTool.addWall:Ajouter un mur`,
+  update_wall: $localize`:@@assistantTool.updateWall:Modifier un mur`,
+  remove_wall: $localize`:@@assistantTool.removeWall:Retirer un mur`,
+  add_opening: $localize`:@@assistantTool.addOpening:Ajouter une ouverture`,
+  add_appliance: $localize`:@@assistantTool.addAppliance:Ajouter un électroménager`,
+  add_filler: $localize`:@@assistantTool.addFiller:Ajouter un remplissage`,
+  update_item: $localize`:@@assistantTool.updateItem:Modifier un élément`,
+  remove_item: $localize`:@@assistantTool.removeItem:Retirer un élément`,
+  add_cabinet: $localize`:@@assistantTool.addCabinet:Ajouter un caisson`,
+  update_cabinet: $localize`:@@assistantTool.updateCabinet:Modifier un caisson`,
+  add_divider: $localize`:@@assistantTool.addDivider:Ajouter un séparateur`,
+  move_divider: $localize`:@@assistantTool.moveDivider:Déplacer un séparateur`,
+  remove_divider: $localize`:@@assistantTool.removeDivider:Retirer un séparateur`,
+  remove_cabinet: $localize`:@@assistantTool.removeCabinet:Retirer un caisson`,
+  note_proposal: $localize`:@@assistantTool.noteProposal:Noter le résumé, les questions et les hypothèses`,
+  view_design: $localize`:@@assistantTool.viewDesign:Relire le plan`,
+};
+
+export const ANSWER_ERROR_LABELS: Record<AnswerError, string> = {
+  OFF: $localize`:@@answerError.off:L'assistant a été désactivé pour l'atelier.`,
+  BUDGET_SPENT: $localize`:@@answerError.budgetSpent:Le budget du mois est dépensé : l'assistant reprendra le 1er du mois prochain.`,
+  MODEL_ERROR: $localize`:@@answerError.modelError:L'assistant n'a pas pu répondre. Réessayez dans un moment.`,
+  TOO_MANY_STEPS: $localize`:@@answerError.tooManySteps:L'assistant s'est arrêté : la demande prenait trop d'étapes. Précisez-la ou découpez-la.`,
+  INTERRUPTED: $localize`:@@answerError.interrupted:L'assistant a été interrompu par un redémarrage. Renvoyez votre message.`,
 };
