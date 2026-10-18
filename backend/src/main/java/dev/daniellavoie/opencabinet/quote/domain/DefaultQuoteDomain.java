@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
 import dev.daniellavoie.opencabinet.cutlist.domain.port.api.CutListDomain;
+import dev.daniellavoie.opencabinet.drawing.domain.port.api.ShopDrawingsDomain;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuotePictures;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import dev.daniellavoie.opencabinet.quote.domain.port.api.QuoteDomain;
 import dev.daniellavoie.opencabinet.quote.domain.port.backend.QuoteRenderer;
@@ -35,6 +37,7 @@ public class DefaultQuoteDomain implements QuoteDomain {
 	CatalogDomain catalogDomain;
 	CutListDomain cutListDomain;
 	ShopRepository shopRepository;
+	ShopDrawingsDomain shopDrawingsDomain;
 
 	@Override
 	public List<Quote> findByProject(UUID projectId, Principal principal) {
@@ -82,13 +85,13 @@ public class DefaultQuoteDomain implements QuoteDomain {
 	}
 
 	/**
-	 * Prices the Project as it is now, without a number yet.
+	 * Prices and pictures the Project as it is now, without a number yet.
 	 */
 	private Quote draft(UUID projectId, UUID shopId) {
 		var shop = shopRepository.findById(shopId);
 		var project = projectDomain.findById(projectId, shopId);
-		var output = cutListDomain.output(project, shop.getSettings().getConstructionStandard(),
-				catalogDomain.findByShop(shopId));
+		var standard = shop.getSettings().getConstructionStandard();
+		var output = cutListDomain.output(project, standard, catalogDomain.findByShop(shopId));
 
 		if (output.getOperations().getCabinets() == 0
 				&& Optional.ofNullable(project.getManualLines()).orElse(List.of()).isEmpty()) {
@@ -101,6 +104,9 @@ public class DefaultQuoteDomain implements QuoteDomain {
 				.status(QuoteStatus.DRAFT)
 				.content(QuoteCalculator.calculate(shop, project, clientDomain.findById(project.getClientId(), shopId),
 						output))
+				.pictures(QuotePictures.builder()
+						.views(shopDrawingsDomain.quotePictures(project, standard, shop.getUnits()))
+						.build())
 				.creationTimestamp(LocalDateTime.now())
 				.build();
 	}

@@ -6,15 +6,18 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Component;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
@@ -23,12 +26,16 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import dev.daniellavoie.opencabinet.drawing.domain.model.View;
+import dev.daniellavoie.opencabinet.drawing.module.adapter.pdf.PdfViewPainter;
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuotePictures;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import dev.daniellavoie.opencabinet.quote.domain.port.backend.QuoteRenderer;
 
 /**
- * Renders the Client-facing Quote in French (Canada). The internal breakdown is never printed.
+ * Renders the Client-facing Quote in French (Canada): the Room in 3D under the parties, the price,
+ * then an Elevation of each Wall with Cabinets. The internal breakdown is never printed.
  */
 @Component
 public class OpenPdfQuoteRenderer implements QuoteRenderer {
@@ -41,6 +48,10 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 	private static final Font BODY = new Font(Font.HELVETICA, 10);
 	private static final Font SMALL = new Font(Font.HELVETICA, 9, Font.NORMAL, MUTED);
 	private static final Font TOTAL = new Font(Font.HELVETICA, 12, Font.BOLD);
+	private static final float OVERVIEW_HEIGHT = 240;
+	private static final float ELEVATION_HEIGHT = 250;
+
+	private final PdfViewPainter painter = new PdfViewPainter();
 
 	@Override
 	public byte[] pdf(Quote quote) {
@@ -50,8 +61,10 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 
 		var output = new ByteArrayOutputStream();
 		var document = new Document(PageSize.LETTER, 54, 54, 54, 54);
-		PdfWriter.getInstance(document, output);
+		var writer = PdfWriter.getInstance(document, output);
 		document.open();
+		var width = document.right() - document.left();
+		var pictures = Optional.ofNullable(quote.getPictures()).map(QuotePictures::getViews).orElse(List.of());
 
 		document.add(new Paragraph(content.getShopName(), TITLE));
 		document.add(new Paragraph("Soumission " + quote.getDisplayNumber() + " — "
@@ -70,6 +83,11 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 				quote.getStatus() == QuoteStatus.DRAFT ? "Brouillon" : null)));
 		document.add(parties);
 		document.add(spacer());
+
+		if (!pictures.isEmpty()) {
+			document.add(picture(writer, pictures.get(0), width, OVERVIEW_HEIGHT));
+			document.add(spacer());
+		}
 
 		var lines = new PdfPTable(new float[] { 4, 1 });
 		lines.setWidthPercentage(100);
@@ -94,8 +112,49 @@ public class OpenPdfQuoteRenderer implements QuoteRenderer {
 		document.add(new Paragraph("Les prix sont en " + content.getCurrency()
 				+ ". Cette soumission correspond à la conception du projet à la date ci-dessus.", SMALL));
 
+		for (var elevation : pictures.stream().skip(1).toList()) {
+			document.add(titled(elevation.getTitle(), picture(writer, elevation, width, ELEVATION_HEIGHT)));
+		}
+
 		document.close();
 		return output.toByteArray();
+	}
+
+	/**
+	 * A View drawn as large as fits {@code width × height}, centred.
+	 */
+	private Image picture(PdfWriter writer, View view, float width, float height) {
+		var box = PdfViewPainter.ViewBox.of(view);
+		var pointsPerMm = PdfViewPainter.fit(List.of(box), width, height);
+		var template = writer.getDirectContent().createTemplate((float) box.width(pointsPerMm),
+				(float) box.height(pointsPerMm));
+		painter.draw(template, view, box, pointsPerMm, 0, 0);
+		try {
+			var image = Image.getInstance(template);
+			image.setAlignment(Element.ALIGN_CENTER);
+			return image;
+		} catch (BadElementException exception) {
+			throw new IllegalStateException("could not place a picture in the quote", exception);
+		}
+	}
+
+	/**
+	 * A heading and its picture, moved to the next page together when they don't fit.
+	 */
+	private static PdfPTable titled(String title, Image picture) {
+		var table = new PdfPTable(1);
+		table.setWidthPercentage(100);
+		table.setKeepTogether(true);
+		table.setSpacingBefore(18);
+		var heading = new PdfPCell(new Phrase(title, HEADING));
+		heading.setBorder(Rectangle.NO_BORDER);
+		heading.setPaddingBottom(6);
+		table.addCell(heading);
+		var cell = new PdfPCell(picture, false);
+		cell.setBorder(Rectangle.NO_BORDER);
+		cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+		table.addCell(cell);
+		return table;
 	}
 
 	private static String percent(BigDecimal rate) {

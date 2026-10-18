@@ -62,6 +62,7 @@ public class QuoteDatabaseRepository implements QuoteRepository {
 				.revision(quote.getRevision())
 				.status(quote.getStatus())
 				.content(quote.getContent())
+				.pictures(quote.getPictures())
 				.creationTimestamp(quote.getCreationTimestamp())
 				.build())
 				.to();

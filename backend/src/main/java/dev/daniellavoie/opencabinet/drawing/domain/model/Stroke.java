@@ -18,7 +18,14 @@ public enum Stroke {
 	 */
 	WALL,
 	/**
-	 * Openings cut through a Wall in plan view.
+	 * Openings cut through a Wall in plan view, and windows on Walls in 3D: filled white.
 	 */
-	OPENING
+	OPENING,
+	/**
+	 * Faces in 3D, filled lightest to darkest so a box reads as a solid: tops, faces turned to the
+	 * reader, faces turned away.
+	 */
+	FACE_LIGHT,
+	FACE_MEDIUM,
+	FACE_DARK
 }

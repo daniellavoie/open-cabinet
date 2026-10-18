@@ -1,6 +1,7 @@
 package dev.daniellavoie.opencabinet.drawing.domain;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -8,6 +9,7 @@ import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.cutlist.domain.SampleKitchen;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
 import dev.daniellavoie.opencabinet.drawing.domain.model.ShopDrawings;
+import dev.daniellavoie.opencabinet.drawing.domain.model.View;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
@@ -25,6 +27,13 @@ public final class ShopDrawingsSamples {
 				output.getCabinetLabels(), output.getParts(),
 				SampleKitchen.catalog().stream().collect(Collectors.toMap(Material::getId, Function.identity())),
 				SampleKitchen.standard(), units, language);
+	}
+
+	/**
+	 * The pictures a Quote of the kitchen prints.
+	 */
+	public static List<View> pictures(DrawingLanguage language, Units units) {
+		return QuotePicturesGenerator.generate(source(language, units));
 	}
 
 	public static ShopDrawings sample(DrawingLanguage language, Units units) {

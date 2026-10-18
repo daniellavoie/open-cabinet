@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import dev.daniellavoie.opencabinet.quote.domain.model.Quote;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteContent;
+import dev.daniellavoie.opencabinet.quote.domain.model.QuotePictures;
 import dev.daniellavoie.opencabinet.quote.domain.model.QuoteStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,6 +38,8 @@ public class QuoteEntity {
 	QuoteStatus status;
 	@JdbcTypeCode(SqlTypes.JSON)
 	QuoteContent content;
+	@JdbcTypeCode(SqlTypes.JSON)
+	QuotePictures pictures;
 	LocalDateTime creationTimestamp;
 	LocalDateTime sentTimestamp;
 
@@ -48,6 +51,7 @@ public class QuoteEntity {
 				.revision(revision)
 				.status(status)
 				.content(content)
+				.pictures(pictures)
 				.creationTimestamp(creationTimestamp)
 				.sentTimestamp(sentTimestamp)
 				.build();

@@ -1,5 +1,6 @@
 package dev.daniellavoie.opencabinet;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -28,6 +29,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 
 /**
  * Boots the whole application against a real PostgreSQL, running the Flyway migrations, and walks
@@ -173,6 +176,7 @@ class OpenCabinetApplicationTests {
 		var quote = read(mockMvc.perform(as(owner, post("/api/project/" + projectId + "/quote")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("DRAFT"))
+				.andExpect(jsonPath("$.pictures").doesNotExist())
 				.andExpect(jsonPath("$.displayNumber").value("S-0001"))
 				.andExpect(jsonPath("$.content.lines", hasSize(2))));
 		var quoteId = quote.get("id").asText();
@@ -202,9 +206,14 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$[0].displayNumber").value("S-0001-R1"))
 				.andExpect(jsonPath("$[1].displayNumber").value("S-0001"));
 
-		mockMvc.perform(as(owner, get("/api/quote/" + quoteId + "/pdf")))
+		var quotePdf = mockMvc.perform(as(owner, get("/api/quote/" + quoteId + "/pdf")))
 				.andExpect(status().isOk())
-				.andExpect(header().string("Content-Type", startsWith("application/pdf")));
+				.andExpect(header().string("Content-Type", startsWith("application/pdf")))
+				.andReturn().getResponse().getContentAsByteArray();
+		// The pictures were stored with the Quote and printed after the price.
+		var quoteReader = new PdfReader(quotePdf);
+		assertThat(new PdfTextExtractor(quoteReader).getTextFromPage(quoteReader.getNumberOfPages()))
+				.contains("Élévation — Mur 1");
 
 		mockMvc.perform(as("stranger-" + System.nanoTime(), get("/api/project/" + projectId)))
 				.andExpect(status().isForbidden());

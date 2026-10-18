@@ -3,6 +3,8 @@ package dev.daniellavoie.opencabinet.quote.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -20,6 +22,11 @@ public class Quote {
 	int revision;
 	QuoteStatus status;
 	QuoteContent content;
+	/**
+	 * Printed in the PDF only, never sent to the app.
+	 */
+	@JsonIgnore
+	QuotePictures pictures;
 	LocalDateTime creationTimestamp;
 	LocalDateTime sentTimestamp;
 

@@ -2,6 +2,7 @@ package dev.daniellavoie.opencabinet.drawing.domain;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -15,11 +16,15 @@ import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
 import dev.daniellavoie.opencabinet.cutlist.domain.port.api.CutListDomain;
 import dev.daniellavoie.opencabinet.drawing.domain.model.DrawingLanguage;
 import dev.daniellavoie.opencabinet.drawing.domain.model.ShopDrawings;
+import dev.daniellavoie.opencabinet.drawing.domain.model.View;
 import dev.daniellavoie.opencabinet.drawing.domain.port.api.ShopDrawingsDomain;
 import dev.daniellavoie.opencabinet.drawing.domain.port.backend.ShopDrawingsRenderer;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
+import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
+import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
+import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 import dev.daniellavoie.opencabinet.shop.domain.port.backend.ShopRepository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,8 +51,7 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 		var catalog = catalogDomain.findByShop(shopId);
 		var output = cutListDomain.output(project, standard, catalog);
 
-		Map<String, CabinetTemplate> templates = projectDomain.templates().stream()
-				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
+		var templates = templates();
 		Map<UUID, Material> materials = catalog.stream()
 				.collect(Collectors.toMap(Material::getId, Function.identity()));
 
@@ -64,7 +68,18 @@ public class DefaultShopDrawingsDomain implements ShopDrawingsDomain {
 	}
 
 	@Override
+	public List<View> quotePictures(Project project, ConstructionStandard standard, Units units) {
+		return QuotePicturesGenerator.generate(new ShopDrawingsGenerator.Source(project.getDesign(), templates(),
+				Map.of(), List.of(), Map.of(), standard, units, DrawingLanguage.FR));
+	}
+
+	@Override
 	public byte[] pdf(UUID projectId, DrawingLanguage language, Principal principal) {
 		return renderer.pdf(drawings(projectId, language, principal));
+	}
+
+	private Map<String, CabinetTemplate> templates() {
+		return projectDomain.templates().stream()
+				.collect(Collectors.toMap(CabinetTemplate::key, Function.identity()));
 	}
 }

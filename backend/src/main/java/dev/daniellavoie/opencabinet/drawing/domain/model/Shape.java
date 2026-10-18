@@ -2,10 +2,19 @@ package dev.daniellavoie.opencabinet.drawing.domain.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /**
  * Something drawn in a View, in millimetres: x to the right, y up. Text and dimension spacing are
- * sized on paper, so they read the same at any scale.
+ * sized on paper, so they read the same at any scale. Stored by name in a Quote's pictures.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = Shape.Outline.class, name = "outline"),
+		@JsonSubTypes.Type(value = Shape.Line.class, name = "line"),
+		@JsonSubTypes.Type(value = Shape.Label.class, name = "label"),
+		@JsonSubTypes.Type(value = Shape.Dimension.class, name = "dimension") })
 public sealed interface Shape {
 	record Point(double x, double y) {
 	}

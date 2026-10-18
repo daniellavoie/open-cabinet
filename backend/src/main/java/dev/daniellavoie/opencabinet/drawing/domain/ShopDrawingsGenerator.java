@@ -75,7 +75,8 @@ final class ShopDrawingsGenerator {
 		var sheets = new ArrayList<Sheet>();
 		sheets.add(plan(source));
 		var walls = source.design().getWalls();
-		IntStream.range(0, walls.size()).forEach(index -> sheets.add(elevation(source, walls.get(index), index + 1)));
+		IntStream.range(0, walls.size())
+				.forEach(index -> sheets.add(elevation(source, walls.get(index), index + 1, true)));
 		cabinetsInOrder(source).forEach(cabinet -> sheets.add(cabinet(source, cabinet)));
 		return sheets;
 	}
@@ -150,9 +151,10 @@ final class ShopDrawingsGenerator {
 	 * One Wall seen from inside the Room, its start on the left: Openings, Appliances (dashed),
 	 * Fillers and Cabinets with their Fronts. Widths are chained under the floor-standing row and over
 	 * the wall Cabinets; the Wall's height on the left, wall Cabinets' heights from the floor on the
-	 * right.
+	 * right. For the Client ({@code forShop} false), only the Wall's length and height are dimensioned
+	 * and Cabinets are not labelled.
 	 */
-	static Sheet elevation(Source source, Wall wall, int number) {
+	static Sheet elevation(Source source, Wall wall, int number, boolean forShop) {
 		var language = source.language();
 		var design = source.design();
 		var length = wall.getLengthMm();
@@ -190,6 +192,9 @@ final class ShopDrawingsGenerator {
 		for (var cabinet : cabinets) {
 			var template = source.template(cabinet);
 			shapes.addAll(front(source, cabinet, template, cabinet.getOffsetMm(), cabinet.getElevationMm()));
+			if (!forShop) {
+				continue;
+			}
 			shapes.add(new Label(new Point(cabinet.getOffsetMm() + cabinet.getWidthMm() / 2, labelHeight(cabinet,
 					template)), source.labels().get(cabinet.getId())));
 			if (cabinet.getElevationMm() < 1) {
@@ -199,6 +204,17 @@ final class ShopDrawingsGenerator {
 			}
 			notes.add(source.labels().get(cabinet.getId()) + "  " + language.templateName(cabinet.getTemplateCode())
 					+ "  " + size(source, cabinet));
+		}
+
+		if (!forShop) {
+			shapes.add(new Dimension(new Point(length, 0), new Point(0, 0), 1, source.length(length)));
+			shapes.add(new Dimension(new Point(0, 0), new Point(0, wall.getHeightMm()), 1,
+					source.length(wall.getHeightMm())));
+			return Sheet.builder()
+					.title(language.pick("Élévation — ", "Elevation — ") + language.wall(number))
+					.views(List.of(View.builder().title("").shapes(shapes).build()))
+					.notes(List.of())
+					.build();
 		}
 
 		floorItems.sort(Comparator.comparingDouble(item -> item[0]));
@@ -404,7 +420,7 @@ final class ShopDrawingsGenerator {
 	/**
 	 * Cabinets in label order (C1, C2…), skipping any whose Wall or Template Version is unknown.
 	 */
-	private static List<Cabinet> cabinetsInOrder(Source source) {
+	static List<Cabinet> cabinetsInOrder(Source source) {
 		var wallIds = source.design().getWalls().stream().map(Wall::getId).toList();
 		var order = new ArrayList<>(source.labels().keySet());
 		return list(source.design().getCabinets()).stream()
