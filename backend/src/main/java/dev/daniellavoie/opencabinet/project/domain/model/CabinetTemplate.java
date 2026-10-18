@@ -45,6 +45,15 @@ public class CabinetTemplate {
 	 * fixed recipe that version 1 of the starter library uses.
 	 */
 	TemplateAssembly assembly;
+	/**
+	 * Set when read for a template that is archived: hidden when adding Cabinets, still used by those
+	 * that have it. Never part of a published version.
+	 */
+	Boolean archived;
+	/**
+	 * Set when read for a template in the Shop library. Never part of a published version.
+	 */
+	Boolean shared;
 
 	/**
 	 * Identifies a Template Version: its template's code and its number.

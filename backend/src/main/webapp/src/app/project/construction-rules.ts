@@ -216,7 +216,7 @@ function checkCorners(walls: Wall[], cabinets: Cabinet[], appliances: Appliance[
       continue;
     }
     const blind = Math.max(0, template.blindWidthMm ?? 0);
-    const blindSide = cabinet.blindSide ?? "RIGHT";
+    const blindSide = cabinet.mirrored ? "LEFT" : "RIGHT";
     const frontStart = cabinet.offsetMm + (blindSide === "LEFT" ? blind : 0);
     const frontEnd = cabinet.offsetMm + cabinet.widthMm - (blindSide === "RIGHT" ? blind : 0);
     const strip = wallRectangle(placement, frontStart, frontEnd, cabinet.depthMm, cabinet.depthMm + FRONT_STRIP_MM);

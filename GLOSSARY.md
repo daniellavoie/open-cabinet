@@ -58,6 +58,14 @@ _Avoid_: Unit, box, module
 A reusable definition of a kind of Cabinet, such as a sink base or an open bookcase: its Parts and hardware, held by Attachments. Open Cabinet provides a starter library; Members design their own, for one Project or shared with the whole Shop.
 _Avoid_: Preset, model, cabinet type, catalog item, piece
 
+**Shop Library**:
+The Cabinet Templates every Project of a Shop can use. A template shared into it stays there; once published it can be archived but not removed.
+_Avoid_: Presets, catalog, shared templates
+
+**Mirror**:
+A Cabinet built left for right, such as a blind corner with its blind side on the left.
+_Avoid_: Flip, left-handed, blind side
+
 **Attachment**:
 How a Part in a Cabinet Template is held: one of its faces fixed to a face of the Cabinet or of another Part, at an offset, so the Part follows when the Cabinet is resized.
 _Avoid_: Constraint, anchor, joint, link

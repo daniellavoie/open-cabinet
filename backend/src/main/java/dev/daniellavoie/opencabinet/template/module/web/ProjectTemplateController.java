@@ -4,12 +4,15 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.daniellavoie.opencabinet.template.domain.model.CreateProjectTemplateRequest;
@@ -37,6 +40,36 @@ public class ProjectTemplateController {
 	public ProjectTemplate create(@PathVariable UUID projectId, @RequestBody CreateProjectTemplateRequest request,
 			Principal principal) {
 		return domain.create(projectId, request, principal);
+	}
+
+	/**
+	 * The Shop library.
+	 */
+	@GetMapping("/template")
+	public List<ProjectTemplate> findShared(Principal principal) {
+		return domain.findShared(principal);
+	}
+
+	@PostMapping("/template")
+	public ProjectTemplate createInLibrary(@RequestBody CreateProjectTemplateRequest request, Principal principal) {
+		return domain.createInLibrary(request, principal);
+	}
+
+	@PostMapping("/project-template/{templateId}/share")
+	public ProjectTemplate share(@PathVariable UUID templateId, Principal principal) {
+		return domain.share(templateId, principal);
+	}
+
+	@PutMapping("/project-template/{templateId}/archived")
+	public ProjectTemplate setArchived(@PathVariable UUID templateId, @RequestBody boolean archived,
+			Principal principal) {
+		return domain.setArchived(templateId, archived, principal);
+	}
+
+	@DeleteMapping("/project-template/{templateId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(@PathVariable UUID templateId, Principal principal) {
+		domain.delete(templateId, principal);
 	}
 
 	@GetMapping("/project-template/{templateId}")

@@ -59,9 +59,8 @@
       [standard]="memberService.shop()!.settings.constructionStandard" [materials]="materials"
       (selectItem)="selectedId = $event" (move)="onMove($event)" />
     <design-panel class="panel" [readOnly]="readOnly" [design]="draft.design" [templates]="templates" [units]="units" [selectedId]="selectedId"
-      [violations]="violations" [outdatedIds]="outdatedIds" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles" [shopTemplates]="shopTemplates" [canSaveTemplates]="memberService.isOwner()"
-      [saved]="!dirty" (designTemplate)="designTemplate($event)"
-      (saveTemplate)="saveTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
+      [violations]="violations" [outdatedIds]="outdatedIds" [cabinetLabels]="cabinetLabels" [frontStyles]="frontStyles"
+      [saved]="!dirty" (designTemplate)="designTemplate($event)" (designChange)="setDesign($event)" (selectItem)="selectedId = $event" />
   </div>
 
   <section class="output" *ngIf="tab === 'cutList' || tab === 'nesting' || tab === 'materials'">

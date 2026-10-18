@@ -9,7 +9,6 @@ import { CatalogService } from "../../catalog/catalog-service";
 import { Material } from "../../catalog/model/material";
 import { ClientService } from "../../client/client-service";
 import { ProjectTemplateService } from "../../template/project-template-service";
-import { ShopCabinetTemplate, ShopTemplateService } from "../../template/shop-template-service";
 import { Client } from "../../client/model/client";
 import { BillOfMaterialsComponent } from "../../cutlist/bill-of-materials/bill-of-materials.component";
 import { CutListComponent } from "../../cutlist/cut-list/cut-list.component";
@@ -82,7 +81,6 @@ export class ProjectEditorComponent implements OnDestroy {
   frontStyles: Material[] = [];
   /** The Shop's whole catalog, for assembled templates' material thicknesses. */
   materials: Material[] = [];
-  shopTemplates: ShopCabinetTemplate[] = [];
   message = "";
   violations: Violation[] = [];
   invalidIds = new Set<string>();
@@ -114,7 +112,6 @@ export class ProjectEditorComponent implements OnDestroy {
     private projectService: ProjectService,
     clientService: ClientService,
     catalogService: CatalogService,
-    private shopTemplateService: ShopTemplateService,
     private projectTemplateService: ProjectTemplateService,
     private router: Router,
     @Inject(LOCALE_ID) private locale: string,
@@ -126,10 +123,8 @@ export class ProjectEditorComponent implements OnDestroy {
         this.projectService.projectTemplates(projectId),
         clientService.findAll(),
         catalogService.findAll(),
-        shopTemplateService.findAll(),
       ])))
-      .pipe(tap(([project, templates, clients, materials, shopTemplates]) => {
-        this.shopTemplates = shopTemplates;
+      .pipe(tap(([project, templates, clients, materials]) => {
         this.templates = templates;
         this.clients = clients;
         this.materials = materials;
@@ -292,16 +287,6 @@ export class ProjectEditorComponent implements OnDestroy {
     }
   }
 
-  saveTemplate(request: { name: string; cabinet: Cabinet }) {
-    this.error = "";
-    this.shopTemplateService.create(request.name, request.cabinet)
-      .pipe(tap(template => {
-        this.shopTemplates = [...this.shopTemplates, template].sort((first, second) => first.name.localeCompare(second.name));
-        this.message = $localize`:@@editor.templateSaved:Modèle « ${template.name}:name: » enregistré.`;
-      }))
-      .subscribe({ error: (response: HttpErrorResponse) => this.error = (response.error as ErrorResponse | null)?.message
-        ?? $localize`:@@editor.templateError:Impossible d'enregistrer le modèle.` });
-  }
 
   /**
    * Downloads the saved Project's Shop Drawings, in the app's language.

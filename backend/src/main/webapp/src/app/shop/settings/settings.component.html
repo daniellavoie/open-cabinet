@@ -87,15 +87,5 @@
       </div>
     </section>
 
-    <section class="panel">
-      <h2 i18n="@@settings.shopTemplates">Modèles de caissons de l'atelier</h2>
-      <p class="hint" *ngIf="shopTemplates.length === 0" i18n="@@settings.noShopTemplates">Aucun modèle. Dans un projet, sélectionnez un caisson et enregistrez-le comme modèle.</p>
-      <ul class="shop-templates">
-        <li *ngFor="let template of shopTemplates">
-          <span>{{ template.name }} <span class="meta">{{ templateLabels[template.baseCode] ?? template.baseCode }}</span></span>
-          <button class="btn btn-sm btn-link text-danger" (click)="deleteTemplate(template)" i18n="@@common.remove">Retirer</button>
-        </li>
-      </ul>
-    </section>
   </div>
 </div>

@@ -28,6 +28,12 @@ public class ShopCabinetTemplateDatabaseRepository implements ShopCabinetTemplat
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<UUID> findShopsWithPresets() {
+		return jpaRepository.findShopIds();
+	}
+
+	@Override
 	@Transactional
 	public ShopCabinetTemplate save(ShopCabinetTemplate template, UUID shopId) {
 		return jpaRepository.save(ShopCabinetTemplateEntity.builder()

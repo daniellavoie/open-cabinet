@@ -469,10 +469,9 @@ export function materialIdOf(material: MaterialRef, standard: ConstructionStanda
 
 /**
  * What a placed Cabinet brings to its template's assembly in this Shop, like
- * CabinetAssemblies.java; a blind corner with its blind side on the left is its
- * template mirrored.
+ * CabinetAssemblies.java; a mirrored Cabinet builds its template left for right.
  */
-export function cabinetContext(cabinet: Cabinet, template: CabinetTemplate, standard: ConstructionStandard, materials: Material[]): AssemblyContext {
+export function cabinetContext(cabinet: Cabinet, standard: ConstructionStandard, materials: Material[]): AssemblyContext {
   const thicknesses = new Map(materials.map(material => [material.id, material.thicknessMm ?? 0]));
   return {
     width: cabinet.widthMm,
@@ -482,6 +481,6 @@ export function cabinetContext(cabinet: Cabinet, template: CabinetTemplate, stan
     dividers: cabinet.dividerPositionsMm ?? [],
     standard: { DOOR_GAP: standard.doorGapMm, TOE_KICK_HEIGHT: standard.toeKickHeightMm },
     thickness: material => thicknesses.get(materialIdOf(material, standard) ?? "") ?? 0,
-    mirrored: (template.blindWidthMm ?? 0) > 0 && cabinet.blindSide === "LEFT",
+    mirrored: !!cabinet.mirrored,
   };
 }

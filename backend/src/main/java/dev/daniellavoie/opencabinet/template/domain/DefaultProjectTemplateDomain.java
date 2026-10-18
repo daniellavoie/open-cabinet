@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -58,7 +59,7 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 	public ProjectTemplate create(UUID projectId, CreateProjectTemplateRequest request, Principal principal) {
 		var shopId = memberDomain.current(principal).getShopId();
 		var project = projectDomain.findById(projectId, shopId);
-		var name = requireUniqueName(request.getName(), null, projectId, shopId);
+		var name = requireUniqueName(request.getName(), null, projectId, false, shopId);
 		var templates = projectDomain.templates(project);
 
 		var cabinet = Optional.ofNullable(request.getCabinetId())
@@ -99,7 +100,7 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 	public ProjectTemplate update(UUID templateId, UpdateProjectTemplateRequest request, Principal principal) {
 		var shopId = memberDomain.current(principal).getShopId();
 		var template = repository.findById(templateId, shopId);
-		var name = requireUniqueName(request.getName(), templateId, template.getProjectId(), shopId);
+		var name = requireUniqueName(request.getName(), templateId, template.getProjectId(), template.isShared(), shopId);
 		var draft = Optional.ofNullable(request.getDraft())
 				.orElseThrow(() -> new IllegalArgumentException("a draft is required"));
 
@@ -135,6 +136,58 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 		return repository.findById(templateId, shopId);
 	}
 
+	@Override
+	public List<ProjectTemplate> findShared(Principal principal) {
+		return repository.findShared(memberDomain.current(principal).getShopId());
+	}
+
+	@Override
+	public ProjectTemplate createInLibrary(CreateProjectTemplateRequest request, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		var name = requireUniqueName(request.getName(), null, null, true, shopId);
+		var templates = Stream.concat(projectDomain.templates().stream(),
+				repository.findShared(shopId).stream().flatMap(template -> template.getVersions().stream())).toList();
+		var source = assembled(templates, Optional.ofNullable(request.getTemplateCode())
+				.orElseThrow(() -> new IllegalArgumentException("a template to start from is required")),
+				request.getTemplateVersion());
+
+		return repository.save(ProjectTemplate.builder()
+				.id(UUID.randomUUID())
+				.name(name)
+				.draft(source.toBuilder().code(null).version(0).name(name).changeNote(null).archived(null).build())
+				.shared(true)
+				.build(), shopId);
+	}
+
+	@Override
+	public ProjectTemplate share(UUID templateId, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		var template = repository.findById(templateId, shopId);
+		if (template.isShared()) {
+			throw new IllegalStateException("this template is already in the shop library");
+		}
+		requireUniqueName(template.getName(), templateId, null, true, shopId);
+		repository.share(templateId, shopId);
+		return repository.findById(templateId, shopId);
+	}
+
+	@Override
+	public ProjectTemplate setArchived(UUID templateId, boolean archived, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		repository.findById(templateId, shopId);
+		repository.setArchived(templateId, archived, shopId);
+		return repository.findById(templateId, shopId);
+	}
+
+	@Override
+	public void delete(UUID templateId, Principal principal) {
+		var shopId = memberDomain.current(principal).getShopId();
+		if (!repository.findById(templateId, shopId).getVersions().isEmpty()) {
+			throw new IllegalStateException("a published template is archived, not deleted");
+		}
+		repository.delete(templateId, shopId);
+	}
+
 	/**
 	 * The template to start from, or the newest version of the same template drawn as an assembly
 	 * when that one is still built by the fixed recipe.
@@ -150,12 +203,17 @@ public class DefaultProjectTemplateDomain implements ProjectTemplateDomain {
 				.orElseThrow(() -> new IllegalArgumentException("template " + code + " is not drawn as parts"));
 	}
 
-	private String requireUniqueName(String requested, UUID templateId, UUID projectId, UUID shopId) {
+	/**
+	 * A name unique where the template lives: its Project, or the Shop library once shared.
+	 */
+	private String requireUniqueName(String requested, UUID templateId, UUID projectId, boolean shared, UUID shopId) {
 		var name = Optional.ofNullable(requested).map(String::trim).filter(text -> !text.isEmpty())
 				.orElseThrow(() -> new IllegalArgumentException("a template name is required"));
-		if (repository.findByProject(projectId, shopId).stream()
+		var neighbours = shared ? repository.findShared(shopId) : repository.findByProject(projectId, shopId);
+		if (neighbours.stream()
 				.anyMatch(other -> !other.getId().equals(templateId) && other.getName().equalsIgnoreCase(name))) {
-			throw new IllegalArgumentException("this project already has a template named " + name);
+			throw new IllegalArgumentException((shared ? "the shop library" : "this project")
+					+ " already has a template named " + name);
 		}
 		return name;
 	}

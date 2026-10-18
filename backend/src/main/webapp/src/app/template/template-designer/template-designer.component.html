@@ -1,11 +1,16 @@
 <div class="designer" *ngIf="draft && template">
   <header class="designer-header">
-    <a class="back" [routerLink]="['/projects', template.projectId]" i18n="@@designer.back">← Projet</a>
+    <a class="back" *ngIf="template.projectId" [routerLink]="['/projects', template.projectId]" i18n="@@designer.back">← Projet</a>
+    <a class="back" *ngIf="!template.projectId" routerLink="/templates" i18n="@@designer.backToLibrary">← Bibliothèque</a>
     <input class="form-control name" [(ngModel)]="name" i18n-aria-label="@@designer.name" aria-label="Nom du modèle" />
     <span class="status" *ngIf="latestVersion > 0" i18n="@@designer.versions">Version {{ latestVersion }} publiée</span>
     <span class="status" *ngIf="latestVersion === 0" i18n="@@designer.unpublished">Jamais publié</span>
+    <span class="status" *ngIf="template.shared" i18n="@@designer.inLibrary">Dans la bibliothèque de l'atelier</span>
+    <span class="status" *ngIf="template.archived" i18n="@@designer.archived">Archivé</span>
     <span class="status invalid" *ngIf="violations.length > 0" i18n="@@designer.problems">{{ violations.length }} problème(s)</span>
     <button class="btn btn-outline-secondary" (click)="save()" [disabled]="!dirty || saving" i18n="@@common.save">Enregistrer</button>
+    <button class="btn btn-outline-secondary" *ngIf="!template.shared" (click)="sharing = true" [disabled]="saving"
+      i18n="@@designer.share">Partager avec l'atelier…</button>
     <button class="btn btn-primary" (click)="publishing = true" [disabled]="saving || violations.length > 0" i18n="@@designer.publish">Publier…</button>
   </header>
 
@@ -15,6 +20,13 @@
     <span i18n="@@designer.offerSwitch">Utiliser ce modèle pour le caisson d'où il vient ?</span>
     <button class="btn btn-sm btn-primary" (click)="switchCabinet()" i18n="@@designer.useIt">Oui, l'utiliser</button>
     <button class="btn btn-sm btn-link" (click)="offerSwitch = false" i18n="@@designer.notNow">Non</button>
+  </div>
+  <div class="publish block" *ngIf="sharing">
+    <p i18n="@@designer.shareConfirm">Le modèle et ses versions passent dans la bibliothèque de l'atelier, où tous les projets pourront l'utiliser. Cela ne peut pas être annulé.</p>
+    <div class="actions">
+      <button class="btn btn-primary" (click)="share()" [disabled]="saving" i18n="@@designer.shareIt">Partager</button>
+      <button class="btn btn-link" (click)="sharing = false" i18n="@@common.cancel">Annuler</button>
+    </div>
   </div>
   <div class="publish block" *ngIf="publishing">
     <label for="changeNote" i18n="@@designer.changeNote">Ce qui change pour les caissons qui passeront à la version {{ latestVersion + 1 }}</label>

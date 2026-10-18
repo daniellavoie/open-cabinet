@@ -379,7 +379,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   private assembledMesh(cabinet: Cabinet, template: CabinetTemplate, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
     const group = this.onWallGroup(cabinet, cabinet.depthMm, placement);
     const interior = cabinet.id === this.selectedId;
-    const result = assemble(template.assembly!, cabinetContext(cabinet, template, this.standard!, this.materials));
+    const result = assemble(template.assembly!, cabinetContext(cabinet, this.standard!, this.materials));
     for (const part of result.parts) {
       const { x0, x1, y0, y1, z0, z1 } = part.box;
       const mesh = box(x1 - x0, y1 - y0, z1 - z0, part.front ? colors.front : colors.carcass, interior && part.front ? 0.25 : 1);
@@ -610,7 +610,7 @@ function fronts(cabinet: Cabinet, template: CabinetTemplate, boxHeight: number):
   const result: { x: number; y: number; width: number; height: number; opening: boolean }[] = [];
   const width = frontWidth(template, cabinet.widthMm);
   const blind = template.blindWidthMm ?? 0;
-  const blindOnLeft = cabinet.blindSide === "LEFT";
+  const blindOnLeft = !!cabinet.mirrored;
   // Centre of the fronted part, from the cabinet's centre.
   const centre = blind === 0 ? 0 : (blindOnLeft ? blind / 2 : -blind / 2);
 

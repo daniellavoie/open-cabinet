@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Out
 import { FormsModule } from "@angular/forms";
 
 import { Material } from "../../catalog/model/material";
-import { ShopCabinetTemplate } from "../../template/shop-template-service";
 import { APPLIANCE_KIND_LABELS, FILLER_LABEL, OPENING_KIND_LABELS, TEMPLATE_LABELS, VIOLATION_LABELS } from "../../util/labels";
 import { LengthInputComponent } from "../../util/length-input/length-input.component";
 import { Units } from "../../util/units/units";
@@ -51,21 +50,16 @@ export class DesignPanelComponent implements OnChanges {
   @Input() readOnly = false;
   /** The Shop's ordered Front styles. */
   @Input() frontStyles: Material[] = [];
-  @Input() shopTemplates: ShopCabinetTemplate[] = [];
-  /** Owners may save a Cabinet as a Shop template. */
-  @Input() canSaveTemplates = false;
 
   @Output() designChange = new EventEmitter<Design>();
   @Output() selectItem = new EventEmitter<string | null>();
-  @Output() saveTemplate = new EventEmitter<{ name: string; cabinet: Cabinet }>();
   /** Start designing a template from the chosen one, or from a saved Cabinet. */
   @Output() designTemplate = new EventEmitter<{ name: string; templateCode?: string; cabinetId?: string }>();
   /** Cabinets can only be made into templates once saved. */
   @Input() saved = true;
 
-  /** A starter template's code, or "shop:" and a Shop template's id. */
+  /** The code of the template to add Cabinets from. */
   newTemplateCode = "BASE_DOOR";
-  presetName: string | null = null;
   /** The name being typed for a new template: from the chosen template, or from the selected Cabinet. */
   newDesign: { from: "template" | "cabinet"; name: string } | null = null;
   newWallId = "";
@@ -138,9 +132,14 @@ export class DesignPanelComponent implements OnChanges {
     return latestVersions(this.templates).filter(template => isStarter(template.code));
   }
 
-  /** The newest version of each template designed for this Project. */
+  /** The newest version of each template designed for this Project, archived ones aside. */
   get projectTemplates(): CabinetTemplate[] {
-    return latestVersions(this.templates).filter(template => !isStarter(template.code));
+    return latestVersions(this.templates).filter(template => !isStarter(template.code) && !template.shared && !template.archived);
+  }
+
+  /** The newest version of each template in the Shop library, archived ones aside. */
+  get libraryTemplates(): CabinetTemplate[] {
+    return latestVersions(this.templates).filter(template => !isStarter(template.code) && template.shared && !template.archived);
   }
 
   templateName(code: string): string {
@@ -183,13 +182,11 @@ export class DesignPanelComponent implements OnChanges {
   }
 
   addCabinet() {
-    const shopTemplate = this.shopTemplates.find(item => `shop:${item.id}` === this.newTemplateCode);
-    const code = shopTemplate?.baseCode ?? this.newTemplateCode;
-    const template = latestVersions(this.templates).find(item => item.code === code);
+    const template = latestVersions(this.templates).find(item => item.code === this.newTemplateCode);
     if (!template || !this.newWallId) {
       return;
     }
-    const result = addCabinet(this.design, template, this.newWallId, this.templates, shopTemplate?.preset);
+    const result = addCabinet(this.design, template, this.newWallId, this.templates);
     this.designChange.emit(result.design);
     this.selectItem.emit(result.cabinetId);
   }
@@ -233,19 +230,12 @@ export class DesignPanelComponent implements OnChanges {
     }
     if (this.newDesign.from === "cabinet" && this.selected) {
       this.designTemplate.emit({ name, cabinetId: this.selected.id });
-    } else if (!this.newTemplateCode.startsWith("shop:")) {
+    } else {
       this.designTemplate.emit({ name, templateCode: this.newTemplateCode });
     }
     this.newDesign = null;
   }
 
-  saveSelectedAsTemplate() {
-    const name = this.presetName?.trim();
-    if (name && this.selected) {
-      this.saveTemplate.emit({ name, cabinet: this.selected });
-      this.presetName = null;
-    }
-  }
 
   removeSelected() {
     this.designChange.emit(removeCabinet(this.design, this.selectedId!));

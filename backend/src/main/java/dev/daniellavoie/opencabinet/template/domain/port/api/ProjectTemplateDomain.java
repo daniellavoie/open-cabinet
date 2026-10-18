@@ -17,6 +17,16 @@ public interface ProjectTemplateDomain {
 
 	ProjectTemplate findById(UUID templateId, Principal principal);
 
+	/**
+	 * The Shop library: templates shared with every Project of the Shop.
+	 */
+	List<ProjectTemplate> findShared(Principal principal);
+
+	/**
+	 * Starts a template in the Shop library, from a starter or library Template Version.
+	 */
+	ProjectTemplate createInLibrary(CreateProjectTemplateRequest request, Principal principal);
+
 	ProjectTemplate create(UUID projectId, CreateProjectTemplateRequest request, Principal principal);
 
 	/**
@@ -29,4 +39,19 @@ public interface ProjectTemplateDomain {
 	 * Shop's materials.
 	 */
 	ProjectTemplate publish(UUID templateId, PublishTemplateRequest request, Principal principal);
+
+	/**
+	 * Moves a Project template, with its history, into the Shop library. It cannot be un-shared.
+	 */
+	ProjectTemplate share(UUID templateId, Principal principal);
+
+	/**
+	 * Hides a template when adding Cabinets, or shows it again; Cabinets using it keep it.
+	 */
+	ProjectTemplate setArchived(UUID templateId, boolean archived, Principal principal);
+
+	/**
+	 * Removes a template that was never published; published ones are archived instead.
+	 */
+	void delete(UUID templateId, Principal principal);
 }

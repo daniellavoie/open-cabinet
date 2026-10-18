@@ -28,6 +28,14 @@ export const routes: Routes = [
         path: "projects/:projectId/templates/:templateId",
         loadComponent: () => import("./template/template-designer/template-designer.component").then(module => module.TemplateDesignerComponent),
       },
+      {
+        path: "templates",
+        loadComponent: () => import("./template/template-library/template-library.component").then(module => module.TemplateLibraryComponent),
+      },
+      {
+        path: "templates/:templateId",
+        loadComponent: () => import("./template/template-designer/template-designer.component").then(module => module.TemplateDesignerComponent),
+      },
       { path: "clients", component: ClientsComponent },
       { path: "settings", component: SettingsComponent, canActivate: [ownerGuardFn] },
       { path: "catalog", component: CatalogComponent, canActivate: [ownerGuardFn] },

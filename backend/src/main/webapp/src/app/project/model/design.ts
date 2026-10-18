@@ -37,10 +37,8 @@ export class Cabinet {
   depthMm!: number;
   elevationMm!: number;
   shelfCount!: number;
-  /**
-   * Which side of a blind corner Cabinet has no fronts; right when unset.
-   */
-  blindSide?: Side | null;
+  /** Built left for right: a blind corner then has its blind side on the left. */
+  mirrored?: boolean;
   /**
    * Vertical dividers, as the distance from the Cabinet's left side to each
    * divider's centre, left to right. Each section gets `shelfCount` shelves.
@@ -119,6 +117,10 @@ export class CabinetTemplate {
   code!: string;
   /** Typed once by the Member for a template they designed; the starter library's come from the app. */
   name?: string | null;
+  /** Set for a template in the Shop library. */
+  shared?: boolean | null;
+  /** Set for an archived template: hidden when adding Cabinets, still used by those that have it. */
+  archived?: boolean | null;
   version!: number;
   changeNote?: string | null;
   type!: CabinetType;

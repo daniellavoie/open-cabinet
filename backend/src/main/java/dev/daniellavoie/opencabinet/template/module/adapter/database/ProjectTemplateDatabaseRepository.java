@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -42,6 +43,35 @@ public class ProjectTemplateDatabaseRepository implements ProjectTemplateReposit
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<ProjectTemplate> findShared(UUID shopId) {
+		return withVersions(jpaRepository.findByShopIdAndSharedTimestampNotNullOrderByName(shopId));
+	}
+
+	@Override
+	@Transactional
+	public void share(UUID templateId, UUID shopId) {
+		var entity = find(templateId, shopId);
+		if (entity.getSharedTimestamp() == null) {
+			jpaRepository.save(entity.toBuilder().sharedTimestamp(LocalDateTime.now()).build());
+			log.info("Shared template {} with shop {}", templateId, shopId);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void setArchived(UUID templateId, boolean archived, UUID shopId) {
+		var entity = find(templateId, shopId);
+		jpaRepository.save(entity.toBuilder().archivedTimestamp(archived ? LocalDateTime.now() : null).build());
+	}
+
+	@Override
+	@Transactional
+	public void delete(UUID templateId, UUID shopId) {
+		jpaRepository.delete(find(templateId, shopId));
+	}
+
+	@Override
 	@Transactional
 	public ProjectTemplate save(ProjectTemplate template, UUID shopId) {
 		var existing = jpaRepository.findByIdAndShopId(template.getId(), shopId);
@@ -54,6 +84,9 @@ public class ProjectTemplateDatabaseRepository implements ProjectTemplateReposit
 				.draft(template.getDraft())
 				.sourceCabinetId(existing.map(ProjectTemplateEntity::getSourceCabinetId)
 						.orElse(template.getSourceCabinetId()))
+				.sharedTimestamp(existing.map(ProjectTemplateEntity::getSharedTimestamp)
+						.orElse(template.isShared() ? now : null))
+				.archivedTimestamp(existing.map(ProjectTemplateEntity::getArchivedTimestamp).orElse(null))
 				.creationTimestamp(existing.map(ProjectTemplateEntity::getCreationTimestamp).orElse(now))
 				.updateTimestamp(now)
 				.build());
@@ -79,10 +112,17 @@ public class ProjectTemplateDatabaseRepository implements ProjectTemplateReposit
 	@Override
 	@Transactional(readOnly = true)
 	public List<CabinetTemplate> findPublished(UUID projectId) {
-		var ids = jpaRepository.findByProjectId(projectId).stream().map(ProjectTemplateEntity::getId).toList();
-		return ids.isEmpty() ? List.of()
-				: versionRepository.findByKeyTemplateIdInOrderByKeyVersion(ids).stream()
-						.map(ProjectTemplateVersionEntity::getContent)
+		var templates = jpaRepository.findUsableBy(projectId);
+		var byId = templates.stream().collect(Collectors.toMap(ProjectTemplateEntity::getId, Function.identity()));
+		return byId.isEmpty() ? List.of()
+				: versionRepository.findByKeyTemplateIdInOrderByKeyVersion(byId.keySet()).stream()
+						.map(version -> {
+							var template = byId.get(version.getKey().getTemplateId());
+							return version.getContent().toBuilder()
+									.archived(template.getArchivedTimestamp() != null ? true : null)
+									.shared(template.getSharedTimestamp() != null ? true : null)
+									.build();
+						})
 						.toList();
 	}
 
@@ -105,6 +145,8 @@ public class ProjectTemplateDatabaseRepository implements ProjectTemplateReposit
 						.draft(entity.getDraft())
 						.versions(versions.getOrDefault(entity.getId(), List.of()))
 						.sourceCabinetId(entity.getSourceCabinetId())
+						.shared(entity.getSharedTimestamp() != null)
+						.archived(entity.getArchivedTimestamp() != null)
 						.creationTimestamp(entity.getCreationTimestamp())
 						.updateTimestamp(entity.getUpdateTimestamp())
 						.build())

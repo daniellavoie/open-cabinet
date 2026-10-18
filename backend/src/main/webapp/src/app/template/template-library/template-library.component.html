@@ -1,0 +1,55 @@
+<div class="page">
+  <section class="list">
+    <h1 i18n="@@library.title">Bibliothèque de l'atelier</h1>
+    <p class="hint" i18n="@@library.hint">Les modèles de la bibliothèque servent à tous les projets de l'atelier. Un modèle publié s'archive : les caissons qui l'utilisent le gardent.</p>
+    <div *ngIf="!templates" i18n="@@common.loading">Chargement…</div>
+    <p class="empty" *ngIf="templates?.length === 0" i18n="@@library.empty">Aucun modèle dans la bibliothèque pour l'instant.</p>
+    <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+    <table class="table" *ngIf="templates?.length">
+      <thead>
+        <tr>
+          <th i18n="@@library.name">Nom</th>
+          <th i18n="@@library.version">Version</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let template of templates" [class.archived]="template.archived">
+          <td>
+            <a [routerLink]="['/templates', template.id]">{{ template.name }}</a>
+            <span class="badge text-bg-secondary" *ngIf="template.archived" i18n="@@library.archived">Archivé</span>
+          </td>
+          <td>
+            <span *ngIf="template.versions.length > 0">{{ template.versions.length }}</span>
+            <span class="muted" *ngIf="template.versions.length === 0" i18n="@@library.unpublished">Jamais publié</span>
+          </td>
+          <td class="row-actions">
+            <button class="btn btn-sm btn-link" *ngIf="template.versions.length > 0 && !template.archived"
+              (click)="setArchived(template, true)" i18n="@@library.archive">Archiver</button>
+            <button class="btn btn-sm btn-link" *ngIf="template.archived" (click)="setArchived(template, false)"
+              i18n="@@library.restore">Restaurer</button>
+            <button class="btn btn-sm btn-link text-danger" *ngIf="template.versions.length === 0" (click)="delete(template)"
+              i18n="@@library.delete">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <aside class="panel">
+    <h2 i18n="@@library.new">Nouveau modèle</h2>
+    <form (ngSubmit)="create()">
+      <div class="mb-2">
+        <label class="form-label" for="libraryName" i18n="@@library.name">Nom</label>
+        <input class="form-control" id="libraryName" name="name" [(ngModel)]="name" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="librarySource" i18n="@@library.startFrom">À partir de</label>
+        <select class="form-select" id="librarySource" name="source" [(ngModel)]="sourceCode">
+          <option *ngFor="let source of sources" [value]="source.code">{{ sourceName(source) }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="saving || !name.trim()" i18n="@@library.design">Concevoir</button>
+    </form>
+  </aside>
+</div>

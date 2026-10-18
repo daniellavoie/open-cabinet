@@ -5,6 +5,7 @@
     <ul class="links">
       <li><a routerLink="/projects" routerLinkActive="active" i18n="@@nav.projects">Projets</a></li>
       <li><a routerLink="/clients" routerLinkActive="active" i18n="@@nav.clients">Clients</a></li>
+      <li><a routerLink="/templates" routerLinkActive="active" i18n="@@nav.templates">Modèles</a></li>
       <li *ngIf="memberService.isOwner()"><a routerLink="/catalog" routerLinkActive="active" i18n="@@nav.catalog">Catalogue</a></li>
       <li *ngIf="memberService.isOwner()"><a routerLink="/members" routerLinkActive="active" i18n="@@nav.members">Membres</a></li>
       <li *ngIf="memberService.isOwner()"><a routerLink="/settings" routerLinkActive="active" i18n="@@nav.settings">Paramètres</a></li>

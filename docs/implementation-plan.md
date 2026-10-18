@@ -7,7 +7,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 **Milestones 0–3 are in production** at `https://cabinet.arendal.ca`. The production environment, the `open-cabinet` Keycloak realm and its `open-cabinet-web` client are set up, and every merge into `main` deploys. Checked after the first deploy: pods and database healthy, DNS and TLS in place, the app served under `/fr/` and `/en/`, the API refusing unsigned requests. To finish:
 
 1. Smoke-test signed in: create an account in the `open-cabinet` realm, sign in, create a Shop, design a Project, download a Quote PDF.
-2. Milestone 5 is under way: the assembly model, the starter library as assemblies and the designer are done; the Shop library and Mirror are next.
+2. Milestone 5 is done once deployed; Milestone 6, the Design Assistant, is next.
 
 ## Status
 
@@ -18,7 +18,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | Done, in production |
-| 5. Template Designer | In progress |
+| 5. Template Designer | Done |
 | 6. Design Assistant | Planned |
 | 7. After v1 | Not scheduled |
 
@@ -86,7 +86,7 @@ Follow-ups found while building it:
 - Bill of Materials quantities have no unit (sheets, metres, m², pieces), in the app and in its exports.
 - The 3D view in the Quote draws boxes farthest first, which can misdraw Cabinets that cross in depth (deep Appliances beside a corner); counters are not drawn.
 
-## 5. Template Designer: in progress
+## 5. Template Designer: done
 
 Members design their own Cabinet Templates in a separate 3D designer, assembling Parts and hardware from the Shop's catalog, and the starter library is redrawn the same way (ADR 0006). Templates stay versioned (ADR 0005), so Projects never change under them; what a Project places is still a Cabinet.
 
@@ -102,11 +102,11 @@ What a template is:
 1. **The assembly model.** Done. A Cabinet Template may carry an `assembly` (Parts held by Attachments, front stacks, repeated Parts split into sections by dividers, a divider Part, hardware counted fixed or by length, mouldings by the metre); templates without one keep the frozen recipe. `Assembly.java` and `assembly.ts` build it at a Cabinet's size, `TemplateRules.java` and `template-rules.ts` check a template at its minimum, default and maximum size, kept in step by `template-assembly/cases.json` and `rules.json`. The Cut List, Bill of Materials, Shop Drawings, Quote pictures and the Project's 3D view use an assembled template's real Parts. No published template is assembled yet: they exist as test data until step 3.
 2. **Starter library, version 2.** Done, ahead of the designer so new templates can start from real assemblies. Every starter template is published as version 2, an assembly; `StarterTemplateVersionsTest` builds versions 1 and 2 over every sampled size, shelf count, divider, made or ordered Fronts, finished ends and blind side, and both cut the same Parts (lengths within the 0.1 mm rounding step) and need the same hardware; every version 2 passes the template rules. The assembly model gained what the recipe does: Parts marked as Fronts (the blind panel), hardware counted by steps (hinges by door height, legs by width), a clearance at dividers, and mirroring for blind sides on the left. The version 1 recipe stays, frozen, for Cabinets still on version 1; their Cabinets now show the update.
 3. **The designer, for Project templates.** Done (V14: `project_template` and its versions). A separate screen opened from the Project editor: a palette of the Shop's materials and Standard roles, a 3D view where snapping creates Attachments, a properties panel (Attachments, offsets, banding, grain, repetition, hardware), a minimum / default / maximum preview and the rules listed live. Start from an existing template or from a Cabinet. One draft and published Template Versions with change notes; a template belongs to its Project until shared; on first publish the editor offers to switch the original Cabinet to it. Names are typed once, not translated, unique within the Project and the Shop library. As built: "Design a template from this one" (from the template chosen to add) and "Make a template from this Cabinet" (saved Cabinets, its size becoming the default) start a draft from an assembled template, starter version 2 for version 1 Cabinets; the designer has a template panel (type, size ranges, shelves, blind width), a palette (carcass, back and front panels, front stack, moulding, dividers), Parts listed with their problems, a 3D view at minimum, default or maximum size where a face's "3D" button then a click on another Part or the Cabinet's outline creates the Attachment, panels for a Part (role, "other" with a name, material, position, grain, Front, repetition, banding, faces with offsets, fixed sizes), a front stack and hardware, and the template rules listed live. Publishing saves, then the server checks the template rules with the Shop's own materials (refusing with the rules broken), and the first version offers itself to the Cabinet it was made from, set in the Project's draft for the Member to save. The "other" Part role carries its name to the Cut List and every printed output.
-4. **Shop library and Mirror.** Sharing moves a Project template with its history into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates. Templates are archived, never deleted, once a version is in use. Milestone 3's Shop Cabinet Template presets become Shop templates and the preset feature goes away. Blind side becomes **Mirror**, for any Cabinet.
+4. **Shop library and Mirror.** Sharing moves a Project template with its history into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates. Templates are archived, never deleted, once a version is in use. Milestone 3's Shop Cabinet Template presets become Shop templates and the preset feature goes away. Blind side becomes **Mirror**, for any Cabinet. Done (V15). As built: the designer's "Share with the shop…" asks once, then the template keeps its Project but every Project of the Shop sees it, grouped as "Shop library" when adding a Cabinet. The **Templates** page lists the library: open a template in the designer, start a new one from a starter or library template (it has no Project), archive or restore a published one (archived templates are hidden when adding Cabinets; Cabinets using them keep them), delete one never published. A name is unique within its Project and within the library. At startup, each preset becomes a library template: the newest assembled version of its starter, with the preset's size, elevation and shelves as defaults (ranges widened to hold them) and published as version 1, renamed "Name (2)" if the name is taken. A Cabinet's **Mirror** builds it left for right; a blind corner's blind side moves to the left, and V15 turns saved left blind sides into Mirror.
 
 In Projects, made or ordered Fronts applies to Parts marked as Fronts; finished ends and crown moulding stay Trim.
 
-Found while building: templates are not deleted yet; Shop presets from Milestone 3 cannot be made from a Project template's Cabinet; the designer draws Fronts see-through to show the inside, which may read as glass; picking a target under another Part means turning the view or using the face's list.
+Found while building: a preset's per-Cabinet choices (made or ordered Fronts, finished ends, crown, dividers) are not carried into its library template; the emptied `shop_cabinet_template` table can be dropped once every Shop has started on V15; the designer draws Fronts see-through to show the inside, which may read as glass; picking a target under another Part means turning the view or using the face's list.
 
 Follow-ups: joinery (dados, rabbets, dowels), which changes Part sizes and matters most for CNC export; moving version 1 Cabinets to version 2 without a Member, which would need its own decision against ADR 0005.
 

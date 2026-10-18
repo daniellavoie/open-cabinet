@@ -29,9 +29,9 @@ public class Cabinet {
 	double elevationMm;
 	int shelfCount;
 	/**
-	 * Which side of a blind corner Cabinet is left without fronts.
+	 * Built left for right: a blind corner then has its blind side on the left.
 	 */
-	Side blindSide;
+	boolean mirrored;
 	/**
 	 * Vertical dividers splitting the interior into sections, as the distance from the Cabinet's
 	 * left side to each divider's centre, left to right. Each section gets {@code shelfCount}
@@ -68,7 +68,10 @@ public class Cabinet {
 		return frontSource == FrontSource.ORDERED;
 	}
 
+	/**
+	 * The side of a blind corner Cabinet left without fronts.
+	 */
 	public Side effectiveBlindSide() {
-		return blindSide == null ? Side.RIGHT : blindSide;
+		return mirrored ? Side.LEFT : Side.RIGHT;
 	}
 }

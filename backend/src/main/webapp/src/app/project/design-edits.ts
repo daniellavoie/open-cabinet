@@ -102,14 +102,14 @@ export function removeItem(design: Design, itemId: string): Design {
 }
 
 /**
- * Adds a Cabinet from a template (with a Shop template's preset, if given) to
- * a Wall, at the first spot along the Wall
+ * Adds a Cabinet from a template, at its default size, to a Wall, at the
+ * first spot along the Wall
  * where it breaks no Construction Rule (or at the Wall's start if none):
  * the start, just past another Cabinet, Appliance, Opening or Filler, or past what
  * stands on a neighbouring Wall's corner, leaving room for a filler.
  */
-export function addCabinet(design: Design, template: CabinetTemplate, wallId: string, templates: CabinetTemplate[],
-  preset?: Omit<Cabinet, "id" | "wallId">): { design: Design; cabinetId: string } {
+export function addCabinet(design: Design, template: CabinetTemplate, wallId: string,
+  templates: CabinetTemplate[]): { design: Design; cabinetId: string } {
   const cabinet: Cabinet = {
     templateCode: template.code,
     templateVersion: template.version,
@@ -119,7 +119,6 @@ export function addCabinet(design: Design, template: CabinetTemplate, wallId: st
     depthMm: template.defaultDepthMm,
     elevationMm: template.defaultElevationMm,
     shelfCount: template.defaultShelfCount,
-    ...preset,
     id: newId("cabinet"),
     wallId,
   };

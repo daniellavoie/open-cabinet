@@ -4020,6 +4020,118 @@
           <context context-type="linenumber">183</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="nav.templates" datatype="html">
+        <source>Modèles</source>
+        <target>Templates</target>
+      </trans-unit>
+      <trans-unit id="design.libraryTemplates" datatype="html">
+        <source>Bibliothèque de l&apos;atelier</source>
+        <target>Shop library</target>
+      </trans-unit>
+      <trans-unit id="design.mirror" datatype="html">
+        <source>Miroir</source>
+        <target>Mirror</target>
+      </trans-unit>
+      <trans-unit id="design.mirrorHint" datatype="html">
+        <source>Gauche et droite inversées (côté aveugle à gauche)</source>
+        <target>Left and right swapped (blind side on the left)</target>
+      </trans-unit>
+      <trans-unit id="designer.backToLibrary" datatype="html">
+        <source>← Bibliothèque</source>
+        <target>← Library</target>
+      </trans-unit>
+      <trans-unit id="designer.inLibrary" datatype="html">
+        <source>Dans la bibliothèque de l&apos;atelier</source>
+        <target>In the shop library</target>
+      </trans-unit>
+      <trans-unit id="designer.archived" datatype="html">
+        <source>Archivé</source>
+        <target>Archived</target>
+      </trans-unit>
+      <trans-unit id="designer.share" datatype="html">
+        <source>Partager avec l&apos;atelier…</source>
+        <target>Share with the shop…</target>
+      </trans-unit>
+      <trans-unit id="designer.shareConfirm" datatype="html">
+        <source>Le modèle et ses versions passent dans la bibliothèque de l&apos;atelier, où tous les projets pourront l&apos;utiliser. Cela ne peut pas être annulé.</source>
+        <target>The template and its versions move into the shop library, where every project can use it. This cannot be undone.</target>
+      </trans-unit>
+      <trans-unit id="designer.shareIt" datatype="html">
+        <source>Partager</source>
+        <target>Share</target>
+      </trans-unit>
+      <trans-unit id="designer.sharedMessage" datatype="html">
+        <source>Le modèle est dans la bibliothèque de l&apos;atelier.</source>
+        <target>The template is in the shop library.</target>
+      </trans-unit>
+      <trans-unit id="designer.shareError" datatype="html">
+        <source>Impossible de partager le modèle.</source>
+        <target>Could not share the template.</target>
+      </trans-unit>
+      <trans-unit id="library.title" datatype="html">
+        <source>Bibliothèque de l&apos;atelier</source>
+        <target>Shop library</target>
+      </trans-unit>
+      <trans-unit id="library.hint" datatype="html">
+        <source>Les modèles de la bibliothèque servent à tous les projets de l&apos;atelier. Un modèle publié s&apos;archive : les caissons qui l&apos;utilisent le gardent.</source>
+        <target>Templates in the library serve every project of the shop. A published template is archived: cabinets using it keep it.</target>
+      </trans-unit>
+      <trans-unit id="library.empty" datatype="html">
+        <source>Aucun modèle dans la bibliothèque pour l&apos;instant.</source>
+        <target>No templates in the library yet.</target>
+      </trans-unit>
+      <trans-unit id="library.name" datatype="html">
+        <source>Nom</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="library.version" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="library.archived" datatype="html">
+        <source>Archivé</source>
+        <target>Archived</target>
+      </trans-unit>
+      <trans-unit id="library.unpublished" datatype="html">
+        <source>Jamais publié</source>
+        <target>Never published</target>
+      </trans-unit>
+      <trans-unit id="library.archive" datatype="html">
+        <source>Archiver</source>
+        <target>Archive</target>
+      </trans-unit>
+      <trans-unit id="library.restore" datatype="html">
+        <source>Restaurer</source>
+        <target>Restore</target>
+      </trans-unit>
+      <trans-unit id="library.delete" datatype="html">
+        <source>Supprimer</source>
+        <target>Delete</target>
+      </trans-unit>
+      <trans-unit id="library.new" datatype="html">
+        <source>Nouveau modèle</source>
+        <target>New template</target>
+      </trans-unit>
+      <trans-unit id="library.startFrom" datatype="html">
+        <source>À partir de</source>
+        <target>Start from</target>
+      </trans-unit>
+      <trans-unit id="library.design" datatype="html">
+        <source>Concevoir</source>
+        <target>Design</target>
+      </trans-unit>
+      <trans-unit id="library.createError" datatype="html">
+        <source>Impossible de créer le modèle.</source>
+        <target>Could not create the template.</target>
+      </trans-unit>
+      <trans-unit id="library.archiveError" datatype="html">
+        <source>Impossible de modifier le modèle.</source>
+        <target>Could not change the template.</target>
+      </trans-unit>
+      <trans-unit id="library.deleteError" datatype="html">
+        <source>Impossible de supprimer le modèle.</source>
+        <target>Could not delete the template.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

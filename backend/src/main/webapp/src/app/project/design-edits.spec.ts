@@ -90,14 +90,3 @@ describe("dividers", () => {
   });
 });
 
-describe("shop templates", () => {
-  it("add a cabinet with the preset over its base template", () => {
-    const preset = { templateCode: "BASE_DOOR", templateVersion: 1, offsetMm: 0, widthMm: 762, heightMm: 876.3, depthMm: 533.4, elevationMm: 0,
-      shelfCount: 2, dividerPositionsMm: [381], finishedLeft: true };
-    const design = addCabinet(room(), BASE_DOOR, "w1", TEMPLATES, preset).design;
-
-    expect(design.cabinets[0]).toMatchObject({ templateCode: "BASE_DOOR", wallId: "w1", widthMm: 762, depthMm: 533.4,
-      shelfCount: 2, dividerPositionsMm: [381], finishedLeft: true });
-    expect(design.cabinets[0].id).toMatch(/^cabinet-/);
-  });
-});

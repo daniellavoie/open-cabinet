@@ -23,7 +23,6 @@ import dev.daniellavoie.opencabinet.project.domain.TemplateRules;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.FrontSource;
-import dev.daniellavoie.opencabinet.project.domain.model.Side;
 
 /**
  * Version 2 of each starter template is version 1 redrawn as an assembly (ADR 0006): at every
@@ -85,7 +84,7 @@ class StarterTemplateVersionsTest {
 
 	/**
 	 * Every size at the template's minimum, default and maximum, with no, default and most shelves,
-	 * a divider when allowed, Fronts made and ordered, finished ends or not, and both blind sides.
+	 * a divider when allowed, Fronts made and ordered, finished ends or not, and mirrored or not.
 	 */
 	private static List<Cabinet> cabinets(CabinetTemplate template) {
 		var cabinets = new ArrayList<Cabinet>();
@@ -95,14 +94,13 @@ class StarterTemplateVersionsTest {
 					for (var shelves : List.of(0, template.getDefaultShelfCount(), template.getMaxShelfCount())) {
 						for (var divided : template.allowsDividers() ? List.of(false, true) : List.of(false)) {
 							for (var ordered : List.of(false, true)) {
-								for (var blindSide : template.getBlindWidthMm() > 0 ? List.of(Side.RIGHT, Side.LEFT)
-										: List.of(Side.RIGHT)) {
+								for (var mirrored : List.of(false, true)) {
 									cabinets.add(Cabinet.builder().id("c1").templateCode(template.getCode()).wallId("w1")
 											.widthMm(width).heightMm(height).depthMm(depth)
 											.elevationMm(template.getDefaultElevationMm()).shelfCount(shelves)
 											.dividerPositionsMm(divided ? List.of(width / 2) : null)
 											.frontSource(ordered ? FrontSource.ORDERED : null)
-											.finishedLeft(ordered).finishedRight(ordered).blindSide(blindSide).build());
+											.finishedLeft(ordered).finishedRight(ordered).mirrored(mirrored).build());
 								}
 							}
 						}

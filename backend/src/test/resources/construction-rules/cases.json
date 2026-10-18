@@ -931,7 +931,7 @@
           "depthMm": 609.6,
           "elevationMm": 0,
           "shelfCount": 1,
-          "blindSide": "RIGHT"
+          "mirrored": false
         },
         {
           "id": "c2",

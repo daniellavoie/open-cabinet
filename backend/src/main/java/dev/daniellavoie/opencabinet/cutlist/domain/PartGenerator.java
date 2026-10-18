@@ -165,7 +165,7 @@ final class PartGenerator {
 			ConstructionStandard standard, Map<UUID, Material> catalog) {
 		Function<MaterialRef, Material> resolve = reference -> material(catalog,
 				CabinetAssemblies.materialId(reference, standard));
-		var result = Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, template, standard,
+		var result = Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, standard,
 				materialId -> Optional.ofNullable(catalog.get(materialId)).map(Material::getThicknessMm).orElse(0d)));
 		if (!result.violations().isEmpty()) {
 			throw new IllegalStateException("template " + template.key() + " cannot be built: " + result.violations());

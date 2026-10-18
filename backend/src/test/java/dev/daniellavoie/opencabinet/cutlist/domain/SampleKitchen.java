@@ -27,7 +27,6 @@ import dev.daniellavoie.opencabinet.project.domain.model.Filler;
 import dev.daniellavoie.opencabinet.project.domain.model.Opening;
 import dev.daniellavoie.opencabinet.project.domain.model.OpeningKind;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
-import dev.daniellavoie.opencabinet.project.domain.model.Side;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
@@ -68,8 +67,7 @@ public final class SampleKitchen {
 								.dividerPositionsMm(List.of(228.6)).build(),
 						cabinet("sink", "BASE_SINK", "w1", 1066.8, 914.4, 0),
 						cabinet("drawers", "BASE_DRAWERS", "w1", 1981.2, 609.6, 0),
-						cabinet("corner", "BASE_BLIND_CORNER", "w1", 2590.8, 1066.8, 0).toBuilder()
-								.blindSide(Side.RIGHT).build(),
+						cabinet("corner", "BASE_BLIND_CORNER", "w1", 2590.8, 1066.8, 0),
 						cabinet("upperLeft", "WALL_DOOR", "w1", 0, 762, 1371.6).toBuilder().depthMm(304.8)
 								.heightMm(762).crown(true).build(),
 						cabinet("upperRight", "WALL_DOOR", "w1", 2286, 762, 1371.6).toBuilder().depthMm(304.8)

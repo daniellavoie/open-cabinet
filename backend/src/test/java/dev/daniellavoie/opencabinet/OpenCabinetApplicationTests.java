@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
+
+import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
+import dev.daniellavoie.opencabinet.template.domain.PresetConversion;
+import dev.daniellavoie.opencabinet.template.domain.model.ShopCabinetTemplate;
+import dev.daniellavoie.opencabinet.template.domain.port.backend.ShopCabinetTemplateRepository;
 
 /**
  * Boots the whole application against a real PostgreSQL, running the Flyway migrations, and walks
@@ -54,6 +60,12 @@ class OpenCabinetApplicationTests {
 
 	@Autowired
 	ObjectMapper objectMapper;
+
+	@Autowired
+	ShopCabinetTemplateRepository presets;
+
+	@Autowired
+	PresetConversion presetConversion;
 
 	@Test
 	void healthIsUp() throws Exception {
@@ -104,20 +116,20 @@ class OpenCabinetApplicationTests {
 		mockMvc.perform(as(owner, get("/api/material")))
 				.andExpect(jsonPath("$", hasSize(14)));
 
-		mockMvc.perform(as(owner, post("/api/shop-template"))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-						{"name": "Vanité 30", "cabinet": {"id": "c1", "templateCode": "BASE_DOOR", "templateVersion": 1, "wallId": "w1",
-						"offsetMm": 300, "widthMm": 762, "heightMm": 876.3, "depthMm": 533.4, "elevationMm": 0,
-						"shelfCount": 1, "dividerPositionsMm": [381], "finishedLeft": true}}
-						"""))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.baseCode").value("BASE_DOOR"));
-		mockMvc.perform(as(owner, get("/api/shop-template")))
+		// A Milestone 3 preset becomes a Shop library template, its size kept as the default.
+		var shopId = UUID.fromString(read(mockMvc.perform(as(owner, get("/api/shop")))).get("id").asText());
+		presets.save(ShopCabinetTemplate.builder().id(UUID.randomUUID()).name("Vanité 30").baseCode("BASE_DOOR")
+				.preset(Cabinet.builder().templateCode("BASE_DOOR").templateVersion(1).widthMm(762).heightMm(876.3)
+						.depthMm(533.4).shelfCount(1).build())
+				.build(), shopId);
+		assertThat(presetConversion.convertAll()).isEqualTo(1);
+		assertThat(presetConversion.convertAll()).isZero();
+		mockMvc.perform(as(owner, get("/api/template")))
 				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].preset.widthMm").value(762))
-				.andExpect(jsonPath("$[0].preset.dividerPositionsMm[0]").value(381))
-				.andExpect(jsonPath("$[0].preset.finishedLeft").value(true));
+				.andExpect(jsonPath("$[0].name").value("Vanité 30"))
+				.andExpect(jsonPath("$[0].shared").value(true))
+				.andExpect(jsonPath("$[0].versions[0].defaultWidthMm").value(762))
+				.andExpect(jsonPath("$[0].versions[0].assembly.parts").isNotEmpty());
 
 		var client = read(mockMvc.perform(as(owner, post("/api/client"))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -215,6 +227,33 @@ class OpenCabinetApplicationTests {
 				.andExpect(jsonPath("$.versions", hasSize(1)))
 				.andExpect(jsonPath("$.versions[0].code").value(templateId))
 				.andExpect(jsonPath("$.versions[0].name").value("Vanité 18"));
+		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/share")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.shared").value(true));
+		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/share")))
+				.andExpect(status().isConflict());
+		mockMvc.perform(as(owner, get("/api/template")))
+				.andExpect(jsonPath("$", hasSize(2)));
+		mockMvc.perform(as(owner, put("/api/project-template/" + templateId + "/archived"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("true"))
+				.andExpect(jsonPath("$.archived").value(true));
+		mockMvc.perform(as(owner, get("/api/project/" + projectId + "/cabinet-template")))
+				.andExpect(jsonPath("$[?(@.code == '" + templateId + "')].archived").value(true));
+		mockMvc.perform(as(owner, put("/api/project-template/" + templateId + "/archived"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("false"))
+				.andExpect(jsonPath("$.archived").value(false));
+		mockMvc.perform(as(owner, delete("/api/project-template/" + templateId)))
+				.andExpect(status().isConflict());
+		var libraryDraft = read(mockMvc.perform(as(owner, post("/api/template"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"name\": \"Colonne maison\", \"templateCode\": \"TALL_PANTRY\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.shared").value(true))
+				.andExpect(jsonPath("$.projectId").doesNotExist()));
+		mockMvc.perform(as(owner, delete("/api/project-template/" + libraryDraft.get("id").asText())))
+				.andExpect(status().isNoContent());
 		mockMvc.perform(as(owner, post("/api/project-template/" + templateId + "/publish"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{}"))

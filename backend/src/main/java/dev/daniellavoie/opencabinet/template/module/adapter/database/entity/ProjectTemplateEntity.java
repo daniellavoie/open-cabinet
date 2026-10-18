@@ -31,6 +31,8 @@ public class ProjectTemplateEntity {
 	@JdbcTypeCode(SqlTypes.JSON)
 	CabinetTemplate draft;
 	String sourceCabinetId;
+	LocalDateTime sharedTimestamp;
+	LocalDateTime archivedTimestamp;
 	LocalDateTime creationTimestamp;
 	LocalDateTime updateTimestamp;
 }

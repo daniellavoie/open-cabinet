@@ -67,6 +67,7 @@ export class TemplateDesignerComponent {
   saving = false;
   changeNote = "";
   publishing = false;
+  sharing = false;
   /** After the first version: offer it to the Cabinet the template was made from. */
   offerSwitch = false;
   message = "";
@@ -320,10 +321,26 @@ export class TemplateDesignerComponent {
         this.publishing = false;
         this.changeNote = "";
         this.message = $localize`:@@designer.published:Version ${template.versions.length}:version: publiée.`;
-        this.offerSwitch = template.versions.length === 1 && !!template.sourceCabinetId;
+        this.offerSwitch = template.versions.length === 1 && !!template.sourceCabinetId && !!template.projectId;
       }))
       .pipe(finalize(() => this.saving = false))
       .subscribe({ error: (response: HttpErrorResponse) => this.onPublishError(response) });
+  }
+
+  /** Saves, then moves the template into the Shop library for good. */
+  share() {
+    this.saving = true;
+    this.error = "";
+    this.templateService.update(this.template!.id, this.name, this.draft!)
+      .pipe(switchMap(() => this.templateService.share(this.template!.id)))
+      .pipe(tap(template => {
+        this.load(template);
+        this.sharing = false;
+        this.message = $localize`:@@designer.sharedMessage:Le modèle est dans la bibliothèque de l'atelier.`;
+      }))
+      .pipe(finalize(() => this.saving = false))
+      .subscribe({ error: (response: HttpErrorResponse) => this.error = this.errorOf(response,
+        $localize`:@@designer.shareError:Impossible de partager le modèle.`) });
   }
 
   /** Back to the Project, with the template set on the Cabinet it was made from, for the Member to save. */

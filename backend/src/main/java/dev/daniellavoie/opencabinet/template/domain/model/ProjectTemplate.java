@@ -10,9 +10,12 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * A Cabinet Template designed for one Project (ADR 0006): its editable {@code draft} and its
- * published {@code versions}, oldest first, which never change (ADR 0005). Cabinets use it by its id
- * as their template code. {@code sourceCabinetId} is the Cabinet it was made from, if any.
+ * A Cabinet Template a Member designed (ADR 0006): its editable {@code draft} and its published
+ * {@code versions}, oldest first, which never change (ADR 0005). Cabinets use it by its id as their
+ * template code. It belongs to its Project ({@code projectId}) until {@code shared} with the Shop
+ * library, where every Project can use it; templates created in the library have no Project.
+ * {@code archived} ones are hidden when adding Cabinets. {@code sourceCabinetId} is the Cabinet it
+ * was made from, if any.
  */
 @Value
 @Jacksonized
@@ -24,6 +27,8 @@ public class ProjectTemplate {
 	CabinetTemplate draft;
 	List<CabinetTemplate> versions;
 	String sourceCabinetId;
+	boolean shared;
+	boolean archived;
 	LocalDateTime creationTimestamp;
 	LocalDateTime updateTimestamp;
 }
