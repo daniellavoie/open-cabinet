@@ -18,7 +18,7 @@ How Open Cabinet gets from today to v1, in milestones. Each milestone ships to p
 | 2. Shop-ready | Done (PR #3), in production |
 | 3. Design depth | Done (PR #4), in production |
 | 4. Outputs for the shop floor and the Client | In progress |
-| 5. Custom Cabinet Templates | Planned |
+| 5. Template Designer | Planned |
 | 6. Design Assistant | Planned |
 | 7. After v1 | Not scheduled |
 
@@ -83,15 +83,27 @@ Follow-ups found while building it:
 - An Elevation shows only its own Wall's Cabinets: a corner Cabinet from the neighbouring Wall is not drawn in section, and dimensions of very narrow items (a 1" filler) crowd their text.
 - Shelves and drawer boxes are not drawn in the Cabinet sheets; the shelf count is in the notes.
 
-## 5. Custom Cabinet Templates: planned
+## 5. Template Designer: planned
 
-Members create their own Cabinet Templates beyond the starter library, versioned like the starter ones (Milestone 4, step 0) so Projects never change under them. What they place is still a Cabinet.
+Members design their own Cabinet Templates in a separate 3D designer, assembling Parts and hardware from the Shop's catalog, and the starter library is redrawn the same way (ADR 0006). Templates stay versioned (ADR 0005), so Projects never change under them; what a Project places is still a Cabinet.
 
-1. **Project templates.** A template editor with a single-Cabinet 3D preview, opened from the Project editor, starting from an existing template or from a Cabinet ("make a custom template from this"). A template has one draft and published Template Versions that never change; publishing needs a change note. It belongs to its Project until shared. On first publish the editor offers to switch the original Cabinet to it. Custom templates have one name, not translated, unique within the Project and within the Shop library.
-2. **Construction options.** On top of what a template sets today (type, size ranges, front rows, shelves, dividers, blind width): back full or none; an open front row with no Front; top full, stretchers or none; floor support toe kick, legs or none; adjustable or fixed shelves. Each option carries its Cut List, Bill of Materials and hardware effects and its Construction Rules in Java and TypeScript, with cases in `cases.json`. The three types stay; thicknesses and joinery keep following the Shop's current Construction Standard.
-3. **Shop library.** Sharing moves a Project template, with its history, into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates and publish new versions of Shop templates. Templates are archived, never deleted, once a version is in use: hidden when adding Cabinets, still available to update and revert. Milestone 3's Shop Cabinet Template presets become Shop templates at version 1, and the preset feature goes away.
+What a template is:
+- An assembly of **Parts** (panels, Fronts, mouldings) and **hardware**, held by **Attachments**: a Part's face fixed to a face of the Cabinet or of another Part, with an offset that is a number, a Construction Standard value (toe kick height, door gap) or a material thickness. Resizing a Cabinet moves every Part with it.
+- Materials are Construction Standard roles by default (carcass, front, the Shop's hinge…), a specific catalog material when chosen. Each panel edge picks its banding and each panel its grain, with defaults (front edges get the front banding, grain vertical).
+- Each Part has a role (side, shelf, door… or "other" with a typed name), which labels it on the Cut List and drawings.
+- **Front stacks** size Fronts like today's front rows (fixed heights and shares, the Standard's door gap). **Repeated** Parts (shelves) take their count per Cabinet; a Front can split into two leaves above a width; a template's divider Part is placed per Cabinet.
+- Hardware sits on a Part, counted fixed or by length (one hinge per 20" of door, at least 2).
+- Butt joints only. Templates keep their type (base, wall, tall) and size ranges.
+- Template rules, live in the designer and enforced on publish at the minimum, default and maximum size: every Part has a positive size, nothing overlaps, every Part fits its sheet, every Part touches another. Assembly runs in Java and TypeScript, kept in step by a shared `template-assembly/cases.json`.
 
-Follow-up: free Part assembly (add, remove and place individual Parts), which needs general rules (fits a sheet, no overlaps, joined to something).
+1. **The assembly model.** Parts, Attachments, Front stacks, repetition, hardware; assembly in both languages with shared cases; the Cut List, Bill of Materials, Shop Drawings and the 3D view built from an assembled template's real Parts; the template rules. Templates written as JSON, no designer yet.
+2. **The designer, for Project templates.** A separate screen opened from the Project editor: a palette of the Shop's materials and Standard roles, a 3D view where snapping creates Attachments, a properties panel (Attachments, offsets, banding, grain, repetition, hardware), a minimum / default / maximum preview and the rules listed live. Start from an existing template or from a Cabinet. One draft and published Template Versions with change notes; a template belongs to its Project until shared; on first publish the editor offers to switch the original Cabinet to it. Names are typed once, not translated, unique within the Project and the Shop library.
+3. **Starter library, version 2.** Every starter template redrawn as an assembly, with tests showing it produces the same Parts as version 1 at sampled sizes. The version 1 recipe (`PartGenerator`, `FrontLayout` and their TypeScript side) stays, frozen, for Cabinets still on version 1.
+4. **Shop library and Mirror.** Sharing moves a Project template with its history into the Shop library; it can't be un-shared. Owners and Designers create, publish and share templates. Templates are archived, never deleted, once a version is in use. Milestone 3's Shop Cabinet Template presets become Shop templates and the preset feature goes away. Blind side becomes **Mirror**, for any Cabinet.
+
+In Projects, made or ordered Fronts applies to Parts marked as Fronts; finished ends and crown moulding stay Trim.
+
+Follow-ups: joinery (dados, rabbets, dowels), which changes Part sizes and matters most for CNC export; moving version 1 Cabinets to version 2 without a Member, which would need its own decision against ADR 0005.
 
 ## 6. Design Assistant: planned
 
