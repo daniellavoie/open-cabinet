@@ -135,21 +135,31 @@ public record TemplateAssembly(List<AssemblyPart> parts, List<FrontStack> frontS
 	}
 
 	/**
-	 * A Part's copies, spaced evenly between its two faces on its thickness axis.
+	 * A Part's copies, spaced evenly between its two faces on its thickness axis, kept
+	 * {@code dividerGapMm} clear of each divider.
 	 */
-	public record Repeat(Count count) {
+	public record Repeat(Count count, Double dividerGapMm) {
+		public double dividerGap() {
+			return dividerGapMm == null ? 0 : dividerGapMm;
+		}
 	}
 
 	/**
 	 * A box. On its thickness axis one face is attached and its size is the material's thickness;
 	 * on the other axes two of its two faces and its {@code sizes} are given. A repeated Part
-	 * attaches both faces of its thickness axis: the span its copies share.
+	 * attaches both faces of its thickness axis: the span its copies share. {@code front} marks a Part
+	 * that is a Front outside any front stack, such as a blind corner's panel: it is ordered with the
+	 * Cabinet's Fronts.
 	 */
 	public record AssemblyPart(String id, PartRole role, String name, PartKind kind, MaterialRef material,
 			Axis thickness, Axis grain, Map<Face, Attachment> faces, Map<Axis, List<Term>> sizes, Repeat repeat,
-			Banding banding) {
+			Banding banding, Boolean front) {
 		public PartKind kindOrPanel() {
 			return kind == null ? PartKind.PANEL : kind;
+		}
+
+		public boolean isFront() {
+			return Boolean.TRUE.equals(front);
 		}
 	}
 
@@ -172,10 +182,18 @@ public record TemplateAssembly(List<AssemblyPart> parts, List<FrontStack> frontS
 	}
 
 	/**
-	 * How many of a hardware item: {@code fixed} per host, or one per {@code perMm} along the host's
-	 * {@code axis}, at least {@code minimum}.
+	 * How many of a hardware item per host: {@code fixed}; one per {@code perMm} along the host's
+	 * {@code axis}, at least {@code minimum}; or by {@code steps} of the host's size along
+	 * {@code axis} (the Cabinet's when there is no host).
 	 */
-	public record Quantity(Integer fixed, Double perMm, Axis axis, Integer minimum) {
+	public record Quantity(Integer fixed, Double perMm, Axis axis, Integer minimum, List<Step> steps) {
+	}
+
+	/**
+	 * {@code quantity} for sizes up to {@code upToMm}; the last step, without a limit, for anything
+	 * larger.
+	 */
+	public record Step(Double upToMm, int quantity) {
 	}
 
 	/**

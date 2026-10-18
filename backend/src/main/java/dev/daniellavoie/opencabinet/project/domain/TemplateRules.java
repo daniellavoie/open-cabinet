@@ -67,7 +67,7 @@ public final class TemplateRules {
 					pick(size, template.getMinWidthMm(), template.getDefaultWidthMm(), template.getMaxWidthMm()),
 					pick(size, template.getMinHeightMm(), template.getDefaultHeightMm(), template.getMaxHeightMm()),
 					pick(size, template.getMinDepthMm(), template.getDefaultDepthMm(), template.getMaxDepthMm()),
-					template.getMaxShelfCount(), List.of(), shop.standard(), shop.thickness());
+					template.getMaxShelfCount(), List.of(), shop.standard(), shop.thickness(), false);
 			var result = Assembly.assemble(assembly, context);
 			var found = new ArrayList<Violation>();
 			result.violations().forEach(violation -> found.add(new Violation(violation.code(), violation.partId(), size)));

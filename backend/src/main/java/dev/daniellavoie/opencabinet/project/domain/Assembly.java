@@ -23,8 +23,10 @@ import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.FrontS
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRef;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRole;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.PartKind;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Quantity;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.StackRow;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.StandardValue;
+import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Step;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.Term;
 
 /**
@@ -38,10 +40,11 @@ public final class Assembly {
 
 	/**
 	 * What a Cabinet brings to its template: its size, its per-Cabinet choices, the Construction
-	 * Standard's values and the thickness of each material.
+	 * Standard's values and the thickness of each material. {@code mirrored} builds the template left
+	 * for right, as a blind corner with its blind side on the left.
 	 */
 	public record Context(double width, double height, double depth, int shelfCount, List<Double> dividers,
-			Map<StandardValue, Double> standard, Function<MaterialRef, Double> thickness) {
+			Map<StandardValue, Double> standard, Function<MaterialRef, Double> thickness, boolean mirrored) {
 	}
 
 	public record Box(double x0, double x1, double y0, double y1, double z0, double z1) {
@@ -141,7 +144,10 @@ public final class Assembly {
 		var divider = assembly.divider();
 		if (divider != null) {
 			var thickness = context.thickness().apply(divider.material());
-			var dividers = Optional.ofNullable(context.dividers()).orElse(List.of());
+			// Divider positions are the Cabinet's; a mirrored template is built as drawn, then flipped.
+			var dividers = Optional.ofNullable(context.dividers()).orElse(List.of()).stream()
+					.map(position -> context.mirrored() ? context.width() - position : position)
+					.toList();
 			for (int index = 0; index < dividers.size(); index++) {
 				var dividerExtents = new EnumMap<Axis, double[]>(Axis.class);
 				dividerExtents.put(Axis.X, new double[] { dividers.get(index) - thickness / 2,
@@ -179,7 +185,8 @@ public final class Assembly {
 			}
 		}
 
-		return new Result(parts, hardware(assembly, parts), violations);
+		var built = context.mirrored() ? parts.stream().map(part -> mirror(part, context.width())).toList() : parts;
+		return new Result(built, hardware(assembly, built, context), violations);
 	}
 
 	/**
@@ -319,8 +326,8 @@ public final class Assembly {
 				.toList();
 		for (var divider : sorted) {
 			if (divider.box().x0() > start + TOLERANCE_MM && divider.box().x1() < span.x1() - TOLERANCE_MM) {
-				sections.add(new double[] { start, divider.box().x0() });
-				start = divider.box().x1();
+				sections.add(new double[] { start, divider.box().x0() - part.repeat().dividerGap() });
+				start = divider.box().x1() + part.repeat().dividerGap();
 			}
 		}
 		sections.add(new double[] { start, span.x1() });
@@ -349,7 +356,7 @@ public final class Assembly {
 
 	private static AssembledPart assembled(AssemblyPart part, String id, Box box) {
 		var thickness = part.thickness();
-		return new AssembledPart(id, part.id(), part.role(), part.name(), part.kindOrPanel(), false, part.material(),
+		return new AssembledPart(id, part.id(), part.role(), part.name(), part.kindOrPanel(), part.isFront(), part.material(),
 				box, thickness, grain(part.grain(), thickness), banding(part.banding(), part.kindOrPanel(), thickness));
 	}
 
@@ -445,7 +452,8 @@ public final class Assembly {
 	/**
 	 * Each hardware item counted on its hosts, totalled by material.
 	 */
-	private static List<AssembledHardware> hardware(TemplateAssembly assembly, List<AssembledPart> parts) {
+	private static List<AssembledHardware> hardware(TemplateAssembly assembly, List<AssembledPart> parts,
+			Context context) {
 		var totals = new LinkedHashMap<MaterialRef, Integer>();
 		for (var item : assembly.hardwareOrEmpty()) {
 			var hosts = item.on() == null ? null
@@ -456,22 +464,45 @@ public final class Assembly {
 			var quantity = item.quantity();
 			int total;
 			if (hosts == null) {
-				total = Optional.ofNullable(quantity.fixed()).orElse(0);
+				var cabinet = new Box(0, context.width(), 0, context.height(), 0, context.depth());
+				total = count(quantity, cabinet);
 			} else {
-				total = hosts.stream().mapToInt(host -> {
-					if (quantity.fixed() != null) {
-						return quantity.fixed();
-					}
-					var axis = Optional.ofNullable(quantity.axis()).orElse(Axis.Y);
-					var byLength = (int) Math.ceil(host.box().size(axis) / quantity.perMm() - TOLERANCE_MM);
-					return Math.max(byLength, Optional.ofNullable(quantity.minimum()).orElse(0));
-				}).sum();
+				total = hosts.stream().mapToInt(host -> count(quantity, host.box())).sum();
 			}
 			if (total > 0) {
 				totals.merge(item.material(), total, Integer::sum);
 			}
 		}
 		return totals.entrySet().stream().map(entry -> new AssembledHardware(entry.getKey(), entry.getValue())).toList();
+	}
+
+	/**
+	 * How many of an item one host takes.
+	 */
+	private static int count(Quantity quantity, Box host) {
+		if (quantity.fixed() != null) {
+			return quantity.fixed();
+		}
+		var size = host.size(Optional.ofNullable(quantity.axis()).orElse(Axis.Y));
+		if (quantity.steps() != null) {
+			return quantity.steps().stream()
+					.filter(step -> step.upToMm() == null || size <= step.upToMm() + TOLERANCE_MM)
+					.findFirst()
+					.map(Step::quantity)
+					.orElse(0);
+		}
+		var byLength = (int) Math.ceil(size / quantity.perMm() - TOLERANCE_MM);
+		return Math.max(byLength, Optional.ofNullable(quantity.minimum()).orElse(0));
+	}
+
+	/**
+	 * A Part flipped left for right within the Cabinet's width.
+	 */
+	private static AssembledPart mirror(AssembledPart part, double width) {
+		var box = part.box();
+		return new AssembledPart(part.id(), part.source(), part.role(), part.name(), part.kind(), part.front(),
+				part.material(), new Box(width - box.x1(), width - box.x0(), box.y0(), box.y1(), box.z0(), box.z1()),
+				part.thickness(), part.grain(), part.banding());
 	}
 
 	private static PartRole role(FrontKind kind) {

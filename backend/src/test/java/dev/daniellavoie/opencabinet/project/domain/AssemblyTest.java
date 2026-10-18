@@ -27,10 +27,10 @@ class AssemblyTest {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	record CaseContext(double width, double height, double depth, int shelfCount, List<Double> dividers,
-			Map<StandardValue, Double> standard, Map<MaterialRole, Double> thicknesses) {
+			Map<StandardValue, Double> standard, Map<MaterialRole, Double> thicknesses, boolean mirrored) {
 		Assembly.Context context() {
 			return new Assembly.Context(width, height, depth, shelfCount, dividers, standard,
-					material -> thicknesses.getOrDefault(material.role(), 0d));
+					material -> thicknesses.getOrDefault(material.role(), 0d), mirrored);
 		}
 	}
 

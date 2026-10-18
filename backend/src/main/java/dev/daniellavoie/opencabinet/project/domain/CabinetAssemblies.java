@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
+import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
+import dev.daniellavoie.opencabinet.project.domain.model.Side;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.MaterialRef;
 import dev.daniellavoie.opencabinet.project.domain.model.TemplateAssembly.StandardValue;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
@@ -47,12 +49,13 @@ public final class CabinetAssemblies {
 
 	/**
 	 * What a placed Cabinet brings to its template's assembly; {@code thickness} gives a catalog
-	 * material's thickness.
+	 * material's thickness. A blind corner with its blind side on the left is its template mirrored.
 	 */
-	public static Assembly.Context context(Cabinet cabinet, ConstructionStandard standard,
+	public static Assembly.Context context(Cabinet cabinet, CabinetTemplate template, ConstructionStandard standard,
 			Function<UUID, Double> thickness) {
 		return new Assembly.Context(cabinet.getWidthMm(), cabinet.getHeightMm(), cabinet.getDepthMm(),
 				cabinet.getShelfCount(), cabinet.dividers(), standardValues(standard),
-				material -> thickness.apply(materialId(material, standard)));
+				material -> thickness.apply(materialId(material, standard)),
+				template.getBlindWidthMm() > 0 && cabinet.effectiveBlindSide() == Side.LEFT);
 	}
 }

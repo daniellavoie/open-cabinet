@@ -3,8 +3,8 @@ import type { PartRole } from "../cutlist/model/project-output";
 import { ConstructionStandard } from "../shop/model/shop";
 import { sizeRows } from "./front-layout";
 import {
-  AssemblyPart, AssemblyPartKind, Attachment, Axis, Banding, Cabinet, Face, FrontKind, FrontStack, MaterialRef,
-  MaterialRole, StandardValue, TemplateAssembly, Term,
+  AssemblyPart, AssemblyPartKind, Attachment, Axis, Banding, Cabinet, CabinetTemplate, Face, FrontKind, FrontStack, Hardware,
+  MaterialRef, MaterialRole, StandardValue, TemplateAssembly, Term,
 } from "./model/design";
 
 /**
@@ -35,6 +35,7 @@ export function faceAxis(face: Face): Axis {
   return FACES[face].axis;
 }
 
+/** A Cabinet's size and choices; `mirrored` builds the template left for right. */
 export interface AssemblyContext {
   width: number;
   height: number;
@@ -43,6 +44,7 @@ export interface AssemblyContext {
   dividers: number[];
   standard: Partial<Record<StandardValue, number>>;
   thickness: (material: MaterialRef) => number;
+  mirrored?: boolean;
 }
 
 export interface Box {
@@ -143,7 +145,8 @@ export function assemble(assembly: TemplateAssembly, context: AssemblyContext): 
   const divider = assembly.divider;
   if (divider) {
     const thickness = context.thickness(divider.material);
-    const dividers = context.dividers ?? [];
+    // Divider positions are the Cabinet's; a mirrored template is built as drawn, then flipped.
+    const dividers = (context.dividers ?? []).map(position => context.mirrored ? context.width - position : position);
     for (let index = 0; index < dividers.length; index++) {
       const dividerExtents = new Map<Axis, [number, number]>();
       dividerExtents.set("X", [dividers[index] - thickness / 2, dividers[index] + thickness / 2]);
@@ -179,7 +182,8 @@ export function assemble(assembly: TemplateAssembly, context: AssemblyContext): 
     }
   }
 
-  return { parts, hardware: hardware(assembly, parts), violations };
+  const built = context.mirrored ? parts.map(part => mirror(part, context.width)) : parts;
+  return { parts: built, hardware: hardware(assembly, built, context), violations };
 }
 
 /**
@@ -287,9 +291,10 @@ function copies(part: AssemblyPart, span: Box, count: number, thickness: number,
   const sections: [number, number][] = [];
   let start = span.x0;
   for (const divider of [...dividers].sort((first, second) => first.box.x0 - second.box.x0)) {
+    const gap = part.repeat?.dividerGapMm ?? 0;
     if (divider.box.x0 > start + TOLERANCE_MM && divider.box.x1 < span.x1 - TOLERANCE_MM) {
-      sections.push([start, divider.box.x0]);
-      start = divider.box.x1;
+      sections.push([start, divider.box.x0 - gap]);
+      start = divider.box.x1 + gap;
     }
   }
   sections.push([start, span.x1]);
@@ -323,7 +328,7 @@ function assembled(part: AssemblyPart, id: string, box: Box): AssembledPart {
   const kind = part.kind ?? "PANEL";
   const thickness = part.thickness ?? null;
   return {
-    id, source: part.id, role: part.role, name: part.name ?? null, kind, front: false, material: part.material, box,
+    id, source: part.id, role: part.role, name: part.name ?? null, kind, front: !!part.front, material: part.material, box,
     thickness, grain: grainAxis(part.grain ?? null, thickness), banding: banding(part.banding ?? null, kind, thickness),
   };
 }
@@ -397,23 +402,17 @@ function fronts(stack: FrontStack, extents: Extents, context: AssemblyContext): 
 }
 
 /** Each hardware item counted on its hosts, totalled by material in order of first use. */
-function hardware(assembly: TemplateAssembly, parts: AssembledPart[]): AssembledHardware[] {
+function hardware(assembly: TemplateAssembly, parts: AssembledPart[], context: AssemblyContext): AssembledHardware[] {
   const totals = new Map<string, AssembledHardware>();
   for (const item of assembly.hardware ?? []) {
     const quantity = item.quantity;
     let total: number;
     if (!item.on) {
-      total = quantity.fixed ?? 0;
+      total = count(quantity, { x0: 0, x1: context.width, y0: 0, y1: context.height, z0: 0, z1: context.depth });
     } else {
       total = parts
         .filter(part => part.source === item.on && (!item.frontKind || part.role === frontRole(item.frontKind)))
-        .reduce((sum, host) => {
-          if (quantity.fixed != null) {
-            return sum + quantity.fixed;
-          }
-          const byLength = Math.ceil(boxSize(host.box, quantity.axis ?? "Y") / quantity.perMm! - TOLERANCE_MM);
-          return sum + Math.max(byLength, quantity.minimum ?? 0);
-        }, 0);
+        .reduce((sum, host) => sum + count(quantity, host.box), 0);
     }
     if (total > 0) {
       const key = `${item.material.role ?? ""}|${item.material.materialId ?? ""}`;
@@ -422,6 +421,24 @@ function hardware(assembly: TemplateAssembly, parts: AssembledPart[]): Assembled
     }
   }
   return [...totals.values()];
+}
+
+/** How many of an item one host takes. */
+function count(quantity: Hardware["quantity"], host: Box): number {
+  if (quantity.fixed != null) {
+    return quantity.fixed;
+  }
+  const size = boxSize(host, quantity.axis ?? "Y");
+  if (quantity.steps) {
+    return quantity.steps.find(step => step.upToMm == null || size <= step.upToMm + TOLERANCE_MM)?.quantity ?? 0;
+  }
+  const byLength = Math.ceil(size / quantity.perMm! - TOLERANCE_MM);
+  return Math.max(byLength, quantity.minimum ?? 0);
+}
+
+/** A Part flipped left for right within the Cabinet's width. */
+function mirror(part: AssembledPart, width: number): AssembledPart {
+  return { ...part, box: { ...part.box, x0: width - part.box.x1, x1: width - part.box.x0 } };
 }
 
 function frontRole(kind: FrontKind): PartRole | null {
@@ -450,8 +467,12 @@ export function materialIdOf(material: MaterialRef, standard: ConstructionStanda
   return material.role ? byRole[material.role] ?? null : null;
 }
 
-/** What a placed Cabinet brings to its template's assembly in this Shop, like CabinetAssemblies.java. */
-export function cabinetContext(cabinet: Cabinet, standard: ConstructionStandard, materials: Material[]): AssemblyContext {
+/**
+ * What a placed Cabinet brings to its template's assembly in this Shop, like
+ * CabinetAssemblies.java; a blind corner with its blind side on the left is its
+ * template mirrored.
+ */
+export function cabinetContext(cabinet: Cabinet, template: CabinetTemplate, standard: ConstructionStandard, materials: Material[]): AssemblyContext {
   const thicknesses = new Map(materials.map(material => [material.id, material.thicknessMm ?? 0]));
   return {
     width: cabinet.widthMm,
@@ -461,5 +482,6 @@ export function cabinetContext(cabinet: Cabinet, standard: ConstructionStandard,
     dividers: cabinet.dividerPositionsMm ?? [],
     standard: { DOOR_GAP: standard.doorGapMm, TOE_KICK_HEIGHT: standard.toeKickHeightMm },
     thickness: material => thicknesses.get(materialIdOf(material, standard) ?? "") ?? 0,
+    mirrored: (template.blindWidthMm ?? 0) > 0 && cabinet.blindSide === "LEFT",
   };
 }

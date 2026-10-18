@@ -378,7 +378,7 @@ final class ShopDrawingsGenerator {
 	 * An assembled Cabinet's Parts at its size (ADR 0006).
 	 */
 	static List<AssembledPart> assembled(Source source, Cabinet cabinet, CabinetTemplate template) {
-		return Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, source.standard(),
+		return Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, template, source.standard(),
 				materialId -> Optional.ofNullable(source.materials().get(materialId)).map(Material::getThicknessMm)
 						.orElse(0d)))
 				.parts();

@@ -125,11 +125,7 @@ final class PartGenerator {
 			}
 		}
 
-		var finishedEnds = (cabinet.isFinishedLeft() ? 1 : 0) + (cabinet.isFinishedRight() ? 1 : 0);
-		if (finishedEnds > 0) {
-			builder.add(PartRole.FINISHED_END, front, cabinet.getHeightMm(), cabinet.getDepthMm(), 1, 1,
-					standard.getFrontEdgeBandingId(), finishedEnds);
-		}
+		addFinishedEnds(builder, cabinet, front, standard);
 
 		if (template.getBlindWidthMm() > 0) {
 			builder.front(PartRole.BLIND_PANEL, front, boxHeight - gap, template.getBlindWidthMm() - gap, true,
@@ -169,7 +165,7 @@ final class PartGenerator {
 			ConstructionStandard standard, Map<UUID, Material> catalog) {
 		Function<MaterialRef, Material> resolve = reference -> material(catalog,
 				CabinetAssemblies.materialId(reference, standard));
-		var result = Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, standard,
+		var result = Assembly.assemble(template.getAssembly(), CabinetAssemblies.context(cabinet, template, standard,
 				materialId -> Optional.ofNullable(catalog.get(materialId)).map(Material::getThicknessMm).orElse(0d)));
 		if (!result.violations().isEmpty()) {
 			throw new IllegalStateException("template " + template.key() + " cannot be built: " + result.violations());
@@ -204,10 +200,25 @@ final class PartGenerator {
 					acrossGrain, bandingId, 1);
 		}
 
+		addFinishedEnds(new Builder(cabinet, label, parts, null), cabinet,
+				material(catalog, standard.getFrontMaterialId()), standard);
+
 		var hardware = new LinkedHashMap<UUID, Integer>();
 		result.hardware().forEach(item -> add(hardware, CabinetAssemblies.materialId(item.material(), standard),
 				item.quantity()));
 		return new PartSet(parts, hardware, mouldings);
+	}
+
+	/**
+	 * Finished end panels over the Cabinet's exposed sides: Trim, the same whatever its template.
+	 */
+	private static void addFinishedEnds(Builder builder, Cabinet cabinet, Material front,
+			ConstructionStandard standard) {
+		var finishedEnds = (cabinet.isFinishedLeft() ? 1 : 0) + (cabinet.isFinishedRight() ? 1 : 0);
+		if (finishedEnds > 0) {
+			builder.add(PartRole.FINISHED_END, front, cabinet.getHeightMm(), cabinet.getDepthMm(), 1, 1,
+					standard.getFrontEdgeBandingId(), finishedEnds);
+		}
 	}
 
 	static int hingesPerDoor(double doorHeightMm) {

@@ -225,8 +225,10 @@ export class AssemblyPart {
   grain?: Axis | null;
   faces?: Partial<Record<Face, Attachment>> | null;
   sizes?: Partial<Record<Axis, Term[]>> | null;
-  repeat?: { count: "SHELVES" } | null;
+  repeat?: { count: "SHELVES"; dividerGapMm?: number | null } | null;
   banding?: Banding | null;
+  /** A Front outside any front stack, such as a blind corner's panel: ordered with the Cabinet's Fronts. */
+  front?: boolean | null;
 }
 
 export class StackRow {
@@ -247,7 +249,11 @@ export class Hardware {
   material!: MaterialRef;
   on?: string | null;
   frontKind?: FrontKind | null;
-  quantity!: { fixed?: number | null; perMm?: number | null; axis?: Axis | null; minimum?: number | null };
+  /** Per host: fixed, one per `perMm` along `axis` (at least `minimum`), or by `steps` of its size along `axis`. */
+  quantity!: {
+    fixed?: number | null; perMm?: number | null; axis?: Axis | null; minimum?: number | null;
+    steps?: { upToMm?: number | null; quantity: number }[] | null;
+  };
 }
 
 export class TemplateAssembly {

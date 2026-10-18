@@ -373,16 +373,21 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * An assembled Cabinet drawn as its own Parts (ADR 0006), from the same
-   * assembly as its Cut List; Fronts turn see-through when it is selected.
+   * assembly as its Cut List; Fronts turn see-through when it is selected, and
+   * its dividers can be dragged.
    */
   private assembledMesh(cabinet: Cabinet, template: CabinetTemplate, placement: WallPlacement, colors: Colors, highlight: string | null): THREE.Group {
     const group = this.onWallGroup(cabinet, cabinet.depthMm, placement);
     const interior = cabinet.id === this.selectedId;
-    const result = assemble(template.assembly!, cabinetContext(cabinet, this.standard!, this.materials));
+    const result = assemble(template.assembly!, cabinetContext(cabinet, template, this.standard!, this.materials));
     for (const part of result.parts) {
       const { x0, x1, y0, y1, z0, z1 } = part.box;
       const mesh = box(x1 - x0, y1 - y0, z1 - z0, part.front ? colors.front : colors.carcass, interior && part.front ? 0.25 : 1);
       mesh.position.set(((x0 + x1) / 2 - cabinet.widthMm / 2) * MM, (y0 + y1) / 2 * MM, ((z0 + z1) / 2 - cabinet.depthMm / 2) * MM);
+      if (interior && part.source === template.assembly!.divider?.id) {
+        // Dividers are built in the Cabinet's order (divider#1, #2…); like a starter Cabinet's, they drag once it is selected.
+        mesh.userData["dividerIndex"] = Number(part.id.split("#")[1]) - 1;
+      }
       group.add(mesh);
     }
     this.outline(group, cabinet.widthMm, cabinet.heightMm, cabinet.depthMm, highlight);

@@ -4,7 +4,8 @@ import { addCabinet } from "./design-edits";
 import { Cabinet, CabinetTemplate, Design } from "./model/design";
 import { changeVersions, latestVersions, outdatedCabinets, templateOf, updateToLatest } from "./template-versions";
 
-const STARTER = templates as CabinetTemplate[];
+/** The starter library as first published, so the made-up version 2 below is the only newer one. */
+const STARTER = (templates as CabinetTemplate[]).filter(template => template.version === 1);
 const BASE_DOOR_1 = STARTER.find(template => template.code === "BASE_DOOR")!;
 /** A made-up second version: narrower, so wide Cabinets no longer fit. */
 const BASE_DOOR_2: CabinetTemplate = { ...BASE_DOOR_1, version: 2, changeNote: "Narrower doors", maxWidthMm: 609.6 };
