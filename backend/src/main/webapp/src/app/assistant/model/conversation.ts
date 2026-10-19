@@ -47,6 +47,20 @@ export class DesignStep {
 
 export type ProposalStatus = "OPEN" | "ACCEPTED" | "DISCARDED";
 
+/** Where a design does not follow a Design Guideline: never blocking. */
+export class Remark {
+  code!: string;
+  wallId!: string | null;
+  ids!: string[];
+  measureMm!: number | null;
+  limitMm!: number | null;
+}
+
+/** Names a remark among a design's remarks, as the server does. */
+export function remarkKey(remark: Remark): string {
+  return `${remark.code}:${(remark.ids ?? []).join(",")}`;
+}
+
 /**
  * A candidate design built by the assistant (ADR 0004): it changes nothing
  * until a Member accepts it, which replays its steps onto the current design.
@@ -60,6 +74,9 @@ export class DesignProposal {
   summary!: string | null;
   openQuestions!: string[];
   assumptions!: string[];
+  /** The Remarks left on the Proposal's design, and the assistant's explanation for those it kept, by key. */
+  remarks!: Remark[] | null;
+  remarkExplanations!: Record<string, string> | null;
   acceptedTimestamp!: string | null;
   appliedSteps!: number | null;
   refusedStep!: number | null;

@@ -109,9 +109,16 @@ class OpenCabinetApplicationTests {
 				.andExpect(status().isConflict());
 		mockMvc.perform(as(owner, put("/api/assistant"))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"enabled\": false, \"monthlyBudgetUsd\": 20}"))
+				.content("{\"enabled\": false, \"monthlyBudgetUsd\": 20, \"styleText\": \"  Pas de coins aveugles.  \"}"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.monthlyBudgetUsd").value(20));
+				.andExpect(jsonPath("$.monthlyBudgetUsd").value(20))
+				.andExpect(jsonPath("$.styleText").value("Pas de coins aveugles."));
+		mockMvc.perform(as(owner, put("/api/assistant"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"enabled\": false, \"monthlyBudgetUsd\": 20, \"styleText\": \"" + "x".repeat(2001) + "\"}"))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(as(owner, get("/api/assistant")))
+				.andExpect(jsonPath("$.styleText").value("Pas de coins aveugles."));
 		mockMvc.perform(as(owner, post("/api/assistant/check")))
 				.andExpect(status().isConflict());
 

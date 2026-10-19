@@ -14,8 +14,8 @@ export class AssistantService {
   }
 
   /** Opts the Shop in or out and sets its monthly budget. Owners only. */
-  update(enabled: boolean, monthlyBudgetUsd: number): Observable<AssistantStatus> {
-    return this.httpClient.put<AssistantStatus>("/api/assistant", { enabled, monthlyBudgetUsd });
+  update(enabled: boolean, monthlyBudgetUsd: number, styleText: string): Observable<AssistantStatus> {
+    return this.httpClient.put<AssistantStatus>("/api/assistant", { enabled, monthlyBudgetUsd, styleText });
   }
 
   /** A short test request, counted against the budget. Owners only. */

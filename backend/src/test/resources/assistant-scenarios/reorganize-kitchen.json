@@ -1,0 +1,208 @@
+{
+  "name": "reorganize-kitchen",
+  "description": "A muddled U-shaped kitchen, like one the assistant once made worse: a pantry mid-wall, gaps, wall cabinets out of line, a wall cabinet low over the range, the sink and dishwasher on different walls. Asked, vaguely, to make sense of it.",
+  "language": "en",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3600,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      },
+      {
+        "id": "w2",
+        "lengthMm": 3600,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      },
+      {
+        "id": "w3",
+        "lengthMm": 3600,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [
+      {
+        "id": "pantry",
+        "templateCode": "TALL_PANTRY",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 1200,
+        "widthMm": 609.6,
+        "heightMm": 2286,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 5
+      },
+      {
+        "id": "b1",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 2100,
+        "widthMm": 457.2,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      },
+      {
+        "id": "sink",
+        "templateCode": "BASE_SINK",
+        "templateVersion": 2,
+        "wallId": "w2",
+        "offsetMm": 800,
+        "widthMm": 914.4,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 0
+      },
+      {
+        "id": "drawers",
+        "templateCode": "BASE_DRAWERS",
+        "templateVersion": 2,
+        "wallId": "w2",
+        "offsetMm": 2000,
+        "widthMm": 457.2,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 0
+      },
+      {
+        "id": "u1",
+        "templateCode": "WALL_DOOR",
+        "templateVersion": 2,
+        "wallId": "w2",
+        "offsetMm": 700,
+        "widthMm": 609.6,
+        "heightMm": 762,
+        "depthMm": 304.8,
+        "elevationMm": 1371.6,
+        "shelfCount": 2
+      },
+      {
+        "id": "u2",
+        "templateCode": "WALL_DOOR",
+        "templateVersion": 2,
+        "wallId": "w2",
+        "offsetMm": 2100,
+        "widthMm": 609.6,
+        "heightMm": 762,
+        "depthMm": 304.8,
+        "elevationMm": 1371.6,
+        "shelfCount": 2
+      },
+      {
+        "id": "b2",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w3",
+        "offsetMm": 900,
+        "widthMm": 762,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      },
+      {
+        "id": "u3",
+        "templateCode": "WALL_DOOR",
+        "templateVersion": 2,
+        "wallId": "w3",
+        "offsetMm": 2400,
+        "widthMm": 762,
+        "heightMm": 762,
+        "depthMm": 304.8,
+        "elevationMm": 1371.6,
+        "shelfCount": 2
+      }
+    ],
+    "openings": [
+      {
+        "id": "window",
+        "kind": "WINDOW",
+        "wallId": "w1",
+        "offsetMm": 2600,
+        "widthMm": 914.4,
+        "heightMm": 1066.8,
+        "elevationMm": 1066.8
+      }
+    ],
+    "appliances": [
+      {
+        "id": "fridge",
+        "kind": "FRIDGE",
+        "wallId": "w1",
+        "offsetMm": 0,
+        "widthMm": 914.4,
+        "heightMm": 1778,
+        "depthMm": 762,
+        "elevationMm": 0
+      },
+      {
+        "id": "dishwasher",
+        "kind": "DISHWASHER",
+        "wallId": "w3",
+        "offsetMm": 1700,
+        "widthMm": 609.6,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0
+      },
+      {
+        "id": "range",
+        "kind": "RANGE",
+        "wallId": "w3",
+        "offsetMm": 2400,
+        "widthMm": 762,
+        "heightMm": 914.4,
+        "depthMm": 660.4,
+        "elevationMm": 0
+      }
+    ],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Reorganize the kitchen to something that would make sense for human",
+      "attachments": []
+    }
+  ],
+  "expect": {
+    "steps": {
+      "min": 3
+    },
+    "walls": {
+      "min": 3,
+      "max": 3
+    },
+    "cabinets": {
+      "min": 6
+    },
+    "templates": {
+      "BASE_SINK": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "appliances": {
+      "RANGE": {
+        "min": 1,
+        "max": 1
+      },
+      "FRIDGE": {
+        "min": 1,
+        "max": 1
+      },
+      "DISHWASHER": {
+        "min": 1,
+        "max": 1
+      }
+    }
+  }
+}

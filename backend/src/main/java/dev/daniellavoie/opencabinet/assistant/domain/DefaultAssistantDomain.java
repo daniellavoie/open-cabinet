@@ -41,6 +41,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DefaultAssistantDomain implements AssistantDomain {
 	static final BigDecimal MAX_MONTHLY_BUDGET_USD = new BigDecimal("10000");
+	static final int MAX_STYLE_LENGTH = 2000;
 
 	MemberDomain memberDomain;
 	MemberRepository memberRepository;
@@ -59,6 +60,10 @@ public class DefaultAssistantDomain implements AssistantDomain {
 				.filter(value -> value.signum() > 0 && value.compareTo(MAX_MONTHLY_BUDGET_USD) <= 0)
 				.orElseThrow(() -> new IllegalArgumentException(
 						"a monthly budget above 0 and up to " + MAX_MONTHLY_BUDGET_USD + " USD is required"));
+		var style = Optional.ofNullable(request.getStyleText()).map(String::strip).filter(text -> !text.isEmpty()).orElse(null);
+		if (style != null && style.length() > MAX_STYLE_LENGTH) {
+			throw new IllegalArgumentException("the shop style is at most " + MAX_STYLE_LENGTH + " characters");
+		}
 		if (request.isEnabled() && !model.isConfigured()) {
 			throw new IllegalStateException("the server has no model provider key, so the assistant cannot be turned on");
 		}
@@ -69,6 +74,7 @@ public class DefaultAssistantDomain implements AssistantDomain {
 				.shopId(owner.getShopId())
 				.enabled(request.isEnabled())
 				.monthlyBudgetUsd(budget)
+				.styleText(style)
 				.enabledBy(turnedOn ? owner.getId() : current.map(AssistantSettings::getEnabledBy).orElse(null))
 				.enabledTimestamp(turnedOn ? LocalDateTime.now()
 						: current.map(AssistantSettings::getEnabledTimestamp).orElse(null))
@@ -139,6 +145,7 @@ public class DefaultAssistantDomain implements AssistantDomain {
 				.enabled(settings.map(AssistantSettings::isEnabled).orElse(false))
 				.monthlyBudgetUsd(settings.map(AssistantSettings::getMonthlyBudgetUsd).orElse(null))
 				.spentThisMonthUsd(spentThisMonth(member.getShopId()))
+				.styleText(settings.map(AssistantSettings::getStyleText).orElse(null))
 				.enabledByName(enabledBy.map(id -> memberRepository.findById(id, member.getShopId()).getName())
 						.orElse(null))
 				.enabledTimestamp(settings.map(AssistantSettings::getEnabledTimestamp).orElse(null))

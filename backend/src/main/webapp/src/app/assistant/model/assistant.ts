@@ -7,6 +7,8 @@ export class AssistantStatus {
   enabled!: boolean;
   monthlyBudgetUsd!: number | null;
   spentThisMonthUsd!: number;
+  /** The Shop Style: how the Shop likes its kitchens, followed before the Design Guidelines. */
+  styleText!: string | null;
   enabledByName!: string | null;
   enabledTimestamp!: string | null;
   builderModel!: string;

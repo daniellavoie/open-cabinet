@@ -45,6 +45,16 @@
       <h4 i18n="@@conversation.assumptions">Hypothèses</h4>
       <ul><li *ngFor="let assumption of proposal.assumptions">{{ assumption }}</li></ul>
     </ng-container>
+    <ng-container *ngIf="remarkLines.length > 0">
+      <h4 i18n="@@conversation.remarks">Remarques</h4>
+      <ul class="remarks">
+        <li *ngFor="let line of remarkLines">
+          {{ line.text }}
+          <span class="why" *ngIf="line.explanation">{{ line.explanation }}</span>
+          <span class="unexplained" *ngIf="!line.explanation" i18n="@@conversation.unexplained">Non expliquée</span>
+        </li>
+      </ul>
+    </ng-container>
     <p class="hint" *ngIf="proposal.status === 'OPEN' && acceptBlocker">{{ acceptBlocker }}</p>
     <div class="actions" *ngIf="proposal.status === 'OPEN'">
       <button class="btn btn-sm btn-primary" (click)="accept()" [disabled]="acting || !!acceptBlocker || proposal.steps.length === 0"

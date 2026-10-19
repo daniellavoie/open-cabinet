@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,7 +46,9 @@ import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelAttachment;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.AssistantDomain;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.ConversationDomain;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantSettings;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantJobs;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantRepository;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AttachmentStore;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.PdfInspector;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.ConversationRepository;
@@ -57,11 +60,14 @@ import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
 import dev.daniellavoie.opencabinet.client.domain.port.api.ClientDomain;
 import dev.daniellavoie.opencabinet.member.domain.port.api.MemberDomain;
 import dev.daniellavoie.opencabinet.member.domain.port.backend.MemberRepository;
+import dev.daniellavoie.opencabinet.project.domain.DesignGuidelines;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.project.domain.model.UpdateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
+import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 import dev.daniellavoie.opencabinet.shop.domain.port.backend.ShopRepository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -93,12 +99,17 @@ public class DefaultConversationDomain implements ConversationDomain {
 					new ToolSpec(VIEW_DESIGN, "Returns the proposal's design as it is now.",
 							"{\"type\": \"object\", \"properties\": {}, \"additionalProperties\": false}"),
 					new ToolSpec(NOTE_PROPOSAL, """
-							Records the proposal's short summary, the questions the member should answer, and the \
-							assumptions made. Replaces what was noted before.""", """
+							Records the proposal's short summary, the questions the member should answer, the assumptions \
+							made, and why each remark you keep stays (by its key). Replaces what was noted before, and \
+							returns the remarks left.""", """
 							{"type": "object", "properties": {
 							"summary": {"type": "string"},
 							"openQuestions": {"type": "array", "items": {"type": "string"}},
-							"assumptions": {"type": "array", "items": {"type": "string"}}
+							"assumptions": {"type": "array", "items": {"type": "string"}},
+							"explanations": {"type": "array", "items": {"type": "object", "properties": {
+							"remark": {"type": "string", "description": "The remark's key"},
+							"why": {"type": "string", "description": "One sentence for the member"}
+							}, "required": ["remark", "why"], "additionalProperties": false}}
 							}, "required": ["summary", "openQuestions", "assumptions"], "additionalProperties": false}""")))
 			.toList();
 
@@ -116,6 +127,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 	DesignIds designIds;
 	AssistantJobs jobs;
 	JsonMapper jsonMapper;
+	AssistantRepository assistantSettings;
 
 	@Override
 	public ConversationView view(UUID projectId, int afterProgress, Principal principal) {
@@ -229,6 +241,14 @@ public class DefaultConversationDomain implements ConversationDomain {
 		List<String> openQuestions;
 		List<String> assumptions;
 		boolean changed;
+		/**
+		 * The Remarks the design has now, the explanations noted for some, and whether the model was
+		 * already reminded of those left unexplained.
+		 */
+		Units units;
+		List<Remark> remarks;
+		Map<String, String> explanations;
+		boolean reminded;
 		DesignToolContext context;
 		String instructions;
 		List<ModelMessage> messages;
@@ -249,8 +269,12 @@ public class DefaultConversationDomain implements ConversationDomain {
 		session.openQuestions = session.open != null ? session.open.getOpenQuestions() : List.of();
 		session.assumptions = session.open != null ? session.open.getAssumptions() : List.of();
 		session.context = context(session.project, shopId, designIds::next);
+		session.explanations = new LinkedHashMap<>(Optional.ofNullable(session.open).map(DesignProposal::getRemarkExplanations)
+				.orElse(Map.of()));
 
 		var shop = shopRepository.findById(shopId);
+		session.units = shop.getUnits();
+		session.remarks = DesignGuidelines.check(session.design, session.context.templates(), session.units);
 		var materials = catalogDomain.findByShop(shopId);
 		var names = materials.stream().collect(Collectors.toMap(Material::getId, Material::getName));
 		var standard = shop.getSettings().getConstructionStandard();
@@ -263,7 +287,8 @@ public class DefaultConversationDomain implements ConversationDomain {
 		session.instructions = AssistantInstructions.build(new AssistantInstructions.Context(language, shop.getUnits(),
 				session.project.getName(), clientDomain.findById(session.project.getClientId(), shopId).getName(), standard,
 				standardMaterials, List.copyOf(session.context.frontStyles().keySet()),
-				List.copyOf(session.context.addableTemplates().values()), session.design, session.open != null), jsonMapper);
+				List.copyOf(session.context.addableTemplates().values()), session.design, session.open != null,
+				assistantSettings.findSettings(shopId).map(AssistantSettings::getStyleText).orElse(null), session.remarks), jsonMapper);
 
 		var history = repository.findMessages(conversation.getId()).stream()
 				.filter(message -> message.getText() != null)
@@ -297,6 +322,17 @@ public class DefaultConversationDomain implements ConversationDomain {
 					.build(), session.conversation.getShopId(), memberId);
 			session.messages.add(ModelMessage.assistant(reply.getText(), reply.getToolCalls(), reply.getProviderState()));
 			if (reply.getToolCalls().isEmpty()) {
+				var unexplained = unexplained(session);
+				if (!reply.isTruncated() && !unexplained.isEmpty() && !session.reminded && !session.steps.isEmpty()) {
+					// One reminder: fix the remarks left, or say in note_proposal why they stay.
+					session.reminded = true;
+					session.messages.add(new ModelMessage(Speaker.MEMBER, "Before you finish, these remarks are still without an "
+							+ "explanation. Fix each, or call note_proposal with a one-sentence explanation for each (by its key), "
+							+ "then answer:\n" + unexplained.stream()
+									.map(remark -> "- " + remark.key() + ": " + RemarkMessages.describe(remark, session.units))
+									.collect(Collectors.joining("\n"))));
+					continue;
+				}
 				if (reply.isTruncated() || reply.getText() == null || reply.getText().isBlank()) {
 					// Cut short, or nothing at all: say so rather than keep an empty answer.
 					log.warn("Design assistant gave no usable answer for conversation {} with: { truncated = {}, round = {} }",
@@ -332,9 +368,26 @@ public class DefaultConversationDomain implements ConversationDomain {
 			session.summary = Optional.ofNullable(arguments.get("summary")).map(JsonNode::asString).orElse(null);
 			session.openQuestions = strings(arguments.get("openQuestions"));
 			session.assumptions = strings(arguments.get("assumptions"));
+			var keys = session.remarks.stream().map(Remark::key).collect(Collectors.toSet());
+			var unknown = new ArrayList<String>();
+			Optional.ofNullable(arguments.get("explanations")).filter(JsonNode::isArray).ifPresent(explanations -> explanations.forEach(item -> {
+				var key = Optional.ofNullable(item.get("remark")).map(JsonNode::asString).orElse("");
+				var why = Optional.ofNullable(item.get("why")).map(JsonNode::asString).orElse("").strip();
+				if (keys.contains(key) && !why.isEmpty()) {
+					session.explanations.put(key, why);
+				} else {
+					unknown.add(key);
+				}
+			}));
 			session.changed = true;
 			progress.add(conversationId, ProgressEvent.builder().kind(ProgressEvent.Kind.NOTED).tool(call.name()));
-			return answer(true, Map.of());
+			var details = new LinkedHashMap<String, Object>();
+			details.put("remarks", session.remarks.stream().map(remark -> remarkView(remark, session)).toList());
+			details.put("unexplained", unexplained(session).size());
+			if (!unknown.isEmpty()) {
+				details.put("unknownRemarks", unknown);
+			}
+			return answer(true, details);
 		}
 
 		var result = ProposalSteps.take(session.design, call.name(), arguments, session.context);
@@ -353,7 +406,9 @@ public class DefaultConversationDomain implements ConversationDomain {
 		}
 
 		var taken = (ProposalSteps.Taken) result;
+		var before = session.remarks.stream().map(Remark::key).collect(Collectors.toSet());
 		session.design = taken.design();
+		session.remarks = DesignGuidelines.check(session.design, session.context.templates(), session.units);
 		session.steps.add(taken.step());
 		session.changed = true;
 		progress.add(conversationId, ProgressEvent.builder().kind(ProgressEvent.Kind.STEP).tool(call.name())
@@ -366,7 +421,27 @@ public class DefaultConversationDomain implements ConversationDomain {
 				.or(() -> Stream.of("cabinetId", "itemId", "wallId")
 						.map(arguments::get).filter(Objects::nonNull).map(JsonNode::asString).findFirst()))
 				.ifPresent(element -> details.put("now", element));
+		var created = session.remarks.stream().filter(remark -> !before.contains(remark.key()))
+				.map(remark -> remarkView(remark, session)).toList();
+		if (!created.isEmpty()) {
+			details.put("newRemarks", created);
+		}
 		return answer(true, details);
+	}
+
+	/**
+	 * A remark as the model reads it: its key, what it says, and the explanation noted for it.
+	 */
+	private static Map<String, Object> remarkView(Remark remark, Session session) {
+		var view = new LinkedHashMap<String, Object>();
+		view.put("key", remark.key());
+		view.put("remark", RemarkMessages.describe(remark, session.units));
+		Optional.ofNullable(session.explanations.get(remark.key())).ifPresent(why -> view.put("explanation", why));
+		return view;
+	}
+
+	private static List<Remark> unexplained(Session session) {
+		return session.remarks.stream().filter(remark -> !session.explanations.containsKey(remark.key())).toList();
 	}
 
 	private static String blankToNull(String text) {
@@ -426,6 +501,10 @@ public class DefaultConversationDomain implements ConversationDomain {
 				.summary(session.summary)
 				.openQuestions(session.openQuestions)
 				.assumptions(session.assumptions)
+				.remarks(List.copyOf(session.remarks))
+				.remarkExplanations(session.explanations.entrySet().stream()
+						.filter(entry -> session.remarks.stream().anyMatch(remark -> remark.key().equals(entry.getKey())))
+						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (first, second) -> first, LinkedHashMap::new)))
 				.updateTimestamp(now)
 				.build();
 		return repository.saveProposal(proposal).getId();

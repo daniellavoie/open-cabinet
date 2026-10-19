@@ -98,6 +98,18 @@ _Avoid_: Shop settings, build preferences
 The constraints a Construction Standard places on every Part, so that whatever is designed can actually be built.
 _Avoid_: Validation, constraints
 
+**Design Guideline** (FR: bonne pratique):
+A recommendation for a kitchen that works and looks right, such as a sink centred under its window or counter beside the range. Unlike a Construction Rule it never blocks: a design that does not follow one gets a Remark.
+_Avoid_: Taste, soft rule, warning
+
+**Remark** (FR: remarque):
+What a Design Guideline says about one place in a design it is not followed, such as a gap in a run of cabinets. The Design Assistant fixes each Remark on its Design Proposal or explains why it stays.
+_Avoid_: Warning, issue, lint
+
+**Shop Style** (FR: style de l'atelier):
+How a Shop likes its kitchens, in its own words, such as "no blind corners". The Design Assistant follows it before the Design Guidelines.
+_Avoid_: Preferences, house rules
+
 **Frameless**:
 A construction method where doors mount directly on the cabinet box with no face frame, using the 32 mm hole system.
 _Avoid_: European, Euro-style, full-access

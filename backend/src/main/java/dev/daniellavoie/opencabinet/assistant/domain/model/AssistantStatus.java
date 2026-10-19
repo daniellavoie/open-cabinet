@@ -22,6 +22,7 @@ public class AssistantStatus {
 	boolean enabled;
 	BigDecimal monthlyBudgetUsd;
 	BigDecimal spentThisMonthUsd;
+	String styleText;
 	String enabledByName;
 	LocalDateTime enabledTimestamp;
 	/**

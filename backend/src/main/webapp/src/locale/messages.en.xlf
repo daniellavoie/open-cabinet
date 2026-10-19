@@ -4181,8 +4181,8 @@
         <target>What is sent</target>
       </trans-unit>
       <trans-unit id="assistant.sentModel" datatype="html">
-        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</source>
-        <target>When a member uses the assistant, the project&apos;s design, published cabinet templates, the construction standard, material and front style names, the client&apos;s name and the conversation&apos;s messages, with their photos, sketches and PDFs, are sent to Anthropic, the model provider. Attached files are kept with the project.</target>
+        <source>Quand un membre utilise l&apos;assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client, le style de l&apos;atelier et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</source>
+        <target>When a member uses the assistant, the project&apos;s design, published cabinet templates, the construction standard, material and front style names, the client&apos;s name, the shop style and the conversation&apos;s messages, with their photos, sketches and PDFs, are sent to Anthropic, the model provider. Attached files are kept with the project.</target>
       </trans-unit>
       <trans-unit id="assistant.sentNever" datatype="html">
         <source>Jamais les prix, les soumissions ni les autres projets.</source>
@@ -4499,6 +4499,114 @@
       <trans-unit id="view.software" datatype="html">
         <source>Affichage simplifié : activez l&apos;accélération matérielle du navigateur pour un rendu complet.</source>
         <target>Simplified view: turn on the browser&apos;s hardware acceleration for full rendering.</target>
+      </trans-unit>
+      <trans-unit id="assistant.style" datatype="html">
+        <source>Style de l&apos;atelier</source>
+        <target>Shop style</target>
+      </trans-unit>
+      <trans-unit id="assistant.stylePlaceholder" datatype="html">
+        <source>Ex. : On évite les coins aveugles. On préfère les tiroirs aux portes dans les caissons bas. Moulure couronne partout.</source>
+        <target>E.g.: We avoid blind corners. We prefer drawers to doors in base cabinets. Crown moulding everywhere.</target>
+      </trans-unit>
+      <trans-unit id="assistant.styleHint" datatype="html">
+        <source>L&apos;assistant suit ce style avant ses bonnes pratiques. <x id="INTERPOLATION" equiv-text="{{ styleText.length }}"/> / <x id="INTERPOLATION_1" equiv-text="{{ maxStyleLength }}"/></source>
+        <target>The assistant follows this style before its design guidelines. <x id="INTERPOLATION" equiv-text="{{ styleText.length }}"/> / <x id="INTERPOLATION_1" equiv-text="{{ maxStyleLength }}"/></target>
+      </trans-unit>
+      <trans-unit id="conversation.remarks" datatype="html">
+        <source>Remarques</source>
+        <target>Remarks</target>
+      </trans-unit>
+      <trans-unit id="conversation.unexplained" datatype="html">
+        <source>Non expliquée</source>
+        <target>Not explained</target>
+      </trans-unit>
+      <trans-unit id="remark.gap" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : espace de <x id="measure" equiv-text="measure"/> dans la rangée de caissons.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> gap in the run of cabinets.</target>
+      </trans-unit>
+      <trans-unit id="remark.gapAtEnd" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : bande de <x id="measure" equiv-text="measure"/> au bout de la rangée.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> sliver at the end of the run.</target>
+      </trans-unit>
+      <trans-unit id="remark.fillerWidth" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : remplissage de <x id="measure" equiv-text="measure"/>, hors de la largeur d&apos;un remplissage.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> filler, outside a filler&apos;s width.</target>
+      </trans-unit>
+      <trans-unit id="remark.fillerMidRun" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : remplissage au milieu d&apos;une rangée plutôt qu&apos;à son bout.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a filler in the middle of a run rather than at its end.</target>
+      </trans-unit>
+      <trans-unit id="remark.widthStep" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : caisson de <x id="measure" equiv-text="measure"/> de large, hors des pas de <x id="limit" equiv-text="limit"/>.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a <x id="measure" equiv-text="measure"/> wide cabinet, outside the <x id="limit" equiv-text="limit"/> steps.</target>
+      </trans-unit>
+      <trans-unit id="remark.cornerNotBlind" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : les rangées se rejoignent dans le coin sans caisson de coin aveugle.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: the runs meet in the corner without a blind corner cabinet.</target>
+      </trans-unit>
+      <trans-unit id="remark.cornerClearance" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : <x id="measure" equiv-text="measure"/> seulement entre la rangée et le caisson de coin (au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: only <x id="measure" equiv-text="measure"/> between the run and the corner cabinet (at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.upperCornerClearance" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : caissons hauts serrés dans le coin (<x id="measure" equiv-text="measure"/>, au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: wall cabinets tight in the corner (<x id="measure" equiv-text="measure"/>, at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.sinkNotCentred" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : l&apos;évier est décentré de <x id="measure" equiv-text="measure"/> sous la fenêtre.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: the sink is <x id="measure" equiv-text="measure"/> off centre under the window.</target>
+      </trans-unit>
+      <trans-unit id="remark.dishwasherNotBesideSink" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : le lave-vaisselle n&apos;est pas à côté de l&apos;évier.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: the dishwasher is not beside the sink.</target>
+      </trans-unit>
+      <trans-unit id="remark.dishwasherInCorner" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : le lave-vaisselle est dans un coin.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: the dishwasher is in a corner.</target>
+      </trans-unit>
+      <trans-unit id="remark.landingRange" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : <x id="measure" equiv-text="measure"/> de comptoir d&apos;un côté de la cuisinière (au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> of counter on one side of the range (at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.landingSink" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : <x id="measure" equiv-text="measure"/> de comptoir d&apos;un côté de l&apos;évier (au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> of counter on one side of the sink (at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.landingFridge" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : <x id="measure" equiv-text="measure"/> de comptoir à côté du réfrigérateur (au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: <x id="measure" equiv-text="measure"/> of counter beside the fridge (at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.workTriangle" datatype="html">
+        <source>Triangle de travail : <x id="measure" equiv-text="measure"/> (limite <x id="limit" equiv-text="limit"/>).</source>
+        <target>Work triangle: <x id="measure" equiv-text="measure"/> (limit <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.workTriangleBlocked" datatype="html">
+        <source>Un caisson haut coupe le triangle de travail.</source>
+        <target>A tall unit cuts across the work triangle.</target>
+      </trans-unit>
+      <trans-unit id="remark.upperAlignment" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : un caisson haut n&apos;est pas aligné avec ce qui est dessous.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a wall cabinet does not line up with what is below it.</target>
+      </trans-unit>
+      <trans-unit id="remark.upperTopLine" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : un caisson haut sort de <x id="measure" equiv-text="measure"/> de la ligne du haut.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a wall cabinet is <x id="measure" equiv-text="measure"/> off the top line.</target>
+      </trans-unit>
+      <trans-unit id="remark.rangeClearance" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : <x id="measure" equiv-text="measure"/> seulement au-dessus de la cuisinière (au moins <x id="limit" equiv-text="limit"/>).</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: only <x id="measure" equiv-text="measure"/> above the range (at least <x id="limit" equiv-text="limit"/>).</target>
+      </trans-unit>
+      <trans-unit id="remark.tallMidRun" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : un caisson haut coupe le comptoir en deux.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a tall unit cuts the counter in two.</target>
+      </trans-unit>
+      <trans-unit id="remark.hoodWithoutRange" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : une hotte sans cuisinière dessous.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: a hood with no range below it.</target>
+      </trans-unit>
+      <trans-unit id="remark.hoodOverRange" datatype="html">
+        <source>Mur <x id="wall" equiv-text="wall"/> : la hotte n&apos;est pas centrée sur la cuisinière, ou est plus étroite.</source>
+        <target>Wall <x id="wall" equiv-text="wall"/>: the hood is not centred over the range, or is narrower.</target>
       </trans-unit>
     </body>
   </file>

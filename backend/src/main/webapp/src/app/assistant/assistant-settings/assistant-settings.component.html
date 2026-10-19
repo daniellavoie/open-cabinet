@@ -6,7 +6,7 @@
 
   <h3 i18n="@@assistant.sentTitle">Ce qui est envoyé</h3>
   <ul class="disclosure">
-    <li i18n="@@assistant.sentModel">Quand un membre utilise l'assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</li>
+    <li i18n="@@assistant.sentModel">Quand un membre utilise l'assistant, le plan du projet, les modèles de caissons publiés, la norme de construction, les noms des matériaux et des styles de façades, le nom du client, le style de l'atelier et les messages de la conversation, avec leurs photos, croquis et PDF, sont envoyés à Anthropic, le fournisseur du modèle. Les fichiers joints sont conservés avec le projet.</li>
     <li i18n="@@assistant.sentNever">Jamais les prix, les soumissions ni les autres projets.</li>
     <li i18n="@@assistant.sentEmail">Les courriels transférés à l'atelier, quand ils seront offerts, passeront par Resend, qui garde le courrier reçu 30 jours.</li>
   </ul>
@@ -27,6 +27,11 @@
   <p class="hint" *ngIf="status.enabled && status.enabledByName" i18n="@@assistant.enabledBy">Activé par {{ status.enabledByName }} le {{ status.enabledTimestamp | date: 'longDate' }}.</p>
   <p class="hint" i18n="@@assistant.models">Modèles : {{ status.builderModel }} pour les propositions, {{ status.sorterModel }} pour la boîte de réception.</p>
 
+  <label class="style-label" for="assistantStyle" i18n="@@assistant.style">Style de l'atelier</label>
+  <textarea class="form-control form-control-sm" id="assistantStyle" rows="4" [maxlength]="maxStyleLength" [(ngModel)]="styleText"
+    i18n-placeholder="@@assistant.stylePlaceholder"
+    placeholder="Ex. : On évite les coins aveugles. On préfère les tiroirs aux portes dans les caissons bas. Moulure couronne partout."></textarea>
+  <p class="hint" i18n="@@assistant.styleHint">L'assistant suit ce style avant ses bonnes pratiques. {{ styleText.length }} / {{ maxStyleLength }}</p>
   <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
   <div class="alert alert-success" *ngIf="message">{{ message }}</div>
   <div class="alert alert-info" *ngIf="checkReply" i18n="@@assistant.checked">{{ checkReply.model }} a répondu « {{ checkReply.text }} » pour {{ checkReply.costUsd | currency: 'USD' : 'symbol' : '1.2-6' }}.</div>

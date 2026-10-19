@@ -7,12 +7,13 @@ import { FormsModule } from "@angular/forms";
 import { finalize, from, Subscription, switchMap, takeWhile, tap, timer } from "rxjs";
 
 import { Project } from "../../project/model/project";
-import { ANSWER_ERROR_LABELS, ASSISTANT_TOOL_LABELS, VIOLATION_LABELS } from "../../util/labels";
+import { ANSWER_ERROR_LABELS, ASSISTANT_TOOL_LABELS, remarkLabel, VIOLATION_LABELS } from "../../util/labels";
+import { Units } from "../../util/units/units";
 import { ErrorResponse } from "../../util/model/error-response";
 import { AssistantService } from "../assistant-service";
 import { AssistantStatus } from "../model/assistant";
 import { ACCEPTED_TYPES, filesProblem, prepare, sizeLabel } from "../attachment-files";
-import { AcceptResult, Attachment, ConversationView, DesignProposal, ProgressEvent } from "../model/conversation";
+import { AcceptResult, Attachment, ConversationView, DesignProposal, ProgressEvent, remarkKey } from "../model/conversation";
 
 const POLL_MS = 1000;
 
@@ -36,6 +37,7 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
   @Input() dirty = false;
   /** Someone else is editing the Project. */
   @Input() readOnly = false;
+  @Input() units: Units = "IMPERIAL";
 
   @Output() proposalChange = new EventEmitter<DesignProposal | null>();
   /** The Project saved by accepting or undoing. */
@@ -47,6 +49,8 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
   status?: AssistantStatus;
   view?: ConversationView;
   progress: ProgressEvent[] = [];
+  /** The Proposal's remarks as Members read them, with the assistant's explanation when it kept one. */
+  remarkLines: { text: string; explanation: string | null }[] = [];
   text = "";
   /** Files chosen for the next message. */
   files: File[] = [];
@@ -228,6 +232,7 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
     const proposalBefore = JSON.stringify(this.view?.proposal ?? null);
     this.view = view;
     this.progress = [...this.progress, ...view.progress];
+    this.remarkLines = this.linesOf(view.proposal);
     this.loadThumbnails(view);
     if (JSON.stringify(view.proposal) !== proposalBefore) {
       this.proposalChange.emit(view.proposal);
@@ -239,6 +244,20 @@ export class ConversationPanelComponent implements OnChanges, OnDestroy {
         .pipe(finalize(() => this.polling = undefined))
         .subscribe(next => this.show(next));
     }
+  }
+
+  private linesOf(proposal: DesignProposal | null): { text: string; explanation: string | null }[] {
+    if (!proposal) {
+      return [];
+    }
+    const walls = proposal.design.walls.map(wall => wall.id);
+    return (proposal.remarks ?? []).map(remark => {
+      const index = remark.wallId ? walls.indexOf(remark.wallId) : -1;
+      return {
+        text: remarkLabel(remark, index >= 0 ? index + 1 : null, this.units),
+        explanation: proposal.remarkExplanations?.[remarkKey(remark)] ?? null,
+      };
+    });
   }
 
   private loadThumbnails(view: ConversationView) {

@@ -25,6 +25,7 @@ public class AssistantSettingsEntity {
 	UUID shopId;
 	boolean enabled;
 	BigDecimal monthlyBudgetUsd;
+	String styleText;
 	UUID enabledBy;
 	LocalDateTime enabledTimestamp;
 	LocalDateTime updateTimestamp;
@@ -34,6 +35,7 @@ public class AssistantSettingsEntity {
 				.shopId(shopId)
 				.enabled(enabled)
 				.monthlyBudgetUsd(monthlyBudgetUsd)
+				.styleText(styleText)
 				.enabledBy(enabledBy)
 				.enabledTimestamp(enabledTimestamp)
 				.build();

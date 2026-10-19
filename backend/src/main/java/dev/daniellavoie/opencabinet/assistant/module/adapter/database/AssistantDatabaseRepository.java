@@ -42,6 +42,7 @@ public class AssistantDatabaseRepository implements AssistantRepository {
 				.shopId(settings.getShopId())
 				.enabled(settings.isEnabled())
 				.monthlyBudgetUsd(settings.getMonthlyBudgetUsd())
+				.styleText(settings.getStyleText())
 				.enabledBy(settings.getEnabledBy())
 				.enabledTimestamp(settings.getEnabledTimestamp())
 				.updateTimestamp(LocalDateTime.now())

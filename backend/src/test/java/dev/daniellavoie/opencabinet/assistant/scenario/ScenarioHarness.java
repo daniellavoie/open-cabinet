@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.core.io.ClassPathResource;
@@ -35,7 +36,9 @@ import dev.daniellavoie.opencabinet.assistant.domain.model.SendMessageRequest;
 import dev.daniellavoie.opencabinet.assistant.domain.model.UpdateAssistantSettingsRequest;
 import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.AssistantDomain;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantSettings;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantModel;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantRepository;
 import dev.daniellavoie.opencabinet.assistant.module.adapter.pdf.OpenPdfInspector;
 import dev.daniellavoie.opencabinet.catalog.domain.model.Material;
 import dev.daniellavoie.opencabinet.catalog.domain.model.MaterialKind;
@@ -121,9 +124,12 @@ final class ScenarioHarness {
 				.build());
 
 		var gate = new MeteredGate(model);
+		var assistantSettings = mock(AssistantRepository.class);
+		when(assistantSettings.findSettings(shopId)).thenReturn(Optional.ofNullable(scenario.shopStyle())
+				.map(style -> AssistantSettings.builder().shopId(shopId).enabled(true).styleText(style).build()));
 		var domain = new DefaultConversationDomain(memberDomain, memberRepository, projectDomain, clientDomain, catalogDomain,
 				shopRepository, gate, new InMemoryConversations(), new ConversationProgress(), new InMemoryAttachments(),
-				new OpenPdfInspector(), new SequentialDesignIds(), Runnable::run, JSON);
+				new OpenPdfInspector(), new SequentialDesignIds(), Runnable::run, JSON, assistantSettings);
 
 		var started = System.nanoTime();
 		for (var message : scenario.messages()) {

@@ -12,6 +12,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import dev.daniellavoie.opencabinet.project.domain.ConstructionRules;
+import dev.daniellavoie.opencabinet.project.domain.DesignGuidelines;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
+import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
 /**
  * Every scenario can run: its file reads, its attachments are there, its starting design passes the
@@ -36,5 +39,17 @@ class ScenarioFilesTest {
 		assertThat(ConstructionRules.check(scenario.design(), ScenarioHarness.templates())).isEmpty();
 		scenario.messages().stream().flatMap(message -> message.attachments().stream())
 				.forEach(file -> assertThat(new ClassPathResource(ScenarioHarness.SCENARIOS + file).exists()).as(file).isTrue());
+	}
+
+	/**
+	 * The reorganizing scenario has something to fix: it starts with the remarks it was built for.
+	 */
+	@org.junit.jupiter.api.Test
+	void theMuddledKitchenStartsWithRemarks() {
+		var codes = DesignGuidelines.check(ScenarioHarness.scenario("reorganize-kitchen").design(), ScenarioHarness.templates(),
+				Units.IMPERIAL).stream().map(Remark::getCode).toList();
+
+		assertThat(codes).contains(DesignGuidelines.GAP, DesignGuidelines.UPPER_ALIGNMENT, DesignGuidelines.RANGE_CLEARANCE,
+				DesignGuidelines.DISHWASHER_NOT_BESIDE_SINK, DesignGuidelines.LANDING_RANGE);
 	}
 }

@@ -58,3 +58,9 @@ h3 {
   display: flex;
   gap: var(--oc-space-2);
 }
+
+.style-label {
+  display: block;
+  margin-top: var(--oc-space-3);
+  margin-bottom: var(--oc-space-1);
+}

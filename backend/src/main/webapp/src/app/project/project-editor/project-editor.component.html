@@ -81,7 +81,7 @@
         [marks]="proposalView.marks" [readOnly]="true" [toeKickHeightMm]="memberService.shop()!.settings.constructionStandard.toeKickHeightMm"
         [standard]="memberService.shop()!.settings.constructionStandard" [materials]="materials" />
     </div>
-    <conversation-panel class="panel" [projectId]="draft.id" [dirty]="dirty" [readOnly]="readOnly"
+    <conversation-panel class="panel" [projectId]="draft.id" [dirty]="dirty" [readOnly]="readOnly" [units]="units"
       (proposalChange)="setProposal($event)" (projectChange)="onProjectSaved($event)" />
   </div>
 

@@ -24,6 +24,8 @@ export class AssistantSettingsComponent {
   status?: AssistantStatus;
   enabled = false;
   budget = 20;
+  styleText = "";
+  readonly maxStyleLength = 2000;
   saving = false;
   checking = false;
   checkReply: CheckReply | null = null;
@@ -37,7 +39,8 @@ export class AssistantSettingsComponent {
   }
 
   get dirty(): boolean {
-    return !!this.status && (this.enabled !== this.status.enabled || this.budget !== (this.status.monthlyBudgetUsd ?? 20));
+    return !!this.status && (this.enabled !== this.status.enabled || this.budget !== (this.status.monthlyBudgetUsd ?? 20)
+      || this.styleText.trim() !== (this.status.styleText ?? ""));
   }
 
   get budgetSpent(): boolean {
@@ -49,7 +52,7 @@ export class AssistantSettingsComponent {
     this.saving = true;
     this.error = "";
     this.message = "";
-    this.assistantService.update(this.enabled, this.budget)
+    this.assistantService.update(this.enabled, this.budget, this.styleText)
       .pipe(tap(status => {
         this.load(status);
         this.message = $localize`:@@assistant.saved:Assistant enregistré.`;
@@ -77,6 +80,7 @@ export class AssistantSettingsComponent {
     this.status = status;
     this.enabled = status.enabled;
     this.budget = status.monthlyBudgetUsd ?? 20;
+    this.styleText = status.styleText ?? "";
   }
 
   private errorOf(response: HttpErrorResponse, fallback: string): string {

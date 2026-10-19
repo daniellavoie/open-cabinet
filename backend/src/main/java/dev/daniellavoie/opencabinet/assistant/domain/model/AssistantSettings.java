@@ -20,6 +20,10 @@ public class AssistantSettings {
 	boolean enabled;
 	BigDecimal monthlyBudgetUsd;
 	/**
+	 * The Shop Style: how the Shop likes its kitchens, followed before the Design Guidelines.
+	 */
+	String styleText;
+	/**
 	 * The Owner who last turned the assistant on, and when.
 	 */
 	UUID enabledBy;

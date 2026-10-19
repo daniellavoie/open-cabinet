@@ -8,6 +8,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
 import dev.daniellavoie.opencabinet.shop.domain.model.ConstructionStandard;
 import dev.daniellavoie.opencabinet.shop.domain.model.Units;
 
@@ -38,8 +39,11 @@ final class AssistantInstructions {
 			- Members may attach photos, sketches and PDFs. Only numbers the member typed, or written on a dimensioned \
 			plan, count as given measurements. A length you read from a photo or an undimensioned sketch is always an \
 			assumption, however clear it looks; so is whatever you choose yourself (a size, a template, a position).
+			- Design for a kitchen a person would want to cook in and look at, following the design guide below. After each \
+			step you hear the remarks it created: fix them in your next steps.
 			- Before your final answer, call note_proposal once with a short summary of the proposal, the questions the \
-			member should answer, and the assumptions you made. Then answer briefly; the member sees the proposal in 3D.
+			member should answer, the assumptions you made, and an explanation for each remark you keep (by its key, in one \
+			sentence). It returns the remarks left. Then answer briefly; the member sees the proposal in 3D.
 			- If the request is a question that needs no change, just answer it.
 			- Answer in %s.
 
@@ -59,7 +63,44 @@ final class AssistantInstructions {
 
 	record Context(String language, Units units, String projectName, String clientName, ConstructionStandard standard,
 			Map<String, String> standardMaterials, List<String> frontStyles, List<CabinetTemplate> addableTemplates,
-			Design design, boolean continuing) {
+			Design design, boolean continuing, String shopStyle, List<Remark> remarks) {
+	}
+
+	/**
+	 * The Design Guidelines in words, with the Shop's numbers: what the remarks check, and the
+	 * judgement calls they leave to the assistant.
+	 */
+	static String guide(Units units) {
+		var metric = units == Units.METRIC;
+		return """
+				Design guide (each checked point gives a remark when not followed; remarks never block):
+				- Runs: base cabinets form continuous runs from a corner, a wall's end or a tall unit to the next appliance, \
+				opening or end. No gaps except for an appliance or a doorway: close a gap of %s or less with a filler, a wider \
+				one with a cabinet. Leave no sliver under %s at a run's end.
+				- Fillers only at a run's ends (against a wall, at a corner, beside a tall unit or fridge), %s wide; at least %s \
+				at a corner.
+				- Widths in steps of %s. Prefer few, wide cabinets, wider before narrower, and repeat widths for symmetry \
+				(two equal cabinets either side of a centred sink). Doors wider than 24" (600 mm) come in pairs: that is the \
+				template's choice.
+				- Corners: where two base runs meet, turn the corner with a blind corner cabinet and leave %s of filler before \
+				the run on the other wall. Wall cabinets stop short of the corner with a filler.
+				- The sink base is centred under the window on its wall. The dishwasher stands right beside the sink base, on \
+				the side with more counter, never in a corner.
+				- Landing space: beside the range at least %s on one side and %s on the other; beside the sink %s and %s; beside \
+				the fridge %s on at least one side, its handle side if known.
+				- Work triangle between sink, range and fridge: each leg %s to %s, the three together under %s, nothing tall \
+				across a leg.
+				- Wall cabinets line up with the cabinets and appliances below them and share one top line per wall; never over \
+				a window; over the range a hood, or a shorter wall cabinet leaving %s above the cooktop.
+				- Tall units (pantry, oven tower, fridge) at a run's end, never in the middle of a counter, grouped when there \
+				are several.
+				- The range sits inside a run, with counter on both sides; a hood is centred over it, at least as wide.
+				""".formatted(
+				metric ? "75 mm" : "3\"", metric ? "300 mm" : "12\"", metric ? "25 to 75 mm" : "1\" to 3\"",
+				metric ? "25 mm" : "1\"", metric ? "50 mm" : "3\"", metric ? "25 mm" : "1\"",
+				metric ? "300 mm" : "12\"", metric ? "380 mm" : "15\"", metric ? "600 mm" : "24\"",
+				metric ? "450 mm" : "18\"", metric ? "380 mm" : "15\"", metric ? "1.2 m" : "4'", metric ? "2.7 m" : "9'",
+				metric ? "7.9 m" : "26'", metric ? "600 mm" : "24\"");
 	}
 
 	static String build(Context context, ObjectMapper mapper) {
@@ -76,7 +117,16 @@ final class AssistantInstructions {
 		facts.put("orderedFrontStyles", context.frontStyles());
 		facts.put("templates", context.addableTemplates().stream().map(AssistantInstructions::template).toList());
 
+		var style = context.shopStyle() == null || context.shopStyle().isBlank() ? ""
+				: "\nThe Shop's own style, which comes before the design guide where they differ:\n" + context.shopStyle() + "\n";
+		var remarks = context.remarks().isEmpty() ? "\nThe design has no remarks.\n"
+				: "\nRemarks on the design as it is now (key: what):\n" + context.remarks().stream()
+						.map(remark -> "- " + remark.key() + ": " + RemarkMessages.describe(remark, context.units()))
+						.collect(java.util.stream.Collectors.joining("\n")) + "\n";
 		return ROLE.formatted(units, language)
+				+ "\n" + guide(context.units())
+				+ style
+				+ remarks
 				+ "\nShop and project:\n" + mapper.writeValueAsString(facts)
 				+ (context.continuing()
 						? "\n\nThe open Design Proposal's current design (continue from it):\n"

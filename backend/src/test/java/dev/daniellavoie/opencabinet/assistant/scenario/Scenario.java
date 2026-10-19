@@ -12,7 +12,7 @@ import dev.daniellavoie.opencabinet.shop.domain.model.Units;
  * PDFs from the scenario's folder), and what the resulting Proposal must look like. The same files
  * drive the on-demand runs against the real model and the replays of their recordings.
  */
-public record Scenario(String name, String description, String language, Units units, Design design,
+public record Scenario(String name, String description, String language, Units units, String shopStyle, Design design,
 		List<Message> messages, Expectations expect) {
 
 	public record Message(String text, List<String> attachments) {

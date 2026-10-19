@@ -2,9 +2,11 @@ package dev.daniellavoie.opencabinet.assistant.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
 import dev.daniellavoie.opencabinet.project.domain.model.Violation;
 import lombok.Builder;
 import lombok.Value;
@@ -31,6 +33,12 @@ public class DesignProposal {
 	String summary;
 	List<String> openQuestions;
 	List<String> assumptions;
+	/**
+	 * The Remarks the Proposal's design still has, and the assistant's explanation for those it
+	 * kept, by remark key.
+	 */
+	List<Remark> remarks;
+	Map<String, String> remarkExplanations;
 	UUID acceptedBy;
 	LocalDateTime acceptedTimestamp;
 	/**

@@ -32,6 +32,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.AnswerError;
+import dev.daniellavoie.opencabinet.assistant.domain.model.AssistantSettings;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Attachment;
 import dev.daniellavoie.opencabinet.assistant.domain.model.AttachmentContent;
 import dev.daniellavoie.opencabinet.assistant.domain.model.Author;
@@ -48,6 +49,7 @@ import dev.daniellavoie.opencabinet.assistant.domain.model.ProposalStatus;
 import dev.daniellavoie.opencabinet.assistant.domain.model.SendMessageRequest;
 import dev.daniellavoie.opencabinet.assistant.domain.model.UploadedFile;
 import dev.daniellavoie.opencabinet.assistant.domain.port.api.AssistantDomain;
+import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AssistantRepository;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.AttachmentStore;
 import dev.daniellavoie.opencabinet.assistant.domain.port.backend.ConversationRepository;
 import dev.daniellavoie.opencabinet.catalog.domain.port.api.CatalogDomain;
@@ -63,6 +65,7 @@ import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
 import dev.daniellavoie.opencabinet.project.domain.model.Project;
 import dev.daniellavoie.opencabinet.project.domain.model.ProjectLock;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
 import dev.daniellavoie.opencabinet.project.domain.model.UpdateProjectRequest;
 import dev.daniellavoie.opencabinet.project.domain.model.Wall;
 import dev.daniellavoie.opencabinet.project.domain.port.api.ProjectDomain;
@@ -82,12 +85,13 @@ class DefaultConversationDomainTest {
 	private final CatalogDomain catalogDomain = mock(CatalogDomain.class);
 	private final ShopRepository shopRepository = mock(ShopRepository.class);
 	private final AssistantDomain assistantDomain = mock(AssistantDomain.class);
+	private final AssistantRepository assistantSettings = mock(AssistantRepository.class);
 	private final InMemoryConversations repository = new InMemoryConversations();
 	private final ConversationProgress progress = new ConversationProgress();
 	private final InMemoryAttachments attachments = new InMemoryAttachments();
 	private final DefaultConversationDomain domain = new DefaultConversationDomain(memberDomain, memberRepository, projectDomain,
-			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, attachments, pdf -> 2, new DesignIds(), Runnable::run,
-			JSON);
+			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, attachments, pdf -> 2, new SequentialIds(), Runnable::run,
+			JSON, assistantSettings);
 
 	private final Principal principal = () -> "marie";
 	private final Member member = Member.builder().id(UUID.randomUUID()).shopId(UUID.randomUUID()).name("Marie")
@@ -248,6 +252,64 @@ class DefaultConversationDomainTest {
 	}
 
 	@Test
+	void eachStepTellsTheModelTheRemarksItCreated() {
+		replies.add(() -> calls(
+				call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 0}"),
+				call("2", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 500}")));
+		replies.add(() -> calls(call("3", "note_proposal", """
+				{"summary": "Deux caissons", "openQuestions": [], "assumptions": [],
+				 "explanations": [{"remark": "GAP:cabinet-1,cabinet-2", "why": "Le client veut une niche à poubelle."}]}""")));
+		replies.add(() -> text("Deux caissons, avec une niche entre eux."));
+
+		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), List.of(), principal);
+
+		var results = requests.get(1).getMessages().stream().filter(message -> message.speaker() == Speaker.TOOL)
+				.map(message -> message.toolResult().content()).toList();
+		assertThat(results.get(0)).doesNotContain("newRemarks");
+		assertThat(results.get(1)).contains("newRemarks", "GAP:cabinet-1,cabinet-2", "Gap of 1.625");
+		var noted = requests.get(2).getMessages().get(requests.get(2).getMessages().size() - 1).toolResult().content();
+		assertThat(noted).contains("\"unexplained\":0", "niche");
+		var proposal = domain.view(projectId, 0, principal).getProposal();
+		assertThat(proposal.getRemarks()).extracting(Remark::getCode).containsExactly("GAP");
+		assertThat(proposal.getRemarkExplanations()).containsEntry("GAP:cabinet-1,cabinet-2", "Le client veut une niche à poubelle.");
+		assertThat(requests).hasSize(3);
+	}
+
+	@Test
+	void unexplainedRemarksGetOneReminder() {
+		replies.add(() -> calls(
+				call("1", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 0}"),
+				call("2", "add_cabinet", "{\"templateCode\": \"BASE_DOOR\", \"wallId\": \"w1\", \"offsetMm\": 500}")));
+		replies.add(() -> text("Voilà."));
+		replies.add(() -> text("Toujours voilà."));
+
+		domain.send(projectId, SendMessageRequest.builder().text("Deux caissons").build(), List.of(), principal);
+
+		assertThat(requests).hasSize(3);
+		var reminder = requests.get(2).getMessages().get(requests.get(2).getMessages().size() - 1);
+		assertThat(reminder.speaker()).isEqualTo(Speaker.MEMBER);
+		assertThat(reminder.text()).contains("without an explanation", "GAP:cabinet-1,cabinet-2");
+		var view = domain.view(projectId, 0, principal);
+		assertThat(view.getMessages().get(1).getText()).isEqualTo("Toujours voilà.");
+		assertThat(view.getProposal().getRemarkExplanations()).isEmpty();
+		assertThat(view.getProposal().getRemarks()).hasSize(1);
+	}
+
+	@Test
+	void theInstructionsCarryTheGuideTheShopStyleAndTheRemarksAlreadyThere() {
+		when(assistantSettings.findSettings(member.getShopId())).thenReturn(Optional.of(AssistantSettings.builder()
+				.styleText("Pas de coins aveugles.").build()));
+		project = project.toBuilder().design(project.getDesign().toBuilder()
+				.cabinets(List.of(cabinet("c0", 0), cabinet("c1", 500))).build()).build();
+		replies.add(() -> text("Bonjour."));
+
+		domain.send(projectId, SendMessageRequest.builder().text("Bonjour").build(), List.of(), principal);
+
+		assertThat(requests.get(0).getInstructions()).contains("Design guide", "Landing space", "beside the range at least 12\"",
+				"Pas de coins aveugles.", "comes before the design guide", "GAP:c0,c1");
+	}
+
+	@Test
 	void answersOneRequestAtATime() {
 		repository.create(Conversation.builder().id(UUID.randomUUID()).shopId(member.getShopId()).projectId(projectId)
 				.creationTimestamp(LocalDateTime.now()).build());
@@ -381,4 +443,16 @@ class DefaultConversationDomainTest {
 	}
 
 
+
+	/**
+	 * Ids numbered in order, so tests can name what the assistant created.
+	 */
+	private static final class SequentialIds extends DesignIds {
+		private final Map<String, Integer> counts = new HashMap<>();
+
+		@Override
+		public String next(String prefix) {
+			return prefix + "-" + counts.merge(prefix, 1, Integer::sum);
+		}
+	}
 }

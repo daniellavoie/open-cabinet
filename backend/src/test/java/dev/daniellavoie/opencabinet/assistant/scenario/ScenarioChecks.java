@@ -13,6 +13,7 @@ import dev.daniellavoie.opencabinet.project.domain.ConstructionRules;
 import dev.daniellavoie.opencabinet.project.domain.model.Cabinet;
 import dev.daniellavoie.opencabinet.project.domain.model.CabinetTemplate;
 import dev.daniellavoie.opencabinet.project.domain.model.Design;
+import dev.daniellavoie.opencabinet.project.domain.model.Remark;
 
 /**
  * Checks a scenario's outcome against its expectations.
@@ -35,6 +36,12 @@ final class ScenarioChecks {
 		var violations = ConstructionRules.check(design, templates);
 		checks.add(new Check("passes the Construction Rules", violations.isEmpty(), violations.toString()));
 
+		if (proposal != null) {
+			var explained = proposal.getRemarkExplanations() == null ? Map.<String, String>of() : proposal.getRemarkExplanations();
+			var unexplained = list(proposal.getRemarks()).stream().map(Remark::key)
+					.filter(key -> !explained.containsKey(key)).toList();
+			checks.add(new Check("no unexplained remark", unexplained.isEmpty(), unexplained.toString()));
+		}
 		range(checks, "steps", expect.steps(), proposal == null ? 0 : proposal.getSteps().size());
 		range(checks, "walls", expect.walls(), list(design.getWalls()).size());
 		range(checks, "cabinets", expect.cabinets(), list(design.getCabinets()).size());

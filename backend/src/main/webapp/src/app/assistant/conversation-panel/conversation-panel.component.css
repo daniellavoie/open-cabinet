@@ -192,3 +192,19 @@
   align-self: stretch;
   margin: 0;
 }
+
+.remarks .why {
+  display: block;
+  color: var(--oc-text-secondary);
+  font-style: italic;
+}
+
+.remarks .unexplained {
+  display: inline-block;
+  margin-left: var(--oc-space-1);
+  padding: 0 var(--oc-space-1);
+  border-radius: var(--oc-radius-sm);
+  color: var(--oc-warning);
+  border: 1px solid var(--oc-warning);
+  font-size: var(--oc-font-size-xs);
+}

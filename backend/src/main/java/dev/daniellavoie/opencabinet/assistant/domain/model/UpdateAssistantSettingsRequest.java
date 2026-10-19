@@ -12,4 +12,5 @@ import lombok.extern.jackson.Jacksonized;
 public class UpdateAssistantSettingsRequest {
 	boolean enabled;
 	BigDecimal monthlyBudgetUsd;
+	String styleText;
 }
