@@ -80,7 +80,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DefaultConversationDomain implements ConversationDomain {
 	static final int MAX_ROUNDS = 25;
-	static final int MAX_TOKENS = 4096;
+	static final int MAX_TOKENS = 8192;
 	static final int MAX_MESSAGE_LENGTH = 20_000;
 	static final int HISTORY = 30;
 
@@ -297,6 +297,12 @@ public class DefaultConversationDomain implements ConversationDomain {
 					.build(), session.conversation.getShopId(), memberId);
 			session.messages.add(ModelMessage.assistant(reply.getText(), reply.getToolCalls()));
 			if (reply.getToolCalls().isEmpty()) {
+				if (reply.isTruncated() || reply.getText() == null || reply.getText().isBlank()) {
+					// Cut short, or nothing at all: say so rather than keep an empty answer.
+					log.warn("Design assistant gave no usable answer for conversation {} with: { truncated = {}, round = {} }",
+							session.conversation.getId(), reply.isTruncated(), round + 1);
+					return new Outcome(blankToNull(reply.getText()), AnswerError.MODEL_ERROR);
+				}
 				return new Outcome(reply.getText(), null);
 			}
 			for (var call : reply.getToolCalls()) {
@@ -361,6 +367,10 @@ public class DefaultConversationDomain implements ConversationDomain {
 						.map(arguments::get).filter(Objects::nonNull).map(JsonNode::asString).findFirst()))
 				.ifPresent(element -> details.put("now", element));
 		return answer(true, details);
+	}
+
+	private static String blankToNull(String text) {
+		return text == null || text.isBlank() ? null : text;
 	}
 
 	private String answer(boolean ok, Map<String, Object> details) {

@@ -59,6 +59,9 @@ server:
     clientId: open-cabinet-web
   # Extra environment variables for the server container.
   env: {}
+  # Fingerprint of the optional `<release>-server` Secret; set by CI so a changed
+  # Secret restarts the server. Empty adds no annotation.
+  secretChecksum: ""
   resources:
     requests:
       cpu: 100m

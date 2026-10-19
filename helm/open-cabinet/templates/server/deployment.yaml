@@ -22,6 +22,11 @@ spec:
         app: {{ include "open-cabinet.fullname" . }}
         release: {{ .Release.Name }}
         component: {{ include "server.fullname" . }}
+      {{- with .Values.server.secretChecksum }}
+      annotations:
+        # The server reads its Secret at startup: a new fingerprint restarts it.
+        checksum/server-secret: {{ . | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "server.fullname" . }}
       {{- with .Values.image.pullSecrets }}

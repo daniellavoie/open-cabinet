@@ -235,6 +235,19 @@ class DefaultConversationDomainTest {
 	}
 
 	@Test
+	void anEmptyOrCutShortAnswerIsAnError() {
+		replies.add(() -> ModelReply.builder().model("fake").costUsd(BigDecimal.ZERO).build());
+		domain.send(projectId, SendMessageRequest.builder().text("Réorganise la cuisine").build(), List.of(), principal);
+		replies.add(() -> ModelReply.builder().text("Je commence par").truncated(true).model("fake").costUsd(BigDecimal.ZERO).build());
+		domain.send(projectId, SendMessageRequest.builder().text("Encore").build(), List.of(), principal);
+
+		var answers = domain.view(projectId, 0, principal).getMessages().stream()
+				.filter(message -> message.getAuthor() == Author.ASSISTANT).toList();
+		assertThat(answers).extracting(ConversationMessage::getError).containsExactly(AnswerError.MODEL_ERROR, AnswerError.MODEL_ERROR);
+		assertThat(answers).extracting(ConversationMessage::getText).containsExactly(null, "Je commence par");
+	}
+
+	@Test
 	void answersOneRequestAtATime() {
 		repository.create(Conversation.builder().id(UUID.randomUUID()).shopId(member.getShopId()).projectId(projectId)
 				.creationTimestamp(LocalDateTime.now()).build());

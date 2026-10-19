@@ -79,18 +79,37 @@ public class AnthropicAssistantModel implements AssistantModel {
 				.call(new Prompt(messages(request), AnthropicChatOptions.builder()
 						.model(model)
 						.maxTokens(request.getMaxTokens())
+						// Spring AI does not send thinking blocks back with tool results, which a thinking model
+						// needs to carry on after a tool call: the domain's tool rounds run without thinking.
+						.thinkingDisabled()
 						.toolCallbacks(request.getTools().stream().map(AnthropicAssistantModel::declared).toList())
 						.build()));
 
 		var usage = response.getMetadata().getUsage();
 		long input = Optional.ofNullable(usage.getPromptTokens()).orElse(0);
 		long output = Optional.ofNullable(usage.getCompletionTokens()).orElse(0);
-		var answer = response.getResult().getOutput();
+		// Spring AI gives each thinking block a result of its own, before the one with the text and
+		// tool calls: read them all, leaving thinking out.
+		var answers = response.getResults().stream()
+				.map(generation -> generation.getOutput())
+				.filter(answer -> !answer.getToolCalls().isEmpty() || !isThinking(answer))
+				.toList();
+		var text = answers.stream().map(AssistantMessage::getText).filter(value -> value != null && !value.isBlank())
+				.collect(java.util.stream.Collectors.joining("\n\n"));
+		var toolCalls = answers.stream().flatMap(answer -> answer.getToolCalls().stream())
+				.map(call -> new ToolCall(call.id(), call.name(), call.arguments()))
+				.toList();
+		var stopReason = response.getResults().stream()
+				.map(generation -> generation.getMetadata().getFinishReason())
+				.filter(reason -> reason != null)
+				.findFirst()
+				.orElse("");
+		log.info("Design assistant reply from {} with: { stopReason = {}, results = {}, textLength = {}, toolCalls = {}, inputTokens = {}, outputTokens = {} }",
+				model, stopReason, response.getResults().size(), text.length(), toolCalls.size(), input, output);
 		return ModelReply.builder()
-				.text(answer.getText())
-				.toolCalls(answer.getToolCalls().stream()
-						.map(call -> new ToolCall(call.id(), call.name(), call.arguments()))
-						.toList())
+				.text(text.isEmpty() ? null : text)
+				.toolCalls(toolCalls)
+				.truncated(stopReason.equalsIgnoreCase("max_tokens"))
 				.model(model)
 				.inputTokens(input)
 				.outputTokens(output)
@@ -133,6 +152,11 @@ public class AnthropicAssistantModel implements AssistantModel {
 			messages.add(ToolResponseMessage.builder().responses(List.copyOf(results)).build());
 		}
 		return messages;
+	}
+
+	private static boolean isThinking(AssistantMessage answer) {
+		var properties = answer.getMetadata();
+		return properties.containsKey("signature") || properties.containsKey("data");
 	}
 
 	/**

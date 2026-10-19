@@ -178,6 +178,59 @@ class AnthropicAssistantModelTest {
 		}
 	}
 
+	/**
+	 * What production got from Sonnet: a thinking block before the text and tool calls, which once
+	 * hid them.
+	 */
+	@Test
+	void readsTheAnswerBehindAThinkingBlockAndAsksForNoThinking() throws Exception {
+		var requests = new ArrayList<String>();
+		var bodies = new java.util.ArrayDeque<>(List.of("""
+				{"id": "msg_1", "type": "message", "role": "assistant", "model": "builder",
+				 "content": [{"type": "thinking", "thinking": "", "signature": "c2lnbmF0dXJl"},
+				             {"type": "text", "text": "Je retire le caisson."},
+				             {"type": "tool_use", "id": "call_1", "name": "remove_cabinet", "input": {"cabinetId": "c1"}}],
+				 "stop_reason": "tool_use", "stop_sequence": null, "usage": {"input_tokens": 100, "output_tokens": 50}}
+				""", """
+				{"id": "msg_2", "type": "message", "role": "assistant", "model": "builder",
+				 "content": [{"type": "text", "text": "Je commence par"}],
+				 "stop_reason": "max_tokens", "stop_sequence": null, "usage": {"input_tokens": 100, "output_tokens": 8192}}
+				"""));
+		var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+		server.createContext("/", exchange -> {
+			requests.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+			var reply = bodies.removeFirst().getBytes(StandardCharsets.UTF_8);
+			exchange.getResponseHeaders().add("Content-Type", "application/json");
+			exchange.sendResponseHeaders(200, reply.length);
+			exchange.getResponseBody().write(reply);
+			exchange.close();
+		});
+		server.start();
+		try {
+			var configuration = configuration("test-key");
+			configuration.setBaseUrl("http://localhost:" + server.getAddress().getPort());
+			var model = new AnthropicAssistantModel(configuration);
+			var request = ModelRequest.builder()
+					.tier(ModelTier.BUILDER)
+					.purpose("PROPOSAL")
+					.instructions("Edit the design.")
+					.messages(List.of(new ModelMessage(Speaker.MEMBER, "Enlève le caisson.")))
+					.maxTokens(8192)
+					.build();
+
+			var answered = model.complete(request);
+			var cut = model.complete(request);
+
+			assertThat(answered.getText()).isEqualTo("Je retire le caisson.");
+			assertThat(answered.getToolCalls()).extracting(ToolCall::name).containsExactly("remove_cabinet");
+			assertThat(answered.isTruncated()).isFalse();
+			assertThat(cut.isTruncated()).isTrue();
+			assertThat(requests.get(0)).contains("\"thinking\":{\"type\":\"disabled\"}");
+		} finally {
+			server.stop(0);
+		}
+	}
+
 	@Test
 	void withoutAKeyItIsNotConfigured() {
 		var model = new AnthropicAssistantModel(configuration(""));

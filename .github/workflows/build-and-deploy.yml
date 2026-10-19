@@ -82,8 +82,10 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       # The chart loads this Secret into the server's environment. Without the
-      # key, the Design Assistant stays off.
+      # key, the Design Assistant stays off. Its fingerprint goes on the pod, so
+      # a new key restarts the server even when the image is the same.
       - name: Create server secret
+        id: server-secret
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
@@ -95,6 +97,7 @@ jobs:
             --namespace $NAMESPACE \
             --from-literal=ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
             --dry-run=client -o yaml | kubectl apply -f -
+          echo "checksum=$(printf %s "$ANTHROPIC_API_KEY" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
 
       - name: Deploy Open Cabinet
         run: |
@@ -103,7 +106,8 @@ jobs:
             --force-conflicts \
             -f .github/infra/$NAMESPACE/values.yaml \
             --set image.repository=$IMAGE_REPOSITORY/opencabinet-backend \
-            --set image.tag=${{ github.sha }}
+            --set image.tag=${{ github.sha }} \
+            --set-string server.secretChecksum=${{ steps.server-secret.outputs.checksum }}
 
       - name: Wait for Open Cabinet ready
         run: |

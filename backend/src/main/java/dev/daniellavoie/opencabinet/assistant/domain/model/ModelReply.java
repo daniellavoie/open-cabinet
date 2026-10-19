@@ -16,6 +16,10 @@ public class ModelReply {
 	@Builder.Default
 	List<ModelRequest.ToolCall> toolCalls = List.of();
 	String model;
+	/**
+	 * The model stopped at the output cap: what it wrote is cut short.
+	 */
+	boolean truncated;
 	long inputTokens;
 	long outputTokens;
 	BigDecimal costUsd;
