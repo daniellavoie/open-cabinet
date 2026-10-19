@@ -156,10 +156,11 @@
       <version>${openpdf.version}</version>
     </dependency>
 
-    <!-- Design Assistant (ADR 0004). Not the starter: the model is built only when an API key is set. -->
+    <!-- Design Assistant (ADR 0004): Claude through Anthropic's SDK, built only when an API key is set. -->
     <dependency>
-      <groupId>org.springframework.ai</groupId>
-      <artifactId>spring-ai-anthropic</artifactId>
+      <groupId>com.anthropic</groupId>
+      <artifactId>anthropic-java</artifactId>
+      <version>${anthropic-java.version}</version>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>

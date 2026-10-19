@@ -20,6 +20,10 @@ public class ModelReply {
 	 * The model stopped at the output cap: what it wrote is cut short.
 	 */
 	boolean truncated;
+	/**
+	 * Opaque to the domain: handed back with the answer in the next round of the same request.
+	 */
+	Object providerState;
 	long inputTokens;
 	long outputTokens;
 	BigDecimal costUsd;

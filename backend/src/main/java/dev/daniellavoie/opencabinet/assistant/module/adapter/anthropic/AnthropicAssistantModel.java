@@ -2,27 +2,38 @@ package dev.daniellavoie.opencabinet.assistant.module.adapter.anthropic;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.ai.anthropic.AnthropicChatModel;
-import org.springframework.ai.anthropic.AnthropicChatOptions;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.ToolResponseMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.content.Media;
-import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.tool.definition.ToolDefinition;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MimeType;
+
+import com.anthropic.client.AnthropicClient;
+import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.core.JsonValue;
+import com.anthropic.models.messages.Base64ImageSource;
+import com.anthropic.models.messages.Base64PdfSource;
+import com.anthropic.models.messages.ContentBlockParam;
+import com.anthropic.models.messages.ImageBlockParam;
+import com.anthropic.models.messages.Message;
+import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.MessageParam;
+import com.anthropic.models.messages.StopReason;
+import com.anthropic.models.messages.ThinkingConfigBetweenTools;
+import com.anthropic.models.messages.Tool;
+import com.anthropic.models.messages.ToolResultBlockParam;
+import com.anthropic.models.messages.ToolUseBlockParam;
+
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelReply;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest;
+import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ModelMessage;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.Speaker;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolCall;
 import dev.daniellavoie.opencabinet.assistant.domain.model.ModelRequest.ToolSpec;
@@ -33,35 +44,41 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Claude through Spring AI. The chat model exists only when an API key is configured.
+ * Claude through Anthropic's Java SDK, which the client exists for only when an API key is
+ * configured. The model writes short notes between tool calls as thinking blocks; each answer is
+ * handed back as it came, so they go back with the tool results as the model needs.
  */
 @Slf4j
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AnthropicAssistantModel implements AssistantModel {
 	static final BigDecimal MILLION = BigDecimal.valueOf(1_000_000);
+	static final Duration TIMEOUT = Duration.ofMinutes(5);
+	static final JsonMapper JSON = JsonMapper.builder().build();
 
 	AnthropicConfiguration configuration;
-	Optional<AnthropicChatModel> chatModel;
+	Optional<AnthropicClient> client;
 
 	public AnthropicAssistantModel(AnthropicConfiguration configuration) {
 		this.configuration = configuration;
-		this.chatModel = Optional.ofNullable(configuration.getApiKey())
+		this.client = Optional.ofNullable(configuration.getApiKey())
 				.filter(key -> !key.isBlank())
-				.map(key -> AnthropicChatModel.builder()
-						.options(AnthropicChatOptions.builder().apiKey(key).baseUrl(configuration.getBaseUrl()).build())
-						.build());
+				.map(key -> {
+					var builder = AnthropicOkHttpClient.builder().apiKey(key).timeout(TIMEOUT).maxRetries(2);
+					Optional.ofNullable(configuration.getBaseUrl()).filter(url -> !url.isBlank()).ifPresent(builder::baseUrl);
+					return builder.build();
+				});
 		for (var tier : ModelTier.values()) {
 			prices(modelFor(tier));
 		}
 		log.info("Design assistant model {} with: { builderModel = {}, sorterModel = {} }",
-				chatModel.isPresent() ? "configured" : "not configured", configuration.getBuilderModel(),
+				client.isPresent() ? "configured" : "not configured", configuration.getBuilderModel(),
 				configuration.getSorterModel());
 	}
 
 	@Override
 	public boolean isConfigured() {
-		return chatModel.isPresent();
+		return client.isPresent();
 	}
 
 	@Override
@@ -75,41 +92,39 @@ public class AnthropicAssistantModel implements AssistantModel {
 	@Override
 	public ModelReply complete(ModelRequest request) {
 		var model = modelFor(request.getTier());
-		var response = chatModel.orElseThrow(() -> new IllegalStateException("the server has no model provider key"))
-				.call(new Prompt(messages(request), AnthropicChatOptions.builder()
-						.model(model)
-						.maxTokens(request.getMaxTokens())
-						// Spring AI does not send thinking blocks back with tool results, which a thinking model
-						// needs to carry on after a tool call: the domain's tool rounds run without thinking.
-						.thinkingDisabled()
-						.toolCallbacks(request.getTools().stream().map(AnthropicAssistantModel::declared).toList())
-						.build()));
+		var params = MessageCreateParams.builder()
+				.model(model)
+				.maxTokens(request.getMaxTokens())
+				.system(request.getInstructions())
+				.messages(messages(request))
+				// No thinking before answering; the notes written between tool calls come back as thinking.
+				.thinking(ThinkingConfigBetweenTools.builder().build());
+		request.getTools().forEach(tool -> params.addTool(tool(tool)));
 
-		var usage = response.getMetadata().getUsage();
-		long input = Optional.ofNullable(usage.getPromptTokens()).orElse(0);
-		long output = Optional.ofNullable(usage.getCompletionTokens()).orElse(0);
-		// Spring AI gives each thinking block a result of its own, before the one with the text and
-		// tool calls: read them all, leaving thinking out.
-		var answers = response.getResults().stream()
-				.map(generation -> generation.getOutput())
-				.filter(answer -> !answer.getToolCalls().isEmpty() || !isThinking(answer))
+		var message = client.orElseThrow(() -> new IllegalStateException("the server has no model provider key"))
+				.messages()
+				.create(params.build());
+
+		var text = message.content().stream()
+				.filter(block -> block.isText())
+				.map(block -> block.asText().text())
+				.filter(value -> !value.isBlank())
+				.collect(Collectors.joining("\n\n"));
+		var toolCalls = message.content().stream()
+				.filter(block -> block.isToolUse())
+				.map(block -> block.asToolUse())
+				.map(call -> new ToolCall(call.id(), call.name(), JSON.writeValueAsString(call._input().convert(Object.class))))
 				.toList();
-		var text = answers.stream().map(AssistantMessage::getText).filter(value -> value != null && !value.isBlank())
-				.collect(java.util.stream.Collectors.joining("\n\n"));
-		var toolCalls = answers.stream().flatMap(answer -> answer.getToolCalls().stream())
-				.map(call -> new ToolCall(call.id(), call.name(), call.arguments()))
-				.toList();
-		var stopReason = response.getResults().stream()
-				.map(generation -> generation.getMetadata().getFinishReason())
-				.filter(reason -> reason != null)
-				.findFirst()
-				.orElse("");
-		log.info("Design assistant reply from {} with: { stopReason = {}, results = {}, textLength = {}, toolCalls = {}, inputTokens = {}, outputTokens = {} }",
-				model, stopReason, response.getResults().size(), text.length(), toolCalls.size(), input, output);
+		var input = message.usage().inputTokens();
+		var output = message.usage().outputTokens();
+		var stopReason = message.stopReason().map(StopReason::asString).orElse("");
+		log.info("Design assistant reply from {} with: { stopReason = {}, blocks = {}, textLength = {}, toolCalls = {}, inputTokens = {}, outputTokens = {} }",
+				model, stopReason, message.content().size(), text.length(), toolCalls.size(), input, output);
 		return ModelReply.builder()
 				.text(text.isEmpty() ? null : text)
 				.toolCalls(toolCalls)
-				.truncated(stopReason.equalsIgnoreCase("max_tokens"))
+				.truncated(message.stopReason().map(StopReason.MAX_TOKENS::equals).orElse(false))
+				.providerState(message)
 				.model(model)
 				.inputTokens(input)
 				.outputTokens(output)
@@ -118,67 +133,88 @@ public class AnthropicAssistantModel implements AssistantModel {
 	}
 
 	/**
-	 * The instructions, then the conversation; consecutive tool results travel together, answering
-	 * the tool calls of the message before them.
+	 * The conversation; consecutive tool results travel together, answering the tool calls of the
+	 * answer before them, and an answer goes back exactly as the model gave it.
 	 */
-	private static List<Message> messages(ModelRequest request) {
-		var messages = new ArrayList<Message>();
-		messages.add(new SystemMessage(request.getInstructions()));
-		var results = new ArrayList<ToolResponseMessage.ToolResponse>();
+	private static List<MessageParam> messages(ModelRequest request) {
+		var messages = new ArrayList<MessageParam>();
+		var results = new ArrayList<ContentBlockParam>();
 		for (var message : request.getMessages()) {
 			if (message.speaker() != Speaker.TOOL && !results.isEmpty()) {
-				messages.add(ToolResponseMessage.builder().responses(List.copyOf(results)).build());
+				messages.add(MessageParam.builder().role(MessageParam.Role.USER).contentOfBlockParams(List.copyOf(results)).build());
 				results.clear();
 			}
 			switch (message.speaker()) {
-			case MEMBER -> messages.add(UserMessage.builder()
-					.text(message.text())
-					.media(message.attachments().stream()
-							.map(attachment -> new Media(MimeType.valueOf(attachment.mediaType()),
-									new ByteArrayResource(attachment.bytes())))
-							.toList())
-					.build());
-			case ASSISTANT -> messages.add(AssistantMessage.builder()
-					.content(Optional.ofNullable(message.text()).orElse(""))
-					.toolCalls(message.toolCalls().stream()
-							.map(call -> new AssistantMessage.ToolCall(call.id(), "function", call.name(), call.arguments()))
-							.toList())
-					.build());
-			case TOOL -> results.add(new ToolResponseMessage.ToolResponse(message.toolResult().callId(),
-					message.toolResult().name(), message.toolResult().content()));
+			case MEMBER -> messages.add(MessageParam.builder().role(MessageParam.Role.USER).contentOfBlockParams(member(message)).build());
+			case ASSISTANT -> messages.add(message.providerState() instanceof Message answer ? answer.toParam() : assistant(message));
+			case TOOL -> results.add(ContentBlockParam.ofToolResult(ToolResultBlockParam.builder()
+					.toolUseId(message.toolResult().callId())
+					.content(message.toolResult().content())
+					.build()));
 			}
 		}
 		if (!results.isEmpty()) {
-			messages.add(ToolResponseMessage.builder().responses(List.copyOf(results)).build());
+			messages.add(MessageParam.builder().role(MessageParam.Role.USER).contentOfBlockParams(List.copyOf(results)).build());
 		}
 		return messages;
 	}
 
-	private static boolean isThinking(AssistantMessage answer) {
-		var properties = answer.getMetadata();
-		return properties.containsKey("signature") || properties.containsKey("data");
+	/**
+	 * The Member's text, after their photos and PDFs.
+	 */
+	private static List<ContentBlockParam> member(ModelMessage message) {
+		var blocks = new ArrayList<ContentBlockParam>();
+		for (var attachment : message.attachments()) {
+			var data = Base64.getEncoder().encodeToString(attachment.bytes());
+			blocks.add(attachment.mediaType().equals("application/pdf")
+					? ContentBlockParam.ofDocument(Base64PdfSource.builder().data(data).build())
+					: ContentBlockParam.ofImage(ImageBlockParam.builder()
+							.source(Base64ImageSource.builder()
+									.data(data)
+									.mediaType(Base64ImageSource.MediaType.of(attachment.mediaType()))
+									.build())
+							.build()));
+		}
+		blocks.add(ContentBlockParam.ofText(message.text()));
+		return blocks;
 	}
 
 	/**
-	 * A tool the model may ask for. Spring AI never runs it: the domain runs each call itself.
+	 * An earlier answer, from its text and tool calls, when it did not come from this provider.
 	 */
-	private static ToolCallback declared(ToolSpec spec) {
-		var definition = ToolDefinition.builder()
+	private static MessageParam assistant(ModelMessage message) {
+		var blocks = new ArrayList<ContentBlockParam>();
+		Optional.ofNullable(message.text()).filter(text -> !text.isBlank()).ifPresent(text -> blocks.add(ContentBlockParam.ofText(text)));
+		message.toolCalls().forEach(call -> blocks.add(ContentBlockParam.ofToolUse(ToolUseBlockParam.builder()
+				.id(call.id())
+				.name(call.name())
+				.input(JsonValue.from(JSON.readValue(call.arguments(), new TypeReference<Map<String, Object>>() {
+				})))
+				.build())));
+		return MessageParam.builder().role(MessageParam.Role.ASSISTANT).contentOfBlockParams(blocks).build();
+	}
+
+	/**
+	 * A tool the model may ask for; the domain runs each call itself.
+	 */
+	private static Tool tool(ToolSpec spec) {
+		Map<String, Object> schema = JSON.readValue(spec.inputSchema(), new TypeReference<Map<String, Object>>() {
+		});
+		var properties = Tool.InputSchema.Properties.builder();
+		@SuppressWarnings("unchecked")
+		var declared = (Map<String, Object>) schema.getOrDefault("properties", Map.of());
+		declared.forEach((name, property) -> properties.putAdditionalProperty(name, JsonValue.from(property)));
+		var inputSchema = Tool.InputSchema.builder().properties(properties.build());
+		@SuppressWarnings("unchecked")
+		var required = (List<String>) schema.getOrDefault("required", List.of());
+		inputSchema.required(required);
+		Optional.ofNullable(schema.get("additionalProperties"))
+				.ifPresent(value -> inputSchema.putAdditionalProperty("additionalProperties", JsonValue.from(value)));
+		return Tool.builder()
 				.name(spec.name())
 				.description(spec.description())
-				.inputSchema(spec.inputSchema())
+				.inputSchema(inputSchema.build())
 				.build();
-		return new ToolCallback() {
-			@Override
-			public ToolDefinition getToolDefinition() {
-				return definition;
-			}
-
-			@Override
-			public String call(String arguments) {
-				throw new IllegalStateException("tool " + spec.name() + " is run by the domain, not by Spring AI");
-			}
-		};
 	}
 
 	/**

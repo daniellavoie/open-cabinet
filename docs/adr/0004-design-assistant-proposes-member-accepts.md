@@ -1,6 +1,6 @@
 # The Design Assistant proposes, a Member accepts
 
-The Design Assistant (an LLM, through Spring AI) never edits a Project's design directly: it builds a separate Design Proposal by calling tools that are the editor's own operations, each checked by the Construction Rules, and a Member accepts it, which replays those steps onto the current design under the editing lock. Its tools reach only that one Project's design and the Shop's design data (Cabinet Templates, Construction Standard, material names); never prices, Quotes, other Projects or email. We chose this so ADR 0001 still holds (whatever it proposes can be built), so prices and Quotes stay deterministic and set by people, and so text in a forwarded email can at worst produce a bad Proposal a Member declines.
+The Design Assistant (an LLM, Claude, behind a model port) never edits a Project's design directly: it builds a separate Design Proposal by calling tools that are the editor's own operations, each checked by the Construction Rules, and a Member accepts it, which replays those steps onto the current design under the editing lock. Its tools reach only that one Project's design and the Shop's design data (Cabinet Templates, Construction Standard, material names); never prices, Quotes, other Projects or email. We chose this so ADR 0001 still holds (whatever it proposes can be built), so prices and Quotes stay deterministic and set by people, and so text in a forwarded email can at worst produce a bad Proposal a Member declines.
 
 ## Considered Options
 

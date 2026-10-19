@@ -25,7 +25,8 @@
     <jib.version>3.5.2</jib.version>
     <lombok.version>1.18.48</lombok.version>
     <openpdf.version>2.0.3</openpdf.version>
-    <spring-ai.version>2.0.1</spring-ai.version>
+    <!-- The official SDK: it sends thinking blocks back during tool use, which Spring AI does not. -->
+    <anthropic-java.version>2.73.0</anthropic-java.version>
 
     <!--
       Dummy values required for build-image goal to not complain even if no publish is done.
@@ -70,13 +71,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.springframework.ai</groupId>
-        <artifactId>spring-ai-bom</artifactId>
-        <version>${spring-ai.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
 
       <dependency>
         <groupId>org.projectlombok</groupId>

@@ -121,7 +121,8 @@ class AnthropicAssistantModelTest {
 
 			assertThat(first.getText()).isEqualTo("Je place le caisson.");
 			assertThat(first.getToolCalls()).containsExactly(new ToolCall("call_1", "remove_cabinet", "{\"cabinetId\":\"c1\"}"));
-			assertThat(requests.get(0)).contains("\"tools\"", "\"name\":\"remove_cabinet\"", "Removes a Cabinet.");
+			assertThat(requests.get(0)).contains("\"tools\"", "\"name\":\"remove_cabinet\"", "Removes a Cabinet.",
+					"\"input_schema\":{", "\"type\":\"object\"", "\"required\":[\"cabinetId\"]", "\"cabinetId\":{\"type\":\"string\"}");
 
 			var second = model.complete(request.toBuilder()
 					.messages(List.of(new ModelMessage(Speaker.MEMBER, "Enlève le caisson."),
@@ -179,11 +180,11 @@ class AnthropicAssistantModelTest {
 	}
 
 	/**
-	 * What production got from Sonnet: a thinking block before the text and tool calls, which once
-	 * hid them.
+	 * What production got from Sonnet: a thinking block before the text and tool calls. The answer
+	 * is read, and the thinking goes back with the tool results, as the model requires.
 	 */
 	@Test
-	void readsTheAnswerBehindAThinkingBlockAndAsksForNoThinking() throws Exception {
+	void readsTheAnswerBehindAThinkingBlockAndSendsTheThinkingBack() throws Exception {
 		var requests = new ArrayList<String>();
 		var bodies = new java.util.ArrayDeque<>(List.of("""
 				{"id": "msg_1", "type": "message", "role": "assistant", "model": "builder",
@@ -219,13 +220,20 @@ class AnthropicAssistantModelTest {
 					.build();
 
 			var answered = model.complete(request);
-			var cut = model.complete(request);
+			var cut = model.complete(request.toBuilder()
+					.messages(List.of(new ModelMessage(Speaker.MEMBER, "Enlève le caisson."),
+							ModelMessage.assistant(answered.getText(), answered.getToolCalls(), answered.getProviderState()),
+							ModelMessage.tool(new ToolResult("call_1", "remove_cabinet", "{\"ok\": true}"))))
+					.build());
 
 			assertThat(answered.getText()).isEqualTo("Je retire le caisson.");
 			assertThat(answered.getToolCalls()).extracting(ToolCall::name).containsExactly("remove_cabinet");
 			assertThat(answered.isTruncated()).isFalse();
 			assertThat(cut.isTruncated()).isTrue();
-			assertThat(requests.get(0)).contains("\"thinking\":{\"type\":\"disabled\"}");
+			assertThat(requests.get(0)).contains("\"thinking\":{\"type\":\"between_tools\"}");
+			assertThat(requests.get(1)).contains("\"type\":\"thinking\"", "\"signature\":\"c2lnbmF0dXJl\"",
+					"\"tool_result\"", "\"tool_use_id\":\"call_1\"");
+			assertThat(requests.get(1).indexOf("\"type\":\"thinking\"")).isLessThan(requests.get(1).indexOf("\"type\":\"tool_use\""));
 		} finally {
 			server.stop(0);
 		}

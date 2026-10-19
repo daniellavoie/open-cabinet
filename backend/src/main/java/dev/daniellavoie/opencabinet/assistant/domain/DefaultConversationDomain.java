@@ -295,7 +295,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 					.tools(TOOLS)
 					.maxTokens(MAX_TOKENS)
 					.build(), session.conversation.getShopId(), memberId);
-			session.messages.add(ModelMessage.assistant(reply.getText(), reply.getToolCalls()));
+			session.messages.add(ModelMessage.assistant(reply.getText(), reply.getToolCalls(), reply.getProviderState()));
 			if (reply.getToolCalls().isEmpty()) {
 				if (reply.isTruncated() || reply.getText() == null || reply.getText().isBlank()) {
 					// Cut short, or nothing at all: say so rather than keep an empty answer.

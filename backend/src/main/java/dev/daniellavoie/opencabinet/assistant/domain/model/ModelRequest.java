@@ -28,21 +28,29 @@ public class ModelRequest {
 	 * answer (with the tool calls it asked for), or the result of a tool call.
 	 */
 	public record ModelMessage(Speaker speaker, String text, List<ModelAttachment> attachments, List<ToolCall> toolCalls,
-			ToolResult toolResult) {
+			ToolResult toolResult, Object providerState) {
 		public ModelMessage(Speaker speaker, String text) {
-			this(speaker, text, List.of(), List.of(), null);
+			this(speaker, text, List.of(), List.of(), null, null);
 		}
 
 		public static ModelMessage member(String text, List<ModelAttachment> attachments) {
-			return new ModelMessage(Speaker.MEMBER, text, attachments, List.of(), null);
+			return new ModelMessage(Speaker.MEMBER, text, attachments, List.of(), null, null);
 		}
 
 		public static ModelMessage assistant(String text, List<ToolCall> toolCalls) {
-			return new ModelMessage(Speaker.ASSISTANT, text, List.of(), toolCalls, null);
+			return assistant(text, toolCalls, null);
+		}
+
+		/**
+		 * The model's answer as it came, {@code providerState} included: what the provider needs back
+		 * unchanged to carry on, such as the thinking written before a tool call.
+		 */
+		public static ModelMessage assistant(String text, List<ToolCall> toolCalls, Object providerState) {
+			return new ModelMessage(Speaker.ASSISTANT, text, List.of(), toolCalls, null, providerState);
 		}
 
 		public static ModelMessage tool(ToolResult result) {
-			return new ModelMessage(Speaker.TOOL, null, List.of(), List.of(), result);
+			return new ModelMessage(Speaker.TOOL, null, List.of(), List.of(), result, null);
 		}
 	}
 
