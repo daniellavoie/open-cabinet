@@ -1,3 +1,4 @@
+import { NgIf } from "@angular/common";
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, ViewChild } from "@angular/core";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -9,6 +10,7 @@ import { doorLeaves, frontRows, frontWidth } from "../front-layout";
 import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor, templateKey } from "../model/design";
 import { Mark } from "../proposal-marks";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
+import { createRenderer, SceneRenderer } from "../../util/three/scene-renderer";
 
 const MM = 1 / 1000;
 const WALL_THICKNESS_MM = 100;
@@ -58,7 +60,7 @@ interface Pick {
   selector: "room-view",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [],
+  imports: [NgIf],
   styleUrls: ["./room-view.component.css"],
   templateUrl: "./room-view.component.html",
 })
@@ -92,7 +94,13 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Output() selectItem = new EventEmitter<string | null>();
   @Output() move = new EventEmitter<ItemMove>();
 
-  private renderer?: THREE.WebGLRenderer;
+  private renderer?: SceneRenderer;
+  /** The element drawn on: the canvas, or an SVG when the browser has no WebGL. */
+  private surface!: HTMLElement;
+  /** The scene changed since it was last drawn. */
+  private dirty = true;
+  /** Drawn without WebGL, with simpler shading. */
+  software = false;
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(45, 1, 0.05, 100);
   private controls?: OrbitControls;
@@ -112,9 +120,13 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit() {
     this.ngZone.runOutsideAngular(() => {
-      const canvas = this.canvasRef.nativeElement;
-      this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      this.renderer.setPixelRatio(window.devicePixelRatio);
+      const renderer = createRenderer(this.canvasRef.nativeElement, this.scene);
+      this.renderer = renderer;
+      this.surface = renderer.domElement as HTMLElement;
+      if (renderer.software) {
+        // After this change detection pass, which has already checked the notice.
+        setTimeout(() => this.ngZone.run(() => this.software = true));
+      }
 
       this.scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 2.2));
       const sun = new THREE.DirectionalLight(0xffffff, 1.4);
@@ -122,7 +134,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.scene.add(sun);
       this.scene.add(this.content);
 
-      this.controls = new OrbitControls(this.camera, canvas);
+      this.controls = new OrbitControls(this.camera, this.surface);
       this.controls.enableDamping = true;
       this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
@@ -137,8 +149,12 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       const loop = () => {
         this.frame = requestAnimationFrame(loop);
-        this.controls?.update();
-        this.renderer?.render(this.scene, this.camera);
+        const moved = this.controls?.update() ?? false;
+        // Drawn on the CPU, the view redraws only when the camera moved or the scene changed.
+        if (!renderer.software || moved || this.dirty) {
+          renderer.render(this.scene, this.camera);
+          this.dirty = false;
+        }
       };
       loop();
     });
@@ -153,14 +169,14 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     cancelAnimationFrame(this.frame);
     this.resizeObserver?.disconnect();
-    this.listeners.forEach(([type, listener]) => this.canvasRef.nativeElement.removeEventListener(type, listener));
+    this.listeners.forEach(([type, listener]) => this.surface?.removeEventListener(type, listener));
     this.controls?.dispose();
     this.clearContent();
     this.renderer?.dispose();
   }
 
   private listen(type: string, listener: EventListener) {
-    this.canvasRef.nativeElement.addEventListener(type, listener);
+    this.surface.addEventListener(type, listener);
     this.listeners.push([type, listener]);
   }
 
@@ -169,12 +185,14 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.renderer || clientWidth === 0 || clientHeight === 0) {
       return;
     }
-    this.renderer.setSize(clientWidth, clientHeight, false);
+    this.renderer.setSize(clientWidth, clientHeight);
+    this.dirty = true;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
   }
 
   private rebuild() {
+    this.dirty = true;
     this.clearContent();
     const colors = readColors(this.host.nativeElement);
     this.scene.background = new THREE.Color(colors.background);
@@ -460,7 +478,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
         : item.offsetMm;
       this.drag = { id: item.id, placement, grabAlongMm: along - grabbed, dividerIndex };
       this.controls!.enabled = false;
-      this.canvasRef.nativeElement.setPointerCapture(event.pointerId);
+      this.surface.setPointerCapture(event.pointerId);
     }
   }
 
@@ -480,7 +498,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       const drag = this.drag;
       this.drag = null;
       this.controls!.enabled = true;
-      this.canvasRef.nativeElement.releasePointerCapture(event.pointerId);
+      this.surface.releasePointerCapture(event.pointerId);
       const along = this.alongWall(event, drag.placement);
       if (along !== null) {
         const move = this.dragMove(drag, along, true);
@@ -535,7 +553,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private aim(event: PointerEvent) {
-    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    const rect = this.surface.getBoundingClientRect();
     const pointer = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
       -((event.clientY - rect.top) / rect.height) * 2 + 1,

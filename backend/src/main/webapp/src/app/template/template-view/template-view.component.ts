@@ -1,9 +1,11 @@
+import { NgIf } from "@angular/common";
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, ViewChild } from "@angular/core";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { AssembledPart, CABINET } from "../../project/assembly";
 import { Face } from "../../project/model/design";
+import { createRenderer, SceneRenderer } from "../../util/three/scene-renderer";
 
 const MM = 0.001;
 /** A click moving less than this, in pixels, picks; more turns the view. */
@@ -24,7 +26,7 @@ export interface PickedFace {
   selector: "template-view",
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [],
+  imports: [NgIf],
   styleUrls: ["./template-view.component.css"],
   templateUrl: "./template-view.component.html",
 })
@@ -43,7 +45,13 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
   @Output() select = new EventEmitter<string | null>();
   @Output() pick = new EventEmitter<PickedFace>();
 
-  private renderer?: THREE.WebGLRenderer;
+  private renderer?: SceneRenderer;
+  /** The element drawn on: the canvas, or an SVG when the browser has no WebGL. */
+  private surface!: HTMLElement;
+  /** The scene changed since it was last drawn. */
+  private dirty = true;
+  /** Drawn without WebGL, with simpler shading. */
+  software = false;
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(40, 1, 0.01, 50);
   private controls?: OrbitControls;
@@ -63,16 +71,20 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
 
   ngAfterViewInit() {
     this.ngZone.runOutsideAngular(() => {
-      const canvas = this.canvasRef.nativeElement;
-      this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      this.renderer.setPixelRatio(window.devicePixelRatio);
+      const renderer = createRenderer(this.canvasRef.nativeElement, this.scene);
+      this.renderer = renderer;
+      this.surface = renderer.domElement as HTMLElement;
+      if (renderer.software) {
+        // After this change detection pass, which has already checked the notice.
+        setTimeout(() => this.ngZone.run(() => this.software = true));
+      }
       this.scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 2.2));
       const sun = new THREE.DirectionalLight(0xffffff, 1.4);
       sun.position.set(3, 6, 5);
       this.scene.add(sun);
       this.scene.add(this.content);
 
-      this.controls = new OrbitControls(this.camera, canvas);
+      this.controls = new OrbitControls(this.camera, this.surface);
       this.controls.enableDamping = true;
 
       this.listen("pointerdown", event => this.pointerDown = { x: (event as PointerEvent).clientX, y: (event as PointerEvent).clientY });
@@ -84,8 +96,12 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
 
       const loop = () => {
         this.frame = requestAnimationFrame(loop);
-        this.controls?.update();
-        this.renderer?.render(this.scene, this.camera);
+        const moved = this.controls?.update() ?? false;
+        // Drawn on the CPU, the view redraws only when the camera moved or the scene changed.
+        if (!renderer.software || moved || this.dirty) {
+          renderer.render(this.scene, this.camera);
+          this.dirty = false;
+        }
       };
       loop();
     });
@@ -100,14 +116,14 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
   ngOnDestroy() {
     cancelAnimationFrame(this.frame);
     this.resizeObserver?.disconnect();
-    this.listeners.forEach(([type, listener]) => this.canvasRef.nativeElement.removeEventListener(type, listener));
+    this.listeners.forEach(([type, listener]) => this.surface?.removeEventListener(type, listener));
     this.controls?.dispose();
     this.clearContent();
     this.renderer?.dispose();
   }
 
   private listen(type: string, listener: EventListener) {
-    this.canvasRef.nativeElement.addEventListener(type, listener);
+    this.surface.addEventListener(type, listener);
     this.listeners.push([type, listener]);
   }
 
@@ -116,12 +132,14 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
     if (!this.renderer || clientWidth === 0 || clientHeight === 0) {
       return;
     }
-    this.renderer.setSize(clientWidth, clientHeight, false);
+    this.renderer.setSize(clientWidth, clientHeight);
+    this.dirty = true;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
   }
 
   private rebuild() {
+    this.dirty = true;
     this.clearContent();
     const style = getComputedStyle(this.host.nativeElement);
     const token = (name: string) => style.getPropertyValue(name).trim() || "#888888";
@@ -183,7 +201,7 @@ export class TemplateViewComponent implements AfterViewInit, OnChanges, OnDestro
     if (!down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > CLICK_TOLERANCE_PX) {
       return;
     }
-    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    const rect = this.surface.getBoundingClientRect();
     this.raycaster.setFromCamera(new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
       -((event.clientY - rect.top) / rect.height) * 2 + 1,

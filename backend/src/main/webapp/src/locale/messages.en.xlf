@@ -4492,6 +4492,14 @@
         <source>Les mesures lues sur une photo restent des hypothèses ; tapez celles qui sont sûres.</source>
         <target>Measurements read from a photo stay assumptions; type the ones you are sure of.</target>
       </trans-unit>
+      <trans-unit id="view.softwareHint" datatype="html">
+        <source>Le navigateur n&apos;offre pas WebGL, souvent parce que l&apos;accélération matérielle est désactivée dans ses paramètres.</source>
+        <target>The browser offers no WebGL, often because hardware acceleration is turned off in its settings.</target>
+      </trans-unit>
+      <trans-unit id="view.software" datatype="html">
+        <source>Affichage simplifié : activez l&apos;accélération matérielle du navigateur pour un rendu complet.</source>
+        <target>Simplified view: turn on the browser&apos;s hardware acceleration for full rendering.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

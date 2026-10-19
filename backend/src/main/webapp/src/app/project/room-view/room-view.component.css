@@ -15,3 +15,16 @@ canvas {
   height: 100%;
   touch-action: none;
 }
+
+.software {
+  position: absolute;
+  left: var(--oc-space-3);
+  bottom: var(--oc-space-3);
+  margin: 0;
+  padding: var(--oc-space-1) var(--oc-space-2);
+  border-radius: var(--oc-radius-sm);
+  background-color: var(--oc-bg-raise);
+  color: var(--oc-text-secondary);
+  font-size: var(--oc-font-size-xs);
+  pointer-events: auto;
+}
