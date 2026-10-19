@@ -65,4 +65,25 @@ describe("scene renderer", () => {
     renderer.dispose();
     canvas.remove();
   });
+
+  it("cuts opaque boxes into small tiles and leaves see-through ones whole", () => {
+    const canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+    const scene = new THREE.Scene();
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.02, 0.5), new THREE.MeshStandardMaterial());
+    const front = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.02),
+      new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.25 }));
+    scene.add(shelf, front);
+
+    const renderer = createRenderer(canvas, scene);
+    renderer.render(scene, new THREE.PerspectiveCamera());
+
+    const shelfSegments = (shelf.geometry as THREE.BoxGeometry).parameters;
+    expect(shelfSegments.widthSegments).toBe(4);
+    expect(shelfSegments.depthSegments).toBe(4);
+    expect(shelfSegments.width).toBe(0.6);
+    expect((front.geometry as THREE.BoxGeometry).parameters.widthSegments).toBe(1);
+    renderer.dispose();
+    canvas.remove();
+  });
 });

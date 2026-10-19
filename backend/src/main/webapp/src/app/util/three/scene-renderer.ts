@@ -19,6 +19,11 @@ export interface SceneRenderer {
 const SVG_AMBIENT = 0.5;
 const SVG_DIRECTIONAL_INTENSITY = 0.6;
 
+/** Largest side of the tiles boxes are cut into without a depth buffer, in scene units (metres). */
+const SVG_TILE = 0.15;
+
+const TILED = "svgTiled";
+
 /** Marks a mesh drawn under everything else when there is no depth buffer, such as the floor. */
 export const GROUND = "ground";
 
@@ -72,6 +77,9 @@ function svgRenderer(canvas: HTMLCanvasElement, scene: THREE.Scene): SceneRender
         if (object instanceof THREE.DirectionalLight) {
           object.intensity = SVG_DIRECTIONAL_INTENSITY;
         }
+        if (object instanceof THREE.Mesh) {
+          tile(object);
+        }
       });
       renderInLayers(renderer, scene, camera);
     },
@@ -122,4 +130,27 @@ function renderInLayers(renderer: SVGRenderer, scene: THREE.Scene, camera: THREE
   renderer.render(scene, camera);
   scene.background = background;
   restoreGround();
+}
+
+/**
+ * Cuts an opaque box into small tiles, once: painted from the farthest centre
+ * to the nearest, a large face (a shelf, a side) can sort in front of what
+ * stands before it, while small tiles sort as they should. See-through boxes
+ * (walls, fronts shown open) stay whole: their tiles' overlaps would show as
+ * a darker grid.
+ */
+function tile(mesh: THREE.Mesh) {
+  if (mesh.userData[TILED] || !(mesh.geometry instanceof THREE.BoxGeometry) || seeThrough(mesh.material)) {
+    return;
+  }
+  const { width, height, depth } = mesh.geometry.parameters;
+  const segments = (size: number) => Math.max(1, Math.ceil(size / SVG_TILE));
+  const tiled = new THREE.BoxGeometry(width, height, depth, segments(width), segments(height), segments(depth));
+  mesh.geometry.dispose();
+  mesh.geometry = tiled;
+  mesh.userData[TILED] = true;
+}
+
+function seeThrough(material: THREE.Material | THREE.Material[]): boolean {
+  return (Array.isArray(material) ? material : [material]).some(item => item.transparent && item.opacity < 1);
 }

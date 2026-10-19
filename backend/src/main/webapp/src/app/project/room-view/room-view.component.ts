@@ -14,7 +14,6 @@ import { createRenderer, GROUND, SceneRenderer } from "../../util/three/scene-re
 
 const MM = 1 / 1000;
 const WALL_THICKNESS_MM = 100;
-const WALL_TILE_MM = 500;
 const FRONT_THICKNESS_MM = 19;
 const FRONT_GAP_MM = 3;
 const TOE_KICK_SETBACK_MM = 75;
@@ -275,9 +274,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   private wallMesh(placement: WallPlacement, color: string): THREE.Mesh {
     const { wall, start, direction, normal } = placement;
     const mesh = new THREE.Mesh(
-      // In tiles, so a view drawn without a depth buffer sorts the wall against what stands before it.
-      new THREE.BoxGeometry(wall.lengthMm * MM, wall.heightMm * MM, WALL_THICKNESS_MM * MM,
-        Math.max(1, Math.ceil(wall.lengthMm / WALL_TILE_MM)), Math.max(1, Math.ceil(wall.heightMm / WALL_TILE_MM))),
+      new THREE.BoxGeometry(wall.lengthMm * MM, wall.heightMm * MM, WALL_THICKNESS_MM * MM),
       new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55 }),
     );
     mesh.position.set(
