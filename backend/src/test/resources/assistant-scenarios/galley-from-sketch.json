@@ -1,0 +1,67 @@
+{
+  "name": "galley-from-sketch",
+  "description": "A galley kitchen from a dimensioned hand sketch: the room, the window and appliances come from the sketch, the cabinets from the request.",
+  "language": "fr",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3657.6,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [],
+    "openings": [],
+    "appliances": [],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Voici le croquis coté de la cuisine en galerie des Tremblay. Monte la pièce selon le croquis, puis fais une première proposition : évier sous la fenêtre, cuisinière et frigo sur le mur B comme sur le croquis, caissons bas partout ailleurs le long des deux murs.",
+      "attachments": [
+        "galley-sketch.png"
+      ]
+    }
+  ],
+  "expect": {
+    "walls": {
+      "min": 2
+    },
+    "cabinets": {
+      "min": 6
+    },
+    "templates": {
+      "BASE_SINK": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "openings": {
+      "WINDOW": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "appliances": {
+      "RANGE": {
+        "min": 1,
+        "max": 1
+      },
+      "FRIDGE": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "under": [
+      {
+        "template": "BASE_SINK",
+        "opening": "WINDOW"
+      }
+    ],
+    "assumptions": {
+      "min": 1
+    }
+  }
+}

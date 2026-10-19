@@ -86,7 +86,7 @@ class DefaultConversationDomainTest {
 	private final ConversationProgress progress = new ConversationProgress();
 	private final InMemoryAttachments attachments = new InMemoryAttachments();
 	private final DefaultConversationDomain domain = new DefaultConversationDomain(memberDomain, memberRepository, projectDomain,
-			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, attachments, pdf -> 2, Runnable::run,
+			clientDomain, catalogDomain, shopRepository, assistantDomain, repository, progress, attachments, pdf -> 2, new DesignIds(), Runnable::run,
 			JSON);
 
 	private final Principal principal = () -> "marie";
@@ -367,118 +367,5 @@ class DefaultConversationDomainTest {
 		}
 	}
 
-	/**
-	 * Attachments kept in memory.
-	 */
-	private static final class InMemoryAttachments implements AttachmentStore {
-		private final Map<UUID, Attachment> attachments = new java.util.LinkedHashMap<>();
-		private final Map<UUID, byte[]> contents = new HashMap<>();
 
-		@Override
-		public Attachment save(Attachment attachment, byte[] content) {
-			var saved = attachment.toBuilder().sizeBytes(content.length).build();
-			attachments.put(saved.getId(), saved);
-			contents.put(saved.getId(), content);
-			return saved;
-		}
-
-		@Override
-		public Map<UUID, List<Attachment>> findByMessages(java.util.Collection<UUID> messageIds) {
-			return attachments.values().stream().filter(attachment -> messageIds.contains(attachment.getMessageId()))
-					.collect(java.util.stream.Collectors.groupingBy(Attachment::getMessageId));
-		}
-
-		@Override
-		public Optional<AttachmentContent> content(UUID attachmentId, UUID shopId) {
-			return Optional.ofNullable(attachments.get(attachmentId))
-					.map(attachment -> new AttachmentContent(attachment.getFileName(), attachment.getMediaType(),
-							contents.get(attachmentId)));
-		}
-
-		@Override
-		public Map<UUID, List<AttachmentContent>> contents(java.util.Collection<UUID> messageIds) {
-			return attachments.values().stream().filter(attachment -> messageIds.contains(attachment.getMessageId()))
-					.collect(java.util.stream.Collectors.groupingBy(Attachment::getMessageId,
-							java.util.stream.Collectors.mapping(attachment -> content(attachment.getId(), null).orElseThrow(),
-									java.util.stream.Collectors.toList())));
-		}
-	}
-
-	/**
-	 * Conversations, messages and Proposals kept in memory.
-	 */
-	private static final class InMemoryConversations implements ConversationRepository {
-		private final Map<UUID, Conversation> conversations = new HashMap<>();
-		private final List<ConversationMessage> messages = new ArrayList<>();
-		private final Map<UUID, DesignProposal> proposals = new HashMap<>();
-
-		@Override
-		public Optional<Conversation> findByProject(UUID projectId, UUID shopId) {
-			return conversations.values().stream()
-					.filter(conversation -> conversation.getProjectId().equals(projectId) && conversation.getShopId().equals(shopId))
-					.findFirst();
-		}
-
-		@Override
-		public Conversation create(Conversation conversation) {
-			conversations.put(conversation.getId(), conversation);
-			return conversation;
-		}
-
-		@Override
-		public boolean startRunning(UUID conversationId) {
-			var conversation = conversations.get(conversationId);
-			if (conversation.isRunning()) {
-				return false;
-			}
-			conversations.put(conversationId, conversation.toBuilder().running(true).build());
-			return true;
-		}
-
-		@Override
-		public void stopRunning(UUID conversationId) {
-			conversations.computeIfPresent(conversationId, (id, conversation) -> conversation.toBuilder().running(false).build());
-		}
-
-		@Override
-		public List<Conversation> findRunning() {
-			return conversations.values().stream().filter(Conversation::isRunning).toList();
-		}
-
-		@Override
-		public List<ConversationMessage> findMessages(UUID conversationId) {
-			return messages.stream().filter(message -> message.getConversationId().equals(conversationId)).toList();
-		}
-
-		@Override
-		public ConversationMessage addMessage(ConversationMessage message) {
-			messages.add(message);
-			return message;
-		}
-
-		@Override
-		public Optional<DesignProposal> findOpenProposal(UUID projectId, UUID shopId) {
-			return proposals.values().stream()
-					.filter(proposal -> proposal.getProjectId().equals(projectId) && proposal.getStatus() == ProposalStatus.OPEN)
-					.findFirst();
-		}
-
-		@Override
-		public Optional<DesignProposal> findCurrentProposal(UUID projectId, UUID shopId) {
-			return findOpenProposal(projectId, shopId).or(() -> proposals.values().stream()
-					.filter(proposal -> proposal.getProjectId().equals(projectId) && proposal.getStatus() == ProposalStatus.ACCEPTED)
-					.findFirst());
-		}
-
-		@Override
-		public DesignProposal findProposal(UUID proposalId, UUID shopId) {
-			return Optional.ofNullable(proposals.get(proposalId)).orElseThrow(NoSuchElementException::new);
-		}
-
-		@Override
-		public DesignProposal saveProposal(DesignProposal proposal) {
-			proposals.put(proposal.getId(), proposal);
-			return proposal;
-		}
-	}
 }

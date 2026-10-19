@@ -1,0 +1,105 @@
+{
+  "name": "wall-cabinets-above",
+  "description": "Wall cabinets above an existing run of base cabinets, asked in English: the bases stay as they are.",
+  "language": "en",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3048.0,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [
+      {
+        "id": "c1",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 0,
+        "widthMm": 457.2,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      },
+      {
+        "id": "c2",
+        "templateCode": "BASE_DRAWERS",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 457.2,
+        "widthMm": 457.2,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 0
+      },
+      {
+        "id": "c3",
+        "templateCode": "BASE_DOOR_DRAWER",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 914.4,
+        "widthMm": 609.6,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      },
+      {
+        "id": "c4",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 1524,
+        "widthMm": 762,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      }
+    ],
+    "openings": [],
+    "appliances": [],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Add wall cabinets above all the base cabinets, matching their widths.",
+      "attachments": []
+    }
+  ],
+  "expect": {
+    "cabinets": {
+      "min": 7,
+      "max": 10
+    },
+    "types": {
+      "BASE": {
+        "min": 4,
+        "max": 4
+      },
+      "WALL": {
+        "min": 3,
+        "max": 6
+      }
+    },
+    "templates": {
+      "BASE_DOOR": {
+        "min": 2,
+        "max": 2
+      },
+      "BASE_DRAWERS": {
+        "min": 1,
+        "max": 1
+      },
+      "BASE_DOOR_DRAWER": {
+        "min": 1,
+        "max": 1
+      }
+    }
+  }
+}

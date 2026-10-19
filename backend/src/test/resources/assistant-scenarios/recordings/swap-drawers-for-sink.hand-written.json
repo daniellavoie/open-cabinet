@@ -1,0 +1,45 @@
+{
+  "scenario": "swap-drawers-for-sink",
+  "model": "hand-written",
+  "note": "Written by hand to prove the replay path before the suite ran against a real model; replace it with recordings from AssistantScenariosTest (-Dscenario.record=true).",
+  "replies": [
+    {
+      "text": "Je retire le caisson à tiroirs et je mets un caisson-évier de 36 po à sa place.",
+      "toolCalls": [
+        {
+          "id": "call-1",
+          "name": "remove_cabinet",
+          "arguments": "{\"cabinetId\": \"c2\"}"
+        },
+        {
+          "id": "call-2",
+          "name": "add_cabinet",
+          "arguments": "{\"templateCode\": \"BASE_SINK\", \"wallId\": \"w1\", \"offsetMm\": 1219.2, \"widthMm\": 914.4}"
+        }
+      ],
+      "inputTokens": 3200,
+      "outputTokens": 120,
+      "costUsd": 0
+    },
+    {
+      "text": null,
+      "toolCalls": [
+        {
+          "id": "call-3",
+          "name": "note_proposal",
+          "arguments": "{\"summary\": \"Caisson-évier de 36 po sous la fenêtre à la place du caisson à tiroirs.\", \"openQuestions\": [\"Évier simple ou double ?\"], \"assumptions\": [\"Même hauteur et profondeur que le caisson remplacé\"]}"
+        }
+      ],
+      "inputTokens": 3500,
+      "outputTokens": 90,
+      "costUsd": 0
+    },
+    {
+      "text": "C'est prêt : le caisson-évier de 36 po remplace le caisson à tiroirs sous la fenêtre. Dites-moi s'il s'agit d'un évier simple ou double.",
+      "toolCalls": [],
+      "inputTokens": 3600,
+      "outputTokens": 60,
+      "costUsd": 0
+    }
+  ]
+}

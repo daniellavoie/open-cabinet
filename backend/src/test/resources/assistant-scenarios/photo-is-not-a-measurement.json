@@ -1,0 +1,54 @@
+{
+  "name": "photo-is-not-a-measurement",
+  "description": "A photo without dimensions: whatever the assistant reads from it, it lists as assumptions.",
+  "language": "fr",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3657.6,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [],
+    "openings": [],
+    "appliances": [],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Voici une photo du mur de la cuisine. Ajoute la fenêtre qu'on voit, puis des caissons bas sur toute la longueur avec un évier sous la fenêtre.",
+      "attachments": [
+        "wall-photo.png"
+      ]
+    }
+  ],
+  "expect": {
+    "cabinets": {
+      "min": 3
+    },
+    "openings": {
+      "WINDOW": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "templates": {
+      "BASE_SINK": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "under": [
+      {
+        "template": "BASE_SINK",
+        "opening": "WINDOW"
+      }
+    ],
+    "assumptions": {
+      "min": 1
+    }
+  }
+}

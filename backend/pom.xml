@@ -8,7 +8,19 @@
 
   <artifactId>opencabinet-backend</artifactId>
 
+  <properties>
+    <!-- The Design Assistant scenarios call the real model: run them on demand with -Pscenarios. -->
+    <excludedGroups>scenarios</excludedGroups>
+  </properties>
+
   <profiles>
+    <profile>
+      <id>scenarios</id>
+      <properties>
+        <groups>scenarios</groups>
+        <excludedGroups>none</excludedGroups>
+      </properties>
+    </profile>
     <profile>
       <id>frontend</id>
 

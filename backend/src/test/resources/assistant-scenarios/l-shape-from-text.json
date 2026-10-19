@@ -1,0 +1,74 @@
+{
+  "name": "l-shape-from-text",
+  "description": "An L-shaped kitchen described in words: blind corner, sink under the window, dishwasher beside it, wall cabinets on one wall.",
+  "language": "fr",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3600,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      },
+      {
+        "id": "w2",
+        "lengthMm": 2700,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [],
+    "openings": [
+      {
+        "id": "o1",
+        "kind": "WINDOW",
+        "wallId": "w1",
+        "offsetMm": 1500,
+        "widthMm": 914.4,
+        "heightMm": 1066.8,
+        "elevationMm": 1066.8
+      }
+    ],
+    "appliances": [],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Cuisine en L : caissons bas sur les deux murs avec un coin aveugle dans l'angle, l'évier sous la fenêtre et le lave-vaisselle juste à droite de l'évier. Caissons hauts sur le deuxième mur seulement.",
+      "attachments": []
+    }
+  ],
+  "expect": {
+    "cabinets": {
+      "min": 6
+    },
+    "templates": {
+      "BASE_BLIND_CORNER": {
+        "min": 1,
+        "max": 1
+      },
+      "BASE_SINK": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "types": {
+      "WALL": {
+        "min": 2
+      }
+    },
+    "appliances": {
+      "DISHWASHER": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "under": [
+      {
+        "template": "BASE_SINK",
+        "opening": "WINDOW"
+      }
+    ]
+  }
+}

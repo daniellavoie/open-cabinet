@@ -113,6 +113,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 	ConversationProgress progress;
 	AttachmentStore attachments;
 	PdfInspector pdfs;
+	DesignIds designIds;
 	AssistantJobs jobs;
 	JsonMapper jsonMapper;
 
@@ -247,7 +248,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 		session.summary = session.open != null ? session.open.getSummary() : null;
 		session.openQuestions = session.open != null ? session.open.getOpenQuestions() : List.of();
 		session.assumptions = session.open != null ? session.open.getAssumptions() : List.of();
-		session.context = context(session.project, shopId, prefix -> prefix + "-" + UUID.randomUUID().toString().substring(0, 8));
+		session.context = context(session.project, shopId, designIds::next);
 
 		var shop = shopRepository.findById(shopId);
 		var materials = catalogDomain.findByShop(shopId);
@@ -444,7 +445,7 @@ public class DefaultConversationDomain implements ConversationDomain {
 
 		var project = projectDomain.findById(projectId, shopId);
 		var replay = ProposalSteps.replay(project.getDesign(), proposal.getSteps(),
-				context(project, shopId, prefix -> prefix + "-" + UUID.randomUUID().toString().substring(0, 8)));
+				context(project, shopId, designIds::next));
 		var refusedViolations = replay.refusal() == null ? null : replay.refusal().violations();
 		if (replay.applied() == 0) {
 			return AcceptResult.builder()

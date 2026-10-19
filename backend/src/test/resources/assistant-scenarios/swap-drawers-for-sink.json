@@ -1,0 +1,98 @@
+{
+  "name": "swap-drawers-for-sink",
+  "description": "Replacing one cabinet by another of a different template: the assistant removes and adds, as a Member would.",
+  "language": "fr",
+  "units": "IMPERIAL",
+  "design": {
+    "walls": [
+      {
+        "id": "w1",
+        "lengthMm": 3657.6,
+        "heightMm": 2438.4,
+        "angleToNextDegrees": 90
+      }
+    ],
+    "cabinets": [
+      {
+        "id": "c1",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 0,
+        "widthMm": 609.6,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      },
+      {
+        "id": "c2",
+        "templateCode": "BASE_DRAWERS",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 1219.2,
+        "widthMm": 914.4,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 0
+      },
+      {
+        "id": "c3",
+        "templateCode": "BASE_DOOR",
+        "templateVersion": 2,
+        "wallId": "w1",
+        "offsetMm": 2133.6,
+        "widthMm": 609.6,
+        "heightMm": 876.3,
+        "depthMm": 609.6,
+        "elevationMm": 0,
+        "shelfCount": 1
+      }
+    ],
+    "openings": [
+      {
+        "id": "o1",
+        "kind": "WINDOW",
+        "wallId": "w1",
+        "offsetMm": 1219.2,
+        "widthMm": 914.4,
+        "heightMm": 1066.8,
+        "elevationMm": 1066.8
+      }
+    ],
+    "appliances": [],
+    "fillers": []
+  },
+  "messages": [
+    {
+      "text": "Remplace le caisson à tiroirs sous la fenêtre par un caisson-évier de la même largeur.",
+      "attachments": []
+    }
+  ],
+  "expect": {
+    "steps": {
+      "min": 2,
+      "max": 4
+    },
+    "cabinets": {
+      "min": 3,
+      "max": 3
+    },
+    "templates": {
+      "BASE_DRAWERS": {
+        "max": 0
+      },
+      "BASE_SINK": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "under": [
+      {
+        "template": "BASE_SINK",
+        "opening": "WINDOW"
+      }
+    ]
+  }
+}
