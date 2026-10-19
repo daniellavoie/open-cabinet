@@ -19,6 +19,9 @@ export interface SceneRenderer {
 const SVG_AMBIENT = 0.5;
 const SVG_DIRECTIONAL_INTENSITY = 0.6;
 
+/** Marks a mesh drawn under everything else when there is no depth buffer, such as the floor. */
+export const GROUND = "ground";
+
 let webgl: boolean | undefined;
 
 /** Whether the browser gives WebGL, asked once per page. */
@@ -70,7 +73,7 @@ function svgRenderer(canvas: HTMLCanvasElement, scene: THREE.Scene): SceneRender
           object.intensity = SVG_DIRECTIONAL_INTENSITY;
         }
       });
-      renderer.render(scene, camera);
+      renderInLayers(renderer, scene, camera);
     },
     dispose: () => {
       scene.remove(ambient);
@@ -78,4 +81,45 @@ function svgRenderer(canvas: HTMLCanvasElement, scene: THREE.Scene): SceneRender
       canvas.style.display = "";
     },
   };
+}
+
+/**
+ * The SVG renderer has no depth buffer: it paints triangles from the farthest
+ * centre to the nearest, and a large floor whose centre lies near the camera
+ * would cover what stands on it. What is marked ground is painted first, on
+ * its own, then everything else over it.
+ */
+function renderInLayers(renderer: SVGRenderer, scene: THREE.Scene, camera: THREE.Camera) {
+  const ground: THREE.Object3D[] = [];
+  const drawn: THREE.Object3D[] = [];
+  scene.traverse(object => {
+    if (object.userData[GROUND]) {
+      ground.push(object);
+    } else if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments || object instanceof THREE.Line) {
+      drawn.push(object);
+    }
+  });
+  if (ground.length === 0) {
+    renderer.render(scene, camera);
+    return;
+  }
+
+  const shown = (objects: THREE.Object3D[], visible: boolean) => {
+    const before = objects.map(object => object.visible);
+    objects.forEach(object => object.visible = visible && object.visible);
+    return () => objects.forEach((object, index) => object.visible = before[index]);
+  };
+
+  const restoreDrawn = shown(drawn, false);
+  renderer.autoClear = true;
+  renderer.render(scene, camera);
+  restoreDrawn();
+
+  const restoreGround = shown(ground, false);
+  const background = scene.background;
+  scene.background = null;
+  renderer.autoClear = false;
+  renderer.render(scene, camera);
+  scene.background = background;
+  restoreGround();
 }

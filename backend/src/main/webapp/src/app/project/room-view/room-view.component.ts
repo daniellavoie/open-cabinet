@@ -10,10 +10,11 @@ import { doorLeaves, frontRows, frontWidth } from "../front-layout";
 import { Appliance, Cabinet, CabinetTemplate, Design, Filler, Opening, standsOnFloor, templateKey } from "../model/design";
 import { Mark } from "../proposal-marks";
 import { footprintCentre, layoutWalls, OnWall, WallPlacement } from "../room-layout";
-import { createRenderer, SceneRenderer } from "../../util/three/scene-renderer";
+import { createRenderer, GROUND, SceneRenderer } from "../../util/three/scene-renderer";
 
 const MM = 1 / 1000;
 const WALL_THICKNESS_MM = 100;
+const WALL_TILE_MM = 500;
 const FRONT_THICKNESS_MM = 19;
 const FRONT_GAP_MM = 3;
 const TOE_KICK_SETBACK_MM = 75;
@@ -215,6 +216,7 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
       new THREE.MeshStandardMaterial({ color: colors.floor }),
     );
     floor.rotation.x = -Math.PI / 2;
+    floor.userData[GROUND] = true;
     floor.position.set(floorCentre.x, 0, floorCentre.z);
     this.content.add(floor);
 
@@ -273,7 +275,9 @@ export class RoomViewComponent implements AfterViewInit, OnChanges, OnDestroy {
   private wallMesh(placement: WallPlacement, color: string): THREE.Mesh {
     const { wall, start, direction, normal } = placement;
     const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(wall.lengthMm * MM, wall.heightMm * MM, WALL_THICKNESS_MM * MM),
+      // In tiles, so a view drawn without a depth buffer sorts the wall against what stands before it.
+      new THREE.BoxGeometry(wall.lengthMm * MM, wall.heightMm * MM, WALL_THICKNESS_MM * MM,
+        Math.max(1, Math.ceil(wall.lengthMm / WALL_TILE_MM)), Math.max(1, Math.ceil(wall.heightMm / WALL_TILE_MM))),
       new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55 }),
     );
     mesh.position.set(
